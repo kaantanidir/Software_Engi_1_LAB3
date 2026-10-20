@@ -4,27 +4,25 @@ Updated: 2026-10-21
 
 ## Task A - Elicitation
 
-SmartBrew AI is a personalized coffee-machine system for office customers and maintenance technicians. The full requirements cover profiles, saved recipes, context/mood recommendations, customization, supplies, payments, receipts, diagnostics, privacy and service-failure fallback. The group's custom feature is loyalty redemption. The executable prototype implements ten selected feature groups with persistent local state and a browser interface.
+SmartBrew AI is a local coffee-machine prototype for customers and maintenance technicians. It implements ten selected feature groups: accounts, menu, customization, personal recipes, availability, recommendations, checkout/history, loyalty, receipts and maintenance. An additional optional local language model interprets drink requests into customer-confirmed recipes. The complete elicitation retains camera/privacy requirements even though camera inference is outside this implementation.
 
-### Cross-lab continuity and course policy
+### Cross-lab continuity
 
-Lab 1 received a positive grade. Its component coverage was marked Partial ('A bit minimalistic'); its relationship feedback questioned whether the UI needs the AIEngine. The saved diagram has nine domain concepts: User, Customer, Technician, PreferenceProfile, BeverageRecipe, Order, Payment, Inventory and Ingredient. These map to roles, preferences, recipes, purchase records and stock/waste state, not necessarily one code class each. Camera inference and the nested real LLM/mood modules remain deferred. Loyalty is first documented in the supplied Lab 2, not the Lab 1 diagrams. See docs/CROSS_LAB_REVIEW.md for the source audit and detailed mapping.
-
-Previously generated Lab 2 correction: AI-GENERATED REVIEW REFERENCE ONLY - NOT FOR LAB 1 OR LAB 2 SUBMISSION. The general course rules supplied after this reference was generated prohibit submitting generated text/models for those labs. Original submissions are unchanged. Lab 3 explicitly permits generation; disclosure does not override the Lab 1-2 restriction.
+Lab 1 received a positive grade, with Partial feedback on component scope and UI dependency on the AIEngine. Its nine domain concepts map to roles, preferences, recipes, purchase records and stock/waste state, not necessarily one code class each. The optional local-LLM responsibility is now implemented through a separate adapter; camera/mood inference remains deferred. Loyalty first appears in the supplied Lab 2, not the Lab 1 diagrams. See docs/CROSS_LAB_REVIEW.md for the detailed source mapping.
 
 ### Models and provenance
 
 GPT-6.1 Sol (model-selector label supplied by the student on 2026-10-20); exact backend build not exposed.
 
-Tasks A, B and C in this revision use this same model through the Codex application. Earlier Lab 2 assistant model/version was not recorded and is not retroactively invented.
+This is the development assistant for Tasks A-C. The runtime drink model is separately identified as local Qwen3 4B through Ollama 0.40.6. Earlier Lab 2 model/version was not recorded.
 
-The preserved files in docs/baseline are exactly the submitted Lab 2 artifacts extracted from the supplied ZIP. This chat previously assisted creation of Lab 2; it would be inaccurate to label that submission an independently human-authored baseline. The comparison uses the actual submitted group version, then separates the feedback correction from the later LLM-assisted refinement. No later correction is silently substituted for the submitted baseline.
+The comparison uses the actual submitted Lab 2 files, preserved with hashes in docs/baseline. That submission was already AI-assisted in this conversation, so it is not an independently human-elicited baseline. This limitation is disclosed for instructor review. Later reference corrections are not substituted for the submitted version.
 
 ### Prompt strategy
 
 Use the actual system description, feedback and course slides as grounding; constrain all requirements to the six-column lecture template; retain the submitted baseline; check each source capability against stories/requirements/backlog; separate source mandates from proposed design assumptions; select ten coherent demonstrable feature groups; implement and test approval, rejection, ownership, retry, safety and offline paths. This was one evolving chat request with student clarifications, not an invented sequence of separate prompting experiments.
 
-Main prompts, student clarifications and assistant response excerpts are recorded in AI_CONVERSATION.md. Generated code is retained in Git; do not describe the artifacts as independently human authored.
+Main prompts and selected responses are recorded in AI_CONVERSATION.md and the separate PDF appendix; generated code and revisions are retained in Git.
 
 ### Source inventory
 
@@ -115,7 +113,7 @@ Main prompts, student clarifications and assistant response excerpts are recorde
 
 ### Initial product backlog
 
-Same required format as corrected Lab 2. Importance 0-100, high first; estimate in relative story points. Proposed values are not measured team velocity or a promised delivery date. Dependencies: accounts before private recipes/history; quotes/availability before checkout; approved purchase before loyalty/receipts. Optional AI and physical integrations remain backlog work.
+Lecture format with Description and trace links retained. Importance 0-100, high first; estimates are relative story points, not measured velocity. This is an initial planning artifact, not a claim that every full-system requirement is implemented. F01-F10 and optional F11 have demonstration steps; camera and physical integrations remain deferred.
 
 | ID | Name | Importance | Estimate | Description | How to demo | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -143,11 +141,11 @@ Same required format as corrected Lab 2. Importance 0-100, high first; estimate 
 | PB-FR-14 | Deliver receipts | 70 | 5 | After a completed purchase, the system shall offer a QR receipt or email delivery and offer QR as fallback on email failure. | Open a real QR; request email in local outbox; fail email and verify QR fallback. | FR-14; S10; F09 |
 | PB-FR-09 | Analyze mood | 45 | 8 | The system shall use the embedded camera to infer a mood and optionally add it to the recommendation context; unavailable inference shall not prevent manual ordering. | With real module enabled, infer tired mood; deny consent and verify manual ordering still works. | FR-09; S05/S16; Deferred |
 | PB-NFR-04 | Respond promptly | 45 | 3 | Proposed acceptance target: local menu and quote responses shall complete within 2 seconds in at least 95 of 100 sequential requests on the documented demo machine, excluding external services. | Measure 100 requests; report p95 and environment without claiming production SLA. | NFR-04; Design assumption; not in brief; F02/F03 |
-| PB-FR-10 | Interpret natural-language requests | 30 | 13 | When the optional local LLM is enabled, the system shall translate a free-form request into supported recipe parameters and ask for confirmation or clarification. | Request sweet but low dairy; inspect parsed proposal; reject unsupported ingredients. | FR-10; S11; Deferred |
+| PB-FR-10 | Interpret natural-language requests | 30 | 13 | When the optional local LLM is enabled, the system shall translate a free-form request into supported recipe parameters and ask for confirmation or clarification. | Request a strong oat latte; inspect the real local-model proposal; test clarification and unsupported ingredients. | FR-10; S11; F11 (optional) |
 
 ### Comparison with the submitted Lab 2
 
-The preserved files in docs/baseline are exactly the submitted Lab 2 artifacts extracted from the supplied ZIP. This chat previously assisted creation of Lab 2; it would be inaccurate to label that submission an independently human-authored baseline. The comparison uses the actual submitted group version, then separates the feedback correction from the later LLM-assisted refinement. No later correction is silently substituted for the submitted baseline.
+The comparison uses the actual submitted Lab 2 files, preserved with hashes in docs/baseline. That submission was already AI-assisted in this conversation, so it is not an independently human-elicited baseline. This limitation is disclosed for instructor review. Later reference corrections are not substituted for the submitted version.
 
 | Topic | Submitted Lab 2 | LLM revision | Decision and reason |
 | --- | --- | --- | --- |
@@ -156,7 +154,7 @@ The preserved files in docs/baseline are exactly the submitted Lab 2 artifacts e
 | REQ-02/03 / accounts | Login/profile; creation is ambiguous; saved recipes absent. | FR-01/02/03 separate registration, auth and defaults; FR-06 names/modifies/restores recipes. | Accept: account and recipe requirements were underrepresented. |
 | REQ-04/05 / drink | Customization and threshold checks present. | FR-05 validates options and quote; FR-07 also checks serving quantity and rechecks at purchase. | Accept: prevents invalid or stale-stock orders. |
 | REQ-06/07 / AI | Context recommendations and in-memory mood present; consent and fallbacks unclear. | FR-08/09 plus NFR-01 preserve mood privacy and provide explicit opt-in/failure handling. | Accept source behavior; opt-in is a design assumption requiring group review. |
-| REQ-08 / LLM | Local LLM required as if always installed. | FR-10 explicitly optional/modular and validates customer-confirmed output. | Accept: optional status matches the brief; defer real LLM from ten-feature prototype. |
+| REQ-08 / LLM | Local LLM required as if always installed. | FR-10 explicitly optional/modular and validates customer-confirmed output. | Accept: optional status matches the brief. F11 now supplies real local inference beyond the ten core groups. |
 | REQ-09 / payment | Contactless, wallets, employee card; chip and offline flow absent. | FR-11 adds EMV chip; FR-20 distinguishes offline prepaid, pending wallet and once-only reconciliation. | Accept coverage; pending/non-dispensing is an explicit conservative demo policy. |
 | Transaction recording | No explicit requirement for immutable customization history. | FR-12 and NFR-03 record snapshots atomically and prevent duplicate purchase effects. | Accept: S02 requires every completed transaction to be recorded. |
 | REQ-10 / loyalty | Redemption only; how points are earned is undefined. | FR-13 defines earning after success, bounded redemption and no deduction on failure. | Accept with documented demo conversion rules; group must review those rules. |
@@ -175,7 +173,7 @@ These are options evaluated and rejected during this generation, not fabricated 
 | Cloud facial-image analysis or image retention | Reject: directly contradicts the mandatory in-memory/no-transmission constraint. |
 | Force account login before any manual order | Reject: account-only ordering is not required and would weaken basic manual fallback. |
 | Mark offline Apple Pay/Google Pay as approved without processor support | Reject: the prototype cannot assume external financial approval. Show pending and do not dispense. |
-| Call a keyword parser a local LLM or call a mood dropdown computer vision | Reject: would misrepresent implementation. Real camera inference/local LLM are deferred and not counted as implemented features. |
+| Call a keyword parser a local LLM or call a mood dropdown computer vision | Reject: would misrepresent implementation. F11 uses actual local-model inference; camera/mood inference remains deferred. |
 | Subscriptions, social sharing and multiple-drink baskets | Reject from scope: not requested; no need to enlarge the minimum usable prototype. |
 | Present Lab 2 as an independently human-authored baseline | Reject: this chat already assisted generation of Lab 2. Preserve the actual submitted version and disclose that provenance. |
 
@@ -193,10 +191,16 @@ The earlier assistant checked names in a serialized Astah ZIP and PDF and overcl
 | F04 | Named personal recipes | FR-06 | Save Morning Oat; rename; load and edit settings; save update; delete. |
 | F05 | Ingredient/quantity checks | FR-07, NFR-03 | Set oat level below threshold as technician; verify oat recipe cannot be purchased; refill. |
 | F06 | Context/history recommendations | FR-08/19 | Toggle Recommended first; change simulated weather/time; buy a drink and verify ranking reasons. |
-| F07 | Checkout and immutable history | FR-11/12/20, NFR-03 | Approve/decline five payment simulators; inspect history; retry a request; test offline pending then reconnect. |
+| F07 | Checkout and immutable history | FR-11/12/20, NFR-03 | Use five payment methods; set external decline in technician Test scenarios; inspect history/retries and offline reconciliation. |
 | F08 | Earn and redeem loyalty | FR-13 | Apply 100 points; verify SEK 10 discount and success-only deduction/earning. |
 | F09 | QR receipt and email adapter | FR-14 | Open receipt QR/text; send to local simulator outbox; fail email and retain QR fallback. |
 | F10 | Protected maintenance/diagnostics | FR-15/16/17/18 | PIN/master-NFC login; full refill; waste halt/empty; fault logging; authorized diagnostic export. |
+
+### Optional addition
+
+| Feature | Functionality | Requirements | Demonstration |
+| --- | --- | --- | --- |
+| F11 | Local drink assistant | FR-10/19 | Ask for a strong oat latte; review the real local-model proposal; apply settings, then separately confirm checkout. Test a clarification and unavailable model. |
 
 ### Scope and assumptions
 
@@ -206,16 +210,18 @@ The earlier assistant checked names in a serialized Astah ZIP and PDF and overcl
 - Mood opt-in and the proposed 2-second response target are design refinements; the original brief does not prescribe consent UI, a numerical latency target or point-conversion rules.
 - Weather/time, NFC/key signals, machine sensors, payment approval and email are simulated locally. Manual ordering and stored-value prepaid payments work while the simulated network is offline.
 - Online-only payment requests can be persisted as pending without dispensing. Reconnect and customer Retry performs authorization/revalidation once; the prototype never assumes that a wallet can approve offline.
-- Camera mood inference and the optional local LLM are elicited but deferred from the selected ten features. A keyword parser and a mood selector are not presented as AI implementations.
+- Camera mood inference remains deferred. F11 adds actual optional local Qwen3 4B inference through Ollama 0.40.6, beyond the ten selected groups; it proposes supported recipes but cannot purchase or modify accounts.
 - No physical brew command or real card authorization occurs. Admin diagnostics can be exported locally; there is no deployed remote diagnostic service or physical key reader.
+- Technician-only Test scenarios controls the persistent external payment mode (Normal/Decline). Customer checkout cannot submit an outcome override. Existing accounts/orders are retained; historical purchases are not reassigned after the authentication fix.
+- The model may need a cold load; server inference has a 90-second bound and manual ordering stays independent. The proposed menu/quote latency target excludes optional inference. Model proposals require customer review and fresh server validation.
 
 ### Architecture
 
-A Python HTTP adapter serves a vanilla JavaScript interface. A service layer enforces authorization and business rules. SQLite persists accounts, hashed sessions, recipes, orders, stock, waste, pending requests, events and email simulator outbox. Checkout uses a write transaction and unique request key. QR generation uses the pinned qrcode library. No external service is required after installation.
+The HTTP adapter and service layer enforce identity, ownership and purchase rules. SQLite holds persistent local state; checkout uses one write transaction and a unique request key. Customer ordering and technician maintenance/testing share one app but separate protected actions. The optional model adapter is loopback-only and has no ordering side effects. See ARCHITECTURE.md for responsibilities and trust boundaries.
 
-### Validation
+### Validation and revisions
 
-See QA_RESULTS.md and evidence/ for actual recorded runs. Unit tests use isolated temporary databases. Browser checks use a separate QA database and verify desktop/mobile layout and end-to-end flows. A recommendation-service failure regression reproduced a blank menu; rendering essential ordering before optional ranking and imposing a 1.2-second ranking timeout fixed the dependency. Passing simulator tests does not validate actual hardware, financial processors, SMTP or camera/LLM inference.
+QA_RESULTS.md and evidence/ contain actual runs. The student exposed a browser authentication defect: hidden demo NFC data overrode entered passwords. A failing regression reproduced it; explicit methods and two-customer browser tests now verify identity, ownership and restart persistence. Earlier passing tests were insufficient because they only used Alex for browser customer login. Other fixes preserve pending loyalty selections, independent manual ordering during recommendation failure and complete order snapshots. Real local-model tests are separate from adapter fixtures; an invented usual-drink response and cold-start timeout were retained as observed failures before refinement. Simulator tests do not validate real hardware or financial/email processors.
 
 ### Recommended extra experimentation
 
@@ -225,9 +231,9 @@ The instructor strongly recommends additional experimentation, but does not stat
 
 Repository: https://github.com/kaantanidir/Software_Engi_1_LAB3 . README.md contains environment, installation, execution, tests and all ten feature demos. Each authored Python/JavaScript/Java function documents purpose, inputs and outputs. Vendored Lucide is third-party library code with its license retained. Runtime data, local packages and temporary files are excluded from Git.
 
-### Student review before submission
+### Review before submission
 
-Review the exact point conversion, pending-payment policy, estimates and optional-feature scope. Read and understand the implementation and run the walkthrough. The baseline comparison is intentionally labeled group submission previously assisted by AI; confirm that disclosure with the course if a strictly independent human baseline is required.
+Review point conversion, pending-payment policy, estimates and model limitations, then run the walkthrough. Detailed prompts/model use are in the appendix. The submitted Lab 2 provenance needs instructor clarification if a strictly independent human baseline is required. Historical generated Lab 2 review aids are not submission materials under the supplied policy.
 
 ### AI appendix
 

@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 import platform
 import re
+import sys
 from zipfile import ZipFile, ZIP_DEFLATED
 
 from PIL import Image, ImageDraw
@@ -13,6 +14,19 @@ from pypdf import PdfReader
 from coursework_data import LAB3, SOURCES
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def check_document_links():
+    """Purpose: validate navigation after documentation moves. Inputs: README/index files. Returns: checked local-link count."""
+    count = 0
+    for file in (ROOT / "README.md", ROOT / "docs" / "README.md"):
+        for target in re.findall(r"\[[^\]]+\]\(([^)]+)\)", file.read_text(encoding="utf-8")):
+            if target.startswith(("https://", "http://", "mailto:", "#")):
+                continue
+            path = (file.parent / target.split("#", 1)[0]).resolve()
+            assert path.is_relative_to(ROOT) and path.exists(), f"Broken local link in {file.name}: {target}"
+            count += 1
+    return count
 
 
 def main():
@@ -39,6 +53,8 @@ def main():
         if label == "lab3":
             for record in LAB3:
                 assert record["id"] in text
+            for value in ("F11", "Qwen3", "Ollama"):
+                assert value in text
         else:
             for i in range(1, 14):
                 assert f"REQ-{i:02d}" in text and f"US-{i:02d}" in text
@@ -66,11 +82,12 @@ def main():
     for phrase in ("GPT-6.1 Sol", "Task A", "Task B", "Task C", "do we need to", "personal reflection"):
         assert phrase in appendix_text, "Missing appendix content: " + phrase
     counts["aiAppendix"] = len(appendix.pages)
-    with ZipFile(ROOT / "output" / "G28Lab2_Corrected.zip", "w", ZIP_DEFLATED) as bundle:
-        bundle.write(ROOT / "output" / "G28Lab2.asta", "Lab2_G28/G28Lab2.asta")
-        bundle.write(ROOT / "output" / "pdf" / "G28Lab2_Corrected.pdf", "Lab2_G28/G28Lab2.pdf")
-        bundle.writestr("Lab2_G28/AI_REFERENCE_ONLY.txt", "AI-GENERATED REVIEW REFERENCE ONLY. NOT FOR LAB 1 OR LAB 2 SUBMISSION.\nGeneral course rules prohibit generated text/models in those submissions.\nOriginal submissions are preserved in docs/baseline of the Lab 3 repository.\n")
-    evidence = {"python": platform.python_version(), "platform": platform.platform(), "pythonFunctionsDocumented": functions, "coverage": coverage, "pdfPages": counts, "baselineHashesVerified": True, "lab1BaselineHashVerified": True, "lab2GeneratedOutputsAreReviewOnly": True}
+    if "--include-reference" in sys.argv:
+        with ZipFile(ROOT / "output" / "G28Lab2_Corrected.zip", "w", ZIP_DEFLATED) as bundle:
+            bundle.write(ROOT / "output" / "G28Lab2.asta", "Lab2_G28/G28Lab2.asta")
+            bundle.write(ROOT / "output" / "pdf" / "G28Lab2_Corrected.pdf", "Lab2_G28/G28Lab2.pdf")
+            bundle.writestr("Lab2_G28/AI_REFERENCE_ONLY.txt", "AI-GENERATED REVIEW REFERENCE ONLY. NOT FOR LAB 1 OR LAB 2 SUBMISSION.\nGeneral course rules prohibit generated text/models in those submissions.\nOriginal submissions are preserved in docs/baseline of the Lab 3 repository.\n")
+    evidence = {"python": platform.python_version(), "platform": platform.platform(), "pythonFunctionsDocumented": functions, "coverage": coverage, "pdfPages": counts, "baselineHashesVerified": True, "lab1BaselineHashVerified": True, "lab2GeneratedOutputsAreReviewOnly": True, "readmeAndIndexLocalLinksVerified": check_document_links()}
     (ROOT / "evidence" / "artifact-checks.json").write_text(json.dumps(evidence, indent=2), encoding="utf-8")
     print(json.dumps(evidence, indent=2))
 

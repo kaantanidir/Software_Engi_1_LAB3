@@ -1,0 +1,8 @@
+2026-10-21: real Qwen3 4B review, before prompt refinement.
+The first cold load exceeded the initial 40-second adapter timeout. Ollama's log recorded 26.5 seconds for model startup; the request was cancelled during initial prompt processing.
+The next warm, explicit oat-latte request passed in 1.858 seconds.
+Request: Make my usual one.
+Expected: clarification with no recipe, because no favorite drink was supplied.
+Actual: kind=recipe; message="I'll make your usual one. What's your usual drink?"; config selected an unrequested espresso.
+Action: retain the failed result, add explicit clarification rules/examples, allow a bounded 90-second cold-load wait, and rerun live tests. Customer confirmation and independent recipe/stock/price validation remain mandatory.
+These are assistant-run integration checks, not a personal student reflection or a claimed optional experiment.

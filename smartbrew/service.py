@@ -92,11 +92,14 @@ class Store:
             CREATE TABLE IF NOT EXISTS events(id INTEGER PRIMARY KEY,created TEXT,severity TEXT,code TEXT,message TEXT);
             CREATE TABLE IF NOT EXISTS outbox(id INTEGER PRIMARY KEY,created TEXT,recipient TEXT,body TEXT,order_id INTEGER REFERENCES orders(id));
             CREATE TABLE IF NOT EXISTS settings(id INTEGER PRIMARY KEY CHECK(id=1),network INTEGER,weather TEXT,period TEXT,email_ok INTEGER,fault TEXT);
-            INSERT OR IGNORE INTO settings VALUES(1,1,'cold','morning',1,'');
+            INSERT OR IGNORE INTO settings(id,network,weather,period,email_ok,fault) VALUES(1,1,'cold','morning',1,'');
             """)
             pending_columns = {row["name"] for row in db.execute("PRAGMA table_info(pending)")}
             if "points" not in pending_columns:
                 db.execute("ALTER TABLE pending ADD COLUMN points INTEGER NOT NULL DEFAULT 0")
+            settings_columns = {row["name"] for row in db.execute("PRAGMA table_info(settings)")}
+            if "payment_mode" not in settings_columns:
+                db.execute("ALTER TABLE settings ADD COLUMN payment_mode TEXT NOT NULL DEFAULT 'normal'")
             for key, name, unit, capacity, threshold in INGREDIENTS:
                 db.execute("INSERT OR IGNORE INTO ingredients VALUES(?,?,?,?,?,?)", (key, name, unit, capacity, capacity, threshold))
             for key in ("liquid", "grounds"):
@@ -140,6 +143,8 @@ class Store:
                 account = db.execute("SELECT * FROM users WHERE id=?", (account["id"],)).fetchone()
                 return {"user": self.public_user(account)}, None
             if action == "register":
+                if set(data) - {"email", "name", "password"}:
+                    raise RuleError("Registration accepts only name, email and password.")
                 email = str(data.get("email", "")).strip().lower()
                 name = str(data.get("name", "")).strip()
                 password = data.get("password", "")
@@ -151,18 +156,27 @@ class Store:
                     raise RuleError("This email is already registered.", 409) from None
                 row = db.execute("SELECT * FROM users WHERE id=?", (user_id,)).fetchone()
             elif action == "login":
-                if data.get("nfc"):
+                method = data.get("method", "password")
+                if method == "nfc":
+                    if set(data) - {"method", "nfc"} or not isinstance(data.get("nfc"), str) or not data["nfc"].strip():
+                        raise RuleError("Use only a registered NFC identifier for NFC sign-in.")
                     row = db.execute("SELECT * FROM users WHERE nfc=?", (str(data["nfc"]),)).fetchone()
-                else:
+                elif method == "password":
+                    if set(data) - {"method", "email", "password"}:
+                        raise RuleError("Password sign-in accepts only email and password; NFC is a separate method.")
                     row = db.execute("SELECT * FROM users WHERE email=?", (str(data.get("email", "")).lower().strip(),)).fetchone()
                     password = str(data.get("password", ""))[:129]
                     if row is None or not compare_digest(password_hash(password, row["salt"]), row["hash"]):
                         row = None
+                else:
+                    raise RuleError("Choose password or NFC sign-in.")
                 if row is None:
                     raise RuleError("Credentials were not recognized.", 403)
             else:
                 raise RuleError("Unknown account action.", 404)
             new_token = secrets.token_urlsafe(32)
+            if token:
+                db.execute("DELETE FROM sessions WHERE token_hash=?", (sha256(token.encode()).hexdigest(),))
             db.execute("INSERT INTO sessions VALUES(?,?,?)", (sha256(new_token.encode()).hexdigest(), row["id"], time.time() + 8 * 3600))
             return {"user": self.public_user(row)}, new_token
 
@@ -218,6 +232,8 @@ class Store:
             except RuleError:
                 account = None
             settings = dict(db.execute("SELECT * FROM settings WHERE id=1").fetchone())
+            if not account or account["role"] != "technician":
+                settings.pop("payment_mode", None)
             result = {"user": self.public_user(account) if account else None, "settings": settings, "menu": [self.quote(db, {"drink": d["id"]}) for d in MENU]}
             if account and account["role"] == "customer":
                 result["recipes"] = [dict(r, config=json.loads(r["config"])) for r in db.execute("SELECT * FROM recipes WHERE user_id=? ORDER BY id DESC", (account["id"],))]
@@ -263,7 +279,9 @@ class Store:
         history = [o["recipe"]["config"]["drink"] for o in state.get("orders", [])]
         settings = state["settings"]
         results = []
-        for entry in state["menu"]:
+        with self.connection() as db:
+            candidates = [self.quote(db, {**entry["config"], **prefs}) for entry in state["menu"]]
+        for entry in candidates:
             if not entry["available"]:
                 continue
             drink = entry["config"]["drink"]
@@ -294,6 +312,8 @@ class Store:
 
     def checkout(self, token, data):
         """Purpose: commit one simulated purchase atomically. Inputs: optional session/checkout data. Returns: order or pending result."""
+        if "outcome" in data:
+            raise RuleError("Payment outcomes are controlled by the technician simulator, not checkout requests.")
         key = str(data.get("key", ""))
         if not 8 <= len(key) <= 100:
             raise RuleError("Checkout requires a request key of 8-100 characters.")
@@ -326,10 +346,8 @@ class Store:
                     raise RuleError("Sign in for a pending offline request, or choose an offline-capable employee card.")
                 db.execute("INSERT OR IGNORE INTO pending(id,user_id,created,config,method,status,request_hash,points) VALUES(?,?,?,?,?,?,?,?)", (key, owner, stamp(), json.dumps(config, sort_keys=True), method, "pending", signature, points))
                 return {"status": "pending", "message": "External authorization is unavailable. No charge or dispensing; reconnect and retry."}
-            if data.get("outcome", "approve") == "decline" and paid:
+            if settings["payment_mode"] == "decline" and method != "prepaid" and paid:
                 raise RuleError("Payment simulator declined. No stock, balance or points changed.", 402)
-            if data.get("outcome", "approve") not in ("approve", "decline"):
-                raise RuleError("Unsupported simulator outcome.")
             if method == "prepaid" and paid:
                 if not account or account["balance"] < paid:
                     raise RuleError("Employee card has insufficient balance.", 402)
@@ -417,6 +435,12 @@ class Store:
                     raise RuleError("Unsupported simulator context.")
                 db.execute("UPDATE settings SET network=?,weather=?,period=?,email_ok=? WHERE id=1", (int(network), weather, period, int(email_ok)))
                 self.event(db, "info", "CONTEXT", "Technician changed network/weather/time simulator.")
+            elif action == "simulation":
+                mode = data.get("payment_mode")
+                if mode not in ("normal", "decline"):
+                    raise RuleError("Choose normal or decline for the external payment simulator.")
+                db.execute("UPDATE settings SET payment_mode=? WHERE id=1", (mode,))
+                self.event(db, "info", "PAYMENT_SIMULATOR", "Technician set external payments to " + mode + ".")
             elif action == "fault":
                 fault = data.get("fault", "")
                 if fault not in ("", "GRINDER_JAM", "HEATER_FAULT"):

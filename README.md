@@ -1,38 +1,12 @@
 # SmartBrew AI - Group 28
 
-Lab 3 prototype with a cross-lab review and preserved original submissions. SmartBrew is a coffee-machine ordering system with personal recipes, context-based recommendations, stock validation, checkout, loyalty, receipts and protected maintenance.
+A local coffee-machine prototype for Software Engineering Lab 3. Customers can customize drinks, keep personal recipes, pay through simulated card/wallet adapters and receive receipts. Technicians manage supplies, waste and diagnostic events. An optional local language model turns drink requests into recipes for the customer to review.
 
-**AI assistance:** GPT-6.1 Sol, as confirmed by the student from the model selector, was used for Lab 3 Tasks A, B and C and this Lab 2 revision. The earlier Lab 2 submission was also assisted in this chat; its exact model/version was not recorded. See [the conversation record](docs/AI_CONVERSATION.md) and [the comparison](docs/LAB3_REPORT.md).
+## Start the App
 
-**Course-policy distinction:** Labs 1-2 prohibit submitting AI-generated text/models; Lab 3 permits generation. The generated Lab 2 corrections below are **review references only, not submission files**. Their filenames predate receipt of that policy. Original submissions are unchanged. An AI appendix does not make generated Lab 1-2 work permissible. See [the cross-lab review](docs/CROSS_LAB_REVIEW.md).
+Requirements: **Python 3.12** and a modern browser. Verified on Windows with Python 3.12.14. SQLite and the HTTP server are included with Python; runtime packages are pinned in `requirements.txt` (`qrcode==8.2`, plus `colorama==0.4.6` on Windows).
 
-## Deliverables
-
-| Item | Location |
-| --- | --- |
-| AI-generated Lab 2 review PDF (not for submission) | [output/pdf/G28Lab2_Corrected.pdf](output/pdf/G28Lab2_Corrected.pdf) |
-| AI-generated Astah reference (not for submission) | [output/G28Lab2.asta](output/G28Lab2.asta) |
-| Lab 2 review bundle (not for submission) | [output/G28Lab2_Corrected.zip](output/G28Lab2_Corrected.zip) |
-| Lab 3 report PDF | [output/pdf/G28Lab3_Report.pdf](output/pdf/G28Lab3_Report.pdf) |
-| Lab 3 model/prompt appendix PDF | [output/pdf/G28Lab3_AI_Appendix.pdf](output/pdf/G28Lab3_AI_Appendix.pdf) |
-| Lab 1 to Lab 3 continuity and policy review | [docs/CROSS_LAB_REVIEW.md](docs/CROSS_LAB_REVIEW.md) |
-| Editable Lab 2 / Lab 3 documents | [docs/LAB2_CORRECTED.md](docs/LAB2_CORRECTED.md), [docs/LAB3_REPORT.md](docs/LAB3_REPORT.md) |
-| Original Lab 1 and Lab 2 baselines | [docs/baseline](docs/baseline) with SHA-256 manifests |
-| AI-generated use-case reference descriptions (not for submission) | [docs/USE_CASE_DESCRIPTIONS.md](docs/USE_CASE_DESCRIPTIONS.md) |
-| Test evidence and actual limitations | [docs/QA_RESULTS.md](docs/QA_RESULTS.md), [evidence](evidence) |
-
-## Environment
-
-- Python **3.12**, verified with **3.12.14** on Windows. Python includes SQLite, HTTP serving and the test framework; no database server/compiler is required.
-- A modern browser; verified with local Chrome. The application binds only to `127.0.0.1`.
-- Runtime dependency: `qrcode==8.2`; Windows console support `colorama==0.4.6`. Exact pins are in `requirements.txt`.
-- Lucide **1.8.0** is bundled with its ISC license, so icons work offline.
-- Node.js is **not required to run the app**. Browser QA optionally uses Node 20+ and Playwright 1.62.1.
-- Astah Professional 12.0.0 is needed only to open/edit the `.asta` deliverable, not to run the prototype.
-
-## Install and Run
-
-Open a terminal in the cloned repository on Windows:
+From the repository directory:
 
 ```powershell
 py -3.12 -m venv .venv
@@ -40,59 +14,79 @@ py -3.12 -m venv .venv
 .\.venv\Scripts\python.exe app.py --port 8765
 ```
 
-Open **http://127.0.0.1:8765**. Stop the server with `Ctrl+C`. If that port is occupied, choose another `--port` and use the matching browser URL. Network access is needed to install dependencies, then the app uses local assets/data only.
+Open **http://127.0.0.1:8765/**. Stop with `Ctrl+C`. If that port is occupied, choose a different `--port` and use the matching address. Network access is needed for installation; normal ordering uses local assets and data afterward.
 
-On macOS/Linux with Python 3.12 installed, the corresponding commands are:
+On macOS/Linux, use `python3.12 -m venv .venv`, then `.venv/bin/python` for the install and run commands. Windows is the documented evaluation environment.
 
-```bash
-python3.12 -m venv .venv
-.venv/bin/python -m pip install -r requirements.txt
-.venv/bin/python app.py --port 8765
-```
-
-SQLite data is created automatically at `data/smartbrew.sqlite3`. To start a fresh demonstration without touching existing data:
+Data persists in `data/smartbrew.sqlite3`. For a fresh demonstration that preserves existing accounts and purchases:
 
 ```powershell
 .\.venv\Scripts\python.exe app.py --port 8767 --database data/fresh-demo.sqlite3
 ```
 
-Keep the same browser origin for a session. `localhost` and `127.0.0.1` are different cookie origins. Sessions expire after eight hours; signing out removes the current session. Credentials and sessions are hashed; demo accounts below are deliberately public simulator fixtures.
+## Accounts
 
-## Demo Accounts
+Normal sign-in and registration fields start empty. **Use demo account** intentionally fills the public fixture; it does not replace the credentials entered for another account. Registration requires a name, unique email and a password of 10-128 characters.
 
-| Role | Sign-in method | Fixture |
-| --- | --- | --- |
-| Customer | Email/password | `alex@smartbrew.test` / `DemoPass123!` |
-| Customer | NFC tap simulator | `DEMO-NFC-001` |
-| Technician | Technician tab / PIN | `246810` |
-| Technician | NFC tap simulator | `MASTER-NFC-001` |
+| Role | Credentials |
+| --- | --- |
+| Demo customer | `alex@smartbrew.test` / `DemoPass123!` |
+| Demo customer NFC simulator | `DEMO-NFC-001` |
+| Technician tab | PIN `246810` |
+| Technician NFC simulator | `MASTER-NFC-001` |
 
-Alex starts with **250 loyalty points** and **SEK 200** employee prepaid balance. A newly registered customer starts at zero. No real card or financial account is connected. Guest menu/customization/purchase is supported; saved recipes, loyalty, prepaid and private history require customer login.
+Alex starts with 250 points and SEK 200 prepaid credit. New accounts start at zero. Guest ordering is available; private recipes, history, loyalty and employee balance require customer sign-in. NFC is an explicit simulator, not a physical reader or production credential mechanism.
 
-## Ten Feature Walkthrough
+One browser profile shares one signed-in session across tabs. For simultaneous customer/technician demonstrations, use separate browser profiles or a normal window and a private window. Use the same hostname consistently: `localhost` and `127.0.0.1` have separate cookies.
 
-| Feature | Requirements | How to run and check |
-| --- | --- | --- |
-| **F01 Accounts and preferences** | FR-01..03, NFR-02 | Sign in using the demo password or NFC identifier. Change milk/strength/temperature and select **Save defaults**; sign out/in and verify retention. **Create account** rejects a duplicate email and passwords shorter than 10 characters. |
-| **F02 Menu and nutrition** | FR-04 | Use **All drinks**, **Coffee**, **Chocolate**. Each drink shows price, estimated calories and allergens. Select a drink to see its customized quote. |
-| **F03 Validated customization** | FR-05 | Select Latte; choose oat, strong, 75 C, two syrup shots and one extra espresso. Quote is **SEK 51**; changing options recalculates price/nutrition. Unsupported values are rejected by the service even if submitted outside the UI. |
-| **F04 Named recipes** | FR-06 | Select **Save recipe**, name it Morning Oat, open **My recipes**. Rename it with the pencil. **Order** restores settings. Change settings then **Save recipe** to update the loaded recipe. Delete with the trash icon. Another account cannot access/edit it. |
-| **F05 Ingredient availability** | FR-07, NFR-03 | Sign in as technician, open **Maintenance**, set oat's simulated level to 99 (minimum 100). Return to an oat drink: checkout is blocked. **Refill** resets oat to capacity. A level of 150 also cannot supply a 180 ml Latte, even though above threshold. Checkout rechecks stock. |
-| **F06 Recommendations** | FR-08/19 | Toggle **Recommended first**. Buy a drink to add history. In Maintenance change simulated weather/time and observe scores/reasons. Offline mode excludes weather but keeps local ordering/recommendations. A failed or slow ranking request falls back to the standard menu without blocking manual checkout. Scores are a local heuristic, not an LLM. |
-| **F07 Checkout/history and offline handling** | FR-11/12/20, NFR-03 | Checkout using each EMV/contactless/wallet/prepaid simulator. Set processor **Decline** and verify no completed order/stock/points change. Approved orders appear in **Purchases** with original recipe settings. Turn network offline in Maintenance: prepaid can complete; a signed-in wallet request becomes pending, with no charge/dispense. Reconnect, sign in as the same customer, open Purchases and **Retry** the pending request. It completes once after approval and current-stock validation. |
-| **F08 Loyalty** | FR-13 | As Alex, redeem 100 points at checkout for **SEK 10** discount. Points are deducted only on success; the purchase earns one point per whole SEK actually paid. Over-balance/over-price redemption is rejected. |
-| **F09 Receipts** | FR-14 | Complete a purchase; inspect the generated QR or open its receipt page. The QR encodes actual receipt text and can be decoded offline. **Email receipt** writes a local simulator outbox entry, visible to the technician. Turn email off to show QR fallback. No external email is sent. |
-| **F10 Maintenance/safety/diagnostics** | FR-15..18 | Technician signs in, refills ingredients/cups, sets a waste bin to 100%, verifies orders are blocked, then records **Empty**. Simulate a grinder jam/heater fault, inspect its timestamp/severity, then clear it. Use **Diagnostic export** for authorized JSON. Customer/guest admin requests are rejected. |
+## Demonstrate the Ten Features
 
-## Tests
+| Feature | Steps and expected result |
+| --- | --- |
+| **F01 Accounts/preferences** | Create a new account, save defaults, sign out and sign back in with its email/password. A wrong password must fail. A second customer must have separate recipes, purchases and points. |
+| **F02 Menu/nutrition** | Browse All drinks, Coffee and Chocolate. Inspect price, estimated calories and listed allergens. |
+| **F03 Customization** | Select Latte, oat milk, strong, 75 C, two syrup shots and one extra espresso. The total is SEK 51. Review every setting before confirming payment. |
+| **F04 Saved recipes** | Save a named recipe. In My recipes, rename it with the pencil, load it with Order, modify and save it, then delete it. Another account cannot modify it. |
+| **F05 Availability** | As technician, use Test scenarios to set oat milk to 99 (minimum 100). An oat drink is blocked. Record a refill in Maintenance and verify availability returns. Quantity is checked as well as the threshold. |
+| **F06 Recommendations** | Save oat preferences and enable Recommended first. Ranking uses history and simulated time/weather. Selecting a recommendation applies its actual settings. Missing ranking service falls back to the standard menu. |
+| **F07 Checkout/history** | Purchase with each payment-method simulator. Purchases show the original settings. For a decline, set the technician's external processor to Decline first; customer checkout cannot choose its result. Decline changes no stock, points or balance. Restore Normal afterward. |
+| **F08 Loyalty** | As Alex, redeem 100 points for SEK 10 discount. A successful purchase earns one point per whole SEK actually paid. Rejected payments spend and earn no points. |
+| **F09 Receipts** | Open a purchase receipt and its actual generated QR. It contains the purchased settings and totals. Email receipt writes to the local simulator outbox; unavailable email retains QR access. No external email is sent. |
+| **F10 Maintenance/diagnostics** | Sign in through the Technician tab. Record refills/emptying in Maintenance. In Test scenarios, simulate a full bin or fault and verify ordering is blocked. Inspect the event log and Diagnostic export. Customer/admin requests are rejected by the server. |
+
+For offline handling, the technician sets Network to Offline in Test scenarios. Prepaid balance can complete a purchase locally. A signed-in customer's online-only wallet request stays pending without charge or dispensing. Restore Online, sign in as that customer and select Retry in Purchases. Authorization and availability are checked again; repeated requests cannot create a second purchase.
+
+Technician test settings persist until changed. **Normal** applies to external payment simulation; the internal prepaid method still checks its actual stored balance. A full bin, insufficient ingredients or a machine fault can block ordering in either mode.
+
+## Optional Local Drink Assistant
+
+The ten features above do **not** require a model. To add real local inference:
+
+1. Install and start [Ollama](https://docs.ollama.com/windows). The verified runtime is **0.40.6**.
+2. Run `ollama pull qwen3:4b` (approximately 2.5 GB for the model).
+3. Optionally warm it with `ollama run qwen3:4b "Reply READY"`. The first load can take substantially longer than later requests.
+4. Start SmartBrew normally. It connects only to the local API at `127.0.0.1:11434`.
+5. Ask: **A strong oat latte at 75 degrees with one syrup shot and no extra espresso.** Inspect the proposal, then select **Use recipe**. Checkout remains a separate confirmation.
+
+On this workspace, `tools/start_local_ai.ps1` can also start the project-local portable runtime. It keeps its runtime/models under ignored `data/local-ai`, without a Windows service or PATH change.
+
+The adapter requests structured JSON, rejects unsupported fields/options, and recalculates price and stock availability on the server. It cannot place orders, edit accounts or authorize payment. Conversation is held in the page and cleared on account changes. The model is fallible: review its proposal. A missing model, invalid response or timeout leaves manual ordering available. The model wait is bounded at 90 seconds; it is not part of the menu/quote latency target.
+
+The verified hardware has about 32 GB RAM and an RTX 3060 Laptop GPU with 6 GB VRAM. This is a tested machine, not a promised minimum hardware specification. Model weights are not bundled in Git. The exact tested model digest and live responses are in `evidence/local-ai-results.json`.
+
+## Run the Tests
 
 ```powershell
 .\.venv\Scripts\python.exe -m unittest discover -s tests -v
 ```
 
-Tests create independent temporary databases in `tmp/tests`, preserving live demo data. They cover all ten feature groups, failure rollback, ownership, concurrency, receipt snapshots and once-only offline reconciliation.
+Tests use isolated temporary databases under `tmp/tests`. Model-adapter unit tests use labelled test doubles and do not require Ollama. Actual inference is tested separately:
 
-Optional browser checks (spawn a separate QA server on **8766**, separate data and a fresh browser):
+```powershell
+.\.venv\Scripts\python.exe tools/check_local_ai.py
+```
+
+Optional browser audit (Node 20+, Playwright 1.62.1):
 
 ```powershell
 npm install
@@ -101,35 +95,39 @@ $env:PYTHON = (Resolve-Path .\.venv\Scripts\python.exe).Path
 npm run test:browser
 ```
 
-If using an already installed Chrome instead, set `CHROME_PATH` to its executable path before the last command. Run the unit suite without Node when only runtime verification is needed. Browser results/screenshots are written to `evidence`. If port 8766 is occupied, stop that separate process before running QA.
+The browser audit uses its own server on 8766 and separate data, including a server restart. Set `CHROME_PATH` to an installed Chrome executable to use that instead of Playwright's browser. Recorded results and limitations are in [the verification record](docs/QA_RESULTS.md).
 
-## Implementation and Limits
+With Ollama/model running, set `$env:SMARTBREW_LIVE_AI = '1'` before the browser command to additionally test actual inference, explicit recipe application and conversation clearing. The normal browser audit does not require a model; its deliberate unavailable-model response is a failure-path test, not simulated evidence of real inference.
 
-- `app.py`: local HTTP routes, session cookies, request validation, QR receipts and static UI.
-- `smartbrew/service.py`: business rules and SQLite persistence. Purchases use `BEGIN IMMEDIATE`, a unique request key and a single commit for transaction, stock, waste, prepaid and points changes.
-- `web/`: responsive interface with local photographs/icons. No CDN is contacted during ordering.
-- `tests/`: isolated business-rule regressions. `tools/browser_check.cjs`: real browser walkthrough and responsive checks.
-- `tools/coursework_data.py`: shared requirements/story/backlog source; `tools/build_documents.py` exports Markdown/PDF; `tools/AstahRepair.java` generated the Lab 2 review copy before the restrictive Lab 1-2 rules were supplied. It must not be used to generate a Lab 1-2 submission.
+## Project Layout
 
-The prototype **simulates** weather/time, NFC/key signals, sensors, dispensing, processor approval and email delivery. It does not connect to EMV hardware, Apple Pay/Google Pay, a camera, a physical machine or SMTP. Prepaid balance and loyalty are real local bookkeeping, not external financial services. Diagnostic JSON export is implemented; a remote diagnostic deployment is not.
+| Location | Responsibility |
+| --- | --- |
+| `app.py` | Local HTTP routes, cookies, static files and QR receipts |
+| `smartbrew/service.py` | Authentication, ownership, quotes, stock and atomic purchases |
+| `smartbrew/assistant.py` | Optional local-model adapter and output validation |
+| `web/` | Customer interface, protected technician views and receipt page |
+| `tests/` | Isolated business-rule and assistant validation tests |
+| `tools/` | Browser/live-model checks, document exports and read-only source audits |
+| `docs/` | Current report, architecture, AI-use record and documentation index |
+| `docs/baseline/` | Unchanged original submissions and source hashes |
+| `docs/reference/lab2/` | Historical generated Lab 2 review aids, not submission materials |
+| `evidence/` | Recorded test results, screenshots and model responses |
+| `output/` | Exported documents and reference artifacts |
+| `data/`, `tmp/`, `.venv/` | Local data, scratch files and environment; excluded from Git |
 
-Camera mood inference and the optional local LLM remain explicit backlog items outside the ten selected features. There is no fake keyword parser presented as an LLM. Nutrition and ingredient quantities are illustrative. Point conversion, opt-in and latency target are proposed design choices documented in the report. The local HTTP server is intended for coursework demonstration on loopback, not public deployment.
+## Report and AI Record
 
-## Coursework Records
+- [Lab 3 report PDF](output/pdf/G28Lab3_Report.pdf)
+- [Model/prompt appendix PDF](output/pdf/G28Lab3_AI_Appendix.pdf)
+- [Documentation index](docs/README.md)
 
-The original feedback gave Lab 2 a **positive grade** but requested complete requirement fields and layout/customer-entry fixes. The revised PDFs follow the exact six requirement columns from Lecture 2 slide 47. Backlogs use the slide's columns plus Description and trace notes; importance is 0-100 and estimates are relative story points.
+Lab 3 Tasks A-C were developed with Codex using the student-confirmed **GPT-6.1 Sol** selector label. Qwen3 is the prototype's runtime drink model, not the assistant that generated the project. The appendix records prompts, decisions, observed errors and revisions. Students still need to understand and evaluate the work; no student-authored personal reflection is supplied.
 
-The original submitted group artifact is preserved rather than relabeled as human-only work. Review the comparison, prompting record and all proposed assumptions, and run the walkthrough before presenting the assignment. The assigned Scrum reading remains the students' responsibility; this project does not assert that anyone has completed that reading.
+The original Lab 2 was also AI-assisted; that limitation is disclosed in the comparison rather than described as an independent human baseline. Earlier generated Lab 2 corrections are historical review aids only: the supplied course policy prohibits submitting generated text/models for Labs 1-2. Original submissions remain unchanged.
 
-Lab 1 received a positive grade; the component feedback questioned minimal scope and UI dependency on the AI engine. The nine visible domain concepts map to the prototype's data and responsibilities, not necessarily nine literal code classes. Loyalty first appears in the supplied Lab 2 submission, not in the Lab 1 diagrams. These distinctions are recorded in the cross-lab review.
+## Scope
 
-The instructor's extra experiment is strongly recommended, not stated as an additional mandatory task. None has been selected or claimed here. A future mutation exercise can use a disposable copy, leaving all ten features intact; its personal reflection must be written by the student. Routine regression tests are not presented as a student-performed optional experiment.
+Hardware brewing, NFC signals, weather/time, external payments and email delivery are simulated. Camera/mood inference, remote diagnostics deployment, password recovery and a real financial connection are not implemented. Nutrition is illustrative and is not an allergy-safety guarantee. Demo prices, quantities and point conversion are documented design choices.
 
-To regenerate documents (optional; the PDFs are already included):
-
-```powershell
-.\.venv\Scripts\python.exe -m pip install -r requirements-docs.txt
-.\.venv\Scripts\python.exe tools/build_documents.py
-```
-
-Astah's supplied `InitiatingActor` template automatically displays **directly associated actors**. Included/extension-only use cases have their initiating customer explicitly described in their model definition and in `docs/USE_CASE_DESCRIPTIONS.md`; their auto-generated actor row can appear blank under that template. Open the corrected file directly in Astah, not by unzipping its internal `EntityStore`. The `.asta.lock` is a transient lock and is not a submission file.
+This loopback HTTP prototype is for coursework demonstration, not public production deployment. No Celery, Redis, Docker or separate database server is needed.

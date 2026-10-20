@@ -34,12 +34,40 @@ class SmartBrewTests(unittest.TestCase):
             self.store.auth("register", {"email": "new@example.test", "name": "New", "password": "UniquePass123!"})
         with self.assertRaises(RuleError):
             self.store.auth("login", {"email": "alex@smartbrew.test", "password": "wrong"})
-        response, nfc = self.store.auth("login", {"nfc": "DEMO-NFC-001"})
+        response, nfc = self.store.auth("login", {"method": "nfc", "nfc": "DEMO-NFC-001"})
         self.assertEqual(response["user"]["name"], "Alex")
         self.store.auth("profile", {"milk": "oat", "strength": "strong", "temperature": 75}, nfc)
         self.assertEqual(Store(self.store.path).state(nfc)["user"]["preferences"]["milk"], "oat")
         self.store.auth("logout", {}, token)
         self.assertIsNone(self.store.state(token)["user"])
+
+    def test_login_rejects_mixed_authentication_methods(self):
+        """Purpose: prevent the hidden-NFC password bypass. Inputs: mixed or incomplete credentials. Returns: None."""
+        for body in ({"email": "nobody@example.test", "password": "wrong", "nfc": "DEMO-NFC-001"},
+                     {"method": "nfc", "nfc": "DEMO-NFC-001", "email": "alex@smartbrew.test"},
+                     {"nfc": "DEMO-NFC-001"}, {"method": "unknown", "email": "alex@smartbrew.test"}):
+            with self.assertRaises(RuleError):
+                self.store.auth("login", body)
+
+    def test_separate_accounts_keep_private_records_after_relogin(self):
+        """Purpose: preserve owner isolation across sign-in/restart. Inputs: two independent customer sessions. Returns: None."""
+        _, first = self.store.auth("register", {"name": "First", "email": "first@example.test", "password": "FirstPass123!"})
+        _, second = self.store.auth("register", {"name": "Second", "email": "second@example.test", "password": "SecondPass123!"})
+        saved = self.store.recipes(first, "save", {"name": "First private recipe", "config": self.body["config"]})
+        order = self.store.checkout(first, self.body)["order"]
+        self.assertEqual(self.store.state(second)["recipes"], [])
+        self.assertEqual(self.store.state(second)["orders"], [])
+        for action in ("update", "delete"):
+            with self.assertRaises(RuleError):
+                self.store.recipes(second, action, {"id": saved["id"], "name": "Stolen", "config": {}})
+        with self.assertRaises(RuleError):
+            self.store.email_receipt(second, {"id": order["id"]})
+        self.store.auth("logout", {}, first)
+        _, again = self.store.auth("login", {"method": "password", "email": "first@example.test", "password": "FirstPass123!"})
+        restored = Store(self.store.path).state(again)
+        self.assertEqual(restored["user"]["name"], "First")
+        self.assertEqual(restored["recipes"][0]["id"], saved["id"])
+        self.assertEqual(restored["orders"][0]["id"], order["id"])
 
     def test_menu_categories_nutrition(self):
         """Purpose: verify F02 menu details. Inputs: seeded catalog. Returns: None."""
@@ -97,6 +125,15 @@ class SmartBrewTests(unittest.TestCase):
         self.store.admin(self.tech, "stock", {"ingredient": "beans", "level": 0})
         self.assertTrue(all(d["config"]["drink"] == "cocoa" for d in self.store.recommendations()["recommendations"]))
 
+    def test_recommendations_use_the_customers_actual_preferences(self):
+        """Purpose: rank purchasable personalized variants. Inputs: oat preference and depleted dairy. Returns: None."""
+        self.store.auth("profile", {"milk": "oat", "strength": "strong", "temperature": 75}, self.customer)
+        self.store.admin(self.tech, "stock", {"ingredient": "dairy", "level": 0})
+        latte = next(row for row in self.store.recommendations(self.customer)["recommendations"] if row["config"]["drink"] == "latte")
+        self.assertEqual(latte["config"]["milk"], "oat")
+        self.assertEqual(latte["config"]["temperature"], 75)
+        self.assertTrue(latte["available"])
+
     def test_payment_snapshot_and_persistence(self):
         """Purpose: verify F07 immutable records. Inputs: completed custom order. Returns: None."""
         result = self.store.checkout(self.customer, self.body)
@@ -114,14 +151,30 @@ class SmartBrewTests(unittest.TestCase):
 
     def test_decline_has_no_partial_effects(self):
         """Purpose: verify atomic failure across stock/points/waste/balance. Inputs: forced decline. Returns: None."""
+        self.store.admin(self.tech, "simulation", {"payment_mode": "decline"})
         before_user = self.store.state(self.customer)["user"]
         before_admin = self.store.state(self.tech)
         with self.assertRaises(RuleError):
-            self.store.checkout(self.customer, {**self.body, "points": 100, "outcome": "decline"})
+            self.store.checkout(self.customer, {**self.body, "points": 100})
         self.assertEqual(before_user, self.store.state(self.customer)["user"])
         self.assertEqual(before_admin["ingredients"], self.store.state(self.tech)["ingredients"])
         self.assertEqual(before_admin["bins"], self.store.state(self.tech)["bins"])
         self.assertEqual(self.store.state(self.customer)["orders"], [])
+
+    def test_only_technicians_control_payment_simulation(self):
+        """Purpose: keep payment simulation server-controlled. Inputs: protected settings and forged checkout fields. Returns: None."""
+        for token in (self.customer, ""):
+            with self.assertRaises(RuleError):
+                self.store.admin(token, "simulation", {"payment_mode": "decline"})
+        for outcome in ("approve", "decline"):
+            with self.assertRaises(RuleError):
+                self.store.checkout(self.customer, {**self.body, "outcome": outcome})
+        self.store.admin(self.tech, "simulation", {"payment_mode": "decline"})
+        with self.assertRaises(RuleError) as failure:
+            self.store.checkout(self.customer, self.body)
+        self.assertEqual(failure.exception.status, 402)
+        self.store.admin(self.tech, "simulation", {"payment_mode": "normal"})
+        self.assertEqual(self.store.checkout(self.customer, self.body)["status"], "completed")
 
     def test_prepaid_insufficient_balance(self):
         """Purpose: reject insufficient prepaid funds. Inputs: zero-balance new user. Returns: None."""

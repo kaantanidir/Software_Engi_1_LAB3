@@ -18,6 +18,7 @@ if (ROOT / ".packages").is_dir():
 import qrcode
 from qrcode.image.svg import SvgPathImage
 from smartbrew.service import RuleError, Store
+from smartbrew.assistant import LocalAssistant
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -65,6 +66,8 @@ class Handler(BaseHTTPRequestHandler):
             self.respond(store.state(self.token()))
         elif path == "/api/recommendations":
             self.respond(store.recommendations(self.token()))
+        elif path == "/api/assistant/status":
+            self.respond(self.server.assistant.status())
         elif path == "/api/diagnostics":
             self.respond(store.diagnostics(self.token()))
         elif path.startswith("/receipt/"):
@@ -74,7 +77,7 @@ class Handler(BaseHTTPRequestHandler):
             order = store.receipt(parts[1])
             if len(parts) == 3:
                 config = order["recipe"]["config"]
-                text = f"SmartBrew AI | Receipt #{order['id']}\n{order['created']}\n{order['recipe']['name']}\n{config['milk']} / {config['strength']} / {config['temperature']} C\nPaid: SEK {order['paid']/100:.2f}\nPayment simulator: {order['method']}"
+                text = f"SmartBrew AI | Receipt #{order['id']}\n{order['created']}\n{order['recipe']['name']}\n{config['milk']} / {config['strength']} / {config['temperature']} C\nSyrup shots: {config['syrup']} | Extra espresso: {config['extra']}\nSubtotal: SEK {order['amount']/100:.2f}\nDiscount: SEK {order['discount']/100:.2f}\nPaid: SEK {order['paid']/100:.2f}\nPayment simulator: {order['method']}"
                 qr = qrcode.make(text, image_factory=SvgPathImage, box_size=6, border=4)
                 output = BytesIO()
                 qr.save(output)
@@ -120,6 +123,8 @@ class Handler(BaseHTTPRequestHandler):
                 result = store.recipes(token, path.rsplit("/", 1)[-1], data)
             elif path == "/api/checkout":
                 result = store.checkout(token, data)
+            elif path == "/api/assistant":
+                result = self.server.assistant.suggest(token, data)
             elif path == "/api/email-receipt":
                 result = store.email_receipt(token, data)
             elif path.startswith("/api/admin/"):
@@ -140,9 +145,12 @@ def main():
     parser = argparse.ArgumentParser(description="SmartBrew local prototype")
     parser.add_argument("--port", type=int, default=8765)
     parser.add_argument("--database", type=Path, default=ROOT / "data" / "smartbrew.sqlite3")
+    parser.add_argument("--ollama-url", default="http://127.0.0.1:11434", help="Optional local Ollama API (loopback only)")
+    parser.add_argument("--model", default="qwen3:4b", help="Installed local drink-assistant model")
     args = parser.parse_args()
     server = ThreadingHTTPServer(("127.0.0.1", args.port), Handler)
     server.store = Store(args.database)
+    server.assistant = LocalAssistant(server.store, args.ollama_url, args.model)
     print(f"SmartBrew AI ready at http://127.0.0.1:{args.port}", flush=True)
     try:
         server.serve_forever()

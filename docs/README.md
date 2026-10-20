@@ -1,0 +1,29 @@
+# Documentation Guide
+
+Start with the repository README for installation and the ten-feature walkthrough.
+
+## Current Lab 3
+
+| Document | Read it for |
+| --- | --- |
+| [Lab 3 report](LAB3_REPORT.md) | Requirements, user stories, backlog and comparison with the submitted Lab 2 |
+| [Architecture](ARCHITECTURE.md) | Responsibilities, data ownership, checkout and the optional model boundary |
+| [Verification record](QA_RESULTS.md) | Actual test results, screenshots, failures found and remaining limitations |
+| [AI interaction record](AI_CONVERSATION.md) | Tool/model roles, main prompts, key responses and revisions |
+| [Main supplied prompt](MAIN_PROMPT.md) | Original Lab 2 review / Lab 3 request and assignment text |
+| [Cross-lab review](CROSS_LAB_REVIEW.md) | Lab 1 feedback, conceptual mapping and custom-feature chronology |
+| [Asset credits](ASSETS.md) | Third-party images, icons and licenses |
+
+Exported Lab 3 report and AI appendix PDFs are in `output/pdf/`. The editable appendix is `LAB3_AI_APPENDIX.md`; it is generated from the prompt and interaction records, not edited independently.
+
+## Preserved Sources and Historical References
+
+`baseline/` contains the original Lab 2 model/PDF and the Lab 1 model, extracted feedback and SHA-256 manifests. These are comparison evidence, not rewritten submissions.
+
+`reference/lab2/` holds the earlier generated [review](reference/lab2/REVIEW.md), [use-case descriptions](reference/lab2/USE_CASE_DESCRIPTIONS.md) and [feedback analysis](reference/lab2/FEEDBACK_CHANGES.md). Their associated Astah/PDF/ZIP files remain in `output/` under historical names. They are **review aids only, not for Lab 1-2 submission**, under the supplied course AI policy.
+
+## Rebuilding Documents
+
+Install `requirements-docs.txt`, then run `python tools/build_documents.py`. By default it updates only the current Lab 3 report and AI appendix. `--text-only` omits PDFs. The separate `--include-reference` flag also regenerates historical review aids; it never changes the original files in `baseline/`.
+
+`tools/verify_artifacts.py` checks requirement coverage, source hashes, function documentation and PDF content. It does not turn an AI-generated Lab 1-2 reference into an acceptable submission.

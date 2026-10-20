@@ -31,11 +31,13 @@ Separate technical observation: the visible name `User {Abstract}` communicates 
 | PaymentProcessingModule / CheckoutService | HTTP checkout adapter and transactional service logic |
 | BrewingHardwareController / BeveragePreparationService | Simulated ingredient consumption, waste updates and safety checks; no physical brewing |
 | AIEngine / RecommendationService | Context/history recommendation heuristic, not a trained LLM |
-| Camera / FacialAnalysis; nested MoodAnalyzer and LocalLLMAgent | Requirements retained, but camera inference and actual local LLM are deferred |
+| Camera / FacialAnalysis; nested MoodAnalyzer and LocalLLMAgent | Camera/mood inference remains deferred; a later approved revision implements the optional local-LLM responsibility in `smartbrew/assistant.py` (F11) |
 
 The prototype also makes account, recipe, inventory, receipt and diagnostics responsibilities explicit. These are logical responsibilities inside a small local application, not a claim of identical deployment boundaries to the original component diagram.
 
 The UI needs recommendations only for personalized ranking. It must not require them to browse, customize or purchase manually. A browser regression exposed a real violation: HTTP 503 from the recommendation endpoint left the menu blank because rendering waited for that optional response. The fix renders essential state and the quote first, limits the recommendation wait to 1.2 seconds, and falls back to the standard menu. Regression evidence is in `evidence/recommendation-regression-before.txt` and the final browser results. This is ordinary reliability validation, not a claimed student-performed optional experiment.
+
+The optional drink assistant follows the same boundary: model inference can propose settings but does not perform checkout or write purchase data. The customer can keep ordering manually while inference is unavailable. This separates optional AI assistance from essential ordering without claiming to reproduce the original component diagram's deployment structure.
 
 ## Custom-feature chronology
 

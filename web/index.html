@@ -3,16 +3,21 @@
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <title>SmartBrew AI</title><link rel="stylesheet" href="/styles.css">
-  <script src="/vendor/lucide.min.js" defer></script><script src="/app.js" defer></script>
+  <script src="/vendor/lucide.min.js" defer></script><script src="/assistant.js" defer></script><script src="/app.js" defer></script>
 </head>
 <body>
   <header class="topbar"><a class="brand" href="/"><i data-lucide="coffee"></i><span>SmartBrew <b>AI</b></span></a>
     <span class="machine">G28 / Office machine</span><div class="top-actions"><span id="connection" class="status"></span><button id="account-button"><i data-lucide="user-round"></i><span id="account-name">Sign in</span></button></div></header>
   <div class="simulation-bar"><i data-lucide="flask-conical"></i><span>Coursework prototype · Simulated machine, weather, NFC, payments and email</span></div>
-  <nav class="navigation" aria-label="Main navigation"><button data-view="menu" class="active"><i data-lucide="layout-grid"></i>Menu</button><button data-view="recipes"><i data-lucide="bookmark"></i>My recipes</button><button data-view="history"><i data-lucide="receipt-text"></i>Purchases</button><button data-view="maintenance"><i data-lucide="wrench"></i>Maintenance</button></nav>
+  <nav class="navigation" aria-label="Main navigation"><button data-view="menu" class="active"><i data-lucide="layout-grid"></i>Menu</button><button data-view="recipes"><i data-lucide="bookmark"></i>My recipes</button><button data-view="history"><i data-lucide="receipt-text"></i>Purchases</button><button id="maintenance-nav" data-view="maintenance" hidden><i data-lucide="wrench"></i>Maintenance</button></nav>
   <main>
     <section id="menu-view" class="view">
       <div class="section-head"><div><p class="eyebrow">YOUR NEXT CUP</p><h1>Choose your drink</h1></div><div id="balance" class="balance"></div></div>
+      <section class="assistant-band" aria-labelledby="assistant-heading">
+        <div class="assistant-heading"><h2 id="assistant-heading"><i data-lucide="sparkles"></i>Drink assistant</h2><div class="assistant-actions"><span id="assistant-status" class="muted" role="status">Checking local model</span><button id="assistant-clear" class="icon" type="button" title="Clear conversation"><i data-lucide="rotate-ccw"></i></button></div></div>
+        <form id="assistant-form"><label for="assistant-request">Your request</label><div class="assistant-input"><input id="assistant-request" name="request" maxlength="600" required placeholder="Something strong, slightly sweet, and without dairy"><button id="assistant-submit" type="submit"><i data-lucide="send"></i>Ask</button></div></form>
+        <div id="assistant-result" aria-live="polite"></div>
+      </section>
       <div class="menu-layout"><div class="catalog">
         <div class="catalog-toolbar"><div class="segments" role="group" aria-label="Category"><button data-category="All" class="active">All drinks</button><button data-category="Coffee">Coffee</button><button data-category="Chocolate">Chocolate</button></div><label class="check"><input id="recommend-toggle" type="checkbox">Recommended first</label></div>
         <div id="recommend-context" class="context"></div><div id="drink-grid" class="drink-grid"></div>
@@ -26,7 +31,7 @@
         </form>
         <div id="nutrition" class="nutrition"></div><div id="availability" class="availability"></div>
         <div class="order-total"><span>Total</span><strong id="quote-price"></strong></div>
-        <button id="checkout-button" class="primary wide"><i data-lucide="credit-card"></i>Checkout</button>
+        <button id="checkout-button" class="primary wide" disabled><i data-lucide="credit-card"></i>Checkout</button>
         <div class="panel-secondary"><button id="save-recipe"><i data-lucide="bookmark-plus"></i>Save recipe</button><button id="save-defaults" title="Save these milk, strength and temperature defaults"><i data-lucide="settings-2"></i>Save defaults</button></div>
       </aside></div>
     </section>
@@ -34,8 +39,27 @@
     <section id="history-view" class="view" hidden><div class="section-head"><div><p class="eyebrow">ORDER HISTORY</p><h1>Purchases</h1></div></div><div id="pending-list"></div><div id="history-list"></div></section>
     <section id="maintenance-view" class="view" hidden><div class="section-head"><div><p class="eyebrow">TECHNICIAN WORKSPACE</p><h1>Maintenance</h1></div><a id="export-logs" class="button" href="/api/diagnostics" target="_blank" rel="noopener"><i data-lucide="download"></i>Diagnostic export</a></div><div id="maintenance-content"></div></section>
   </main>
-  <dialog id="auth-dialog"><form id="auth-form"><div class="dialog-head"><h2 id="auth-title">Sign in</h2><button type="button" class="icon close-dialog" title="Close"><i data-lucide="x"></i></button></div><p id="signed-in-info"></p><div id="auth-fields"><div class="segments auth-modes"><button type="button" data-auth="login" class="active">Sign in</button><button type="button" data-auth="register">Create account</button><button type="button" data-auth="nfc">NFC tap</button><button type="button" data-auth="technician">Technician</button></div><label id="name-field" hidden>Name<input name="name" autocomplete="name" maxlength="60"></label><label id="email-field">Email<input name="email" type="email" autocomplete="username" value="alex@smartbrew.test"></label><label id="password-field">Password<input name="password" type="password" autocomplete="current-password" value="DemoPass123!"></label><label id="nfc-field" hidden>Registered NFC identifier<input name="nfc" value="DEMO-NFC-001"></label><p id="auth-hint" class="muted">Demo: alex@smartbrew.test / DemoPass123!</p><button type="submit" class="primary wide" id="auth-submit">Sign in</button></div><button id="logout" type="button" class="wide" hidden><i data-lucide="log-out"></i>Sign out</button><p class="form-error" id="auth-error" role="alert"></p></form></dialog>
-  <dialog id="checkout-dialog"><div class="dialog-head"><h2>Checkout</h2><button class="icon close-dialog" title="Close"><i data-lucide="x"></i></button></div><div id="checkout-summary"></div><form id="payment-form"><label>Payment method<select name="method"><option value="contactless">Contactless card · simulator</option><option value="emv_chip">EMV chip card · simulator</option><option value="apple_pay">Apple Pay · simulator</option><option value="google_pay">Google Pay · simulator</option><option value="prepaid">Employee prepaid card · simulator</option></select></label><label>Redeem points <span id="points-balance" class="muted"></span><input type="number" name="points" min="0" step="1" value="0"></label><label>Processor response<select name="outcome"><option value="approve">Approve</option><option value="decline">Decline</option></select></label><div class="order-total"><span>To pay</span><strong id="payment-total"></strong></div><button id="pay-button" class="primary wide" type="submit"><i data-lucide="lock-keyhole"></i>Confirm simulated payment</button><p id="payment-error" class="form-error" role="alert"></p></form></dialog>
+  <dialog id="auth-dialog"><form id="auth-form">
+    <div class="dialog-head"><h2 id="auth-title">Sign in</h2><button type="button" class="icon close-dialog" title="Close"><i data-lucide="x"></i></button></div>
+    <p id="signed-in-info"></p><div id="auth-fields">
+      <div class="segments auth-modes"><button type="button" data-auth="login" class="active">Sign in</button><button type="button" data-auth="register">Create account</button><button type="button" data-auth="nfc">NFC tap</button><button type="button" data-auth="technician">Technician</button></div>
+      <label id="name-field" hidden>Name<input name="name" autocomplete="name" maxlength="60" disabled></label>
+      <label id="email-field">Email<input name="email" type="email" autocomplete="username" maxlength="120" required></label>
+      <label id="password-field">Password<input name="password" type="password" autocomplete="current-password" maxlength="128" required></label>
+      <label id="nfc-field" hidden>Registered NFC identifier<input name="nfc" maxlength="100" disabled></label>
+      <button id="fill-demo" type="button"><i data-lucide="flask-conical"></i><span>Use demo account</span></button>
+      <button type="submit" class="primary wide" id="auth-submit">Sign in</button>
+    </div>
+    <button id="logout" type="button" class="wide" hidden><i data-lucide="log-out"></i>Sign out</button><p class="form-error" id="auth-error" role="alert"></p>
+  </form></dialog>
+  <dialog id="checkout-dialog"><div class="dialog-head"><h2>Review your order</h2><button type="button" class="icon close-dialog" title="Close"><i data-lucide="x"></i></button></div>
+    <div id="checkout-summary"></div><form id="payment-form">
+      <label>Payment method<select name="method"><option value="contactless">Contactless card · simulator</option><option value="emv_chip">EMV chip card · simulator</option><option value="apple_pay">Apple Pay · simulator</option><option value="google_pay">Google Pay · simulator</option><option value="prepaid">Employee prepaid card · simulator</option></select></label>
+      <label>Redeem points <span id="points-balance" class="muted"></span><input type="number" name="points" min="0" step="1" value="0"></label>
+      <div class="price-breakdown"><span>Drink subtotal</span><strong id="payment-subtotal"></strong><span>Loyalty discount</span><strong id="payment-discount"></strong></div>
+      <div class="order-total"><span>To pay</span><strong id="payment-total"></strong></div><button id="pay-button" class="primary wide" type="submit"><i data-lucide="lock-keyhole"></i>Confirm simulated payment</button><p id="payment-error" class="form-error" role="alert"></p>
+    </form>
+  </dialog>
   <dialog id="receipt-dialog"><div class="dialog-head"><h2>Purchase completed</h2><button class="icon close-dialog" title="Close"><i data-lucide="x"></i></button></div><div id="receipt-content"></div><button id="email-receipt" class="wide"><i data-lucide="mail"></i>Email receipt · simulator</button><p id="receipt-message" class="muted"></p></dialog>
   <dialog id="recipe-dialog"><form id="recipe-form"><div class="dialog-head"><h2 id="recipe-title">Save recipe</h2><button type="button" class="icon close-dialog" title="Close"><i data-lucide="x"></i></button></div><label>Recipe name<input id="recipe-name" maxlength="60" required placeholder="Morning oat"></label><button type="submit" class="primary wide">Save</button><p id="recipe-error" class="form-error" role="alert"></p></form></dialog>
   <div id="toast" class="toast" role="status" hidden></div>

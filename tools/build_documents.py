@@ -23,17 +23,18 @@ FEATURES = [
     ("F04", "Named personal recipes", "FR-06", "Save Morning Oat; rename; load and edit settings; save update; delete."),
     ("F05", "Ingredient/quantity checks", "FR-07, NFR-03", "Set oat level below threshold as technician; verify oat recipe cannot be purchased; refill."),
     ("F06", "Context/history recommendations", "FR-08/19", "Toggle Recommended first; change simulated weather/time; buy a drink and verify ranking reasons."),
-    ("F07", "Checkout and immutable history", "FR-11/12/20, NFR-03", "Approve/decline five payment simulators; inspect history; retry a request; test offline pending then reconnect."),
+    ("F07", "Checkout and immutable history", "FR-11/12/20, NFR-03", "Use five payment methods; set external decline in technician Test scenarios; inspect history/retries and offline reconciliation."),
     ("F08", "Earn and redeem loyalty", "FR-13", "Apply 100 points; verify SEK 10 discount and success-only deduction/earning."),
     ("F09", "QR receipt and email adapter", "FR-14", "Open receipt QR/text; send to local simulator outbox; fail email and retain QR fallback."),
     ("F10", "Protected maintenance/diagnostics", "FR-15/16/17/18", "PIN/master-NFC login; full refill; waste halt/empty; fault logging; authorized diagnostic export."),
 ]
+OPTIONAL_FEATURE = [("F11", "Local drink assistant", "FR-10/19", "Ask for a strong oat latte; review the real local-model proposal; apply settings, then separately confirm checkout. Test a clarification and unavailable model.")]
 
-OVERVIEW = "SmartBrew AI is a personalized coffee-machine system for office customers and maintenance technicians. The full requirements cover profiles, saved recipes, context/mood recommendations, customization, supplies, payments, receipts, diagnostics, privacy and service-failure fallback. The group's custom feature is loyalty redemption. The executable prototype implements ten selected feature groups with persistent local state and a browser interface."
+OVERVIEW = "SmartBrew AI is a local coffee-machine prototype for customers and maintenance technicians. It implements ten selected feature groups: accounts, menu, customization, personal recipes, availability, recommendations, checkout/history, loyalty, receipts and maintenance. An additional optional local language model interprets drink requests into customer-confirmed recipes. The complete elicitation retains camera/privacy requirements even though camera inference is outside this implementation."
 POLICY = "Previously generated Lab 2 correction: AI-GENERATED REVIEW REFERENCE ONLY - NOT FOR LAB 1 OR LAB 2 SUBMISSION. The general course rules supplied after this reference was generated prohibit submitting generated text/models for those labs. Original submissions are unchanged. Lab 3 explicitly permits generation; disclosure does not override the Lab 1-2 restriction."
-CROSS_LAB = "Lab 1 received a positive grade. Its component coverage was marked Partial ('A bit minimalistic'); its relationship feedback questioned whether the UI needs the AIEngine. The saved diagram has nine domain concepts: User, Customer, Technician, PreferenceProfile, BeverageRecipe, Order, Payment, Inventory and Ingredient. These map to roles, preferences, recipes, purchase records and stock/waste state, not necessarily one code class each. Camera inference and the nested real LLM/mood modules remain deferred. Loyalty is first documented in the supplied Lab 2, not the Lab 1 diagrams. See docs/CROSS_LAB_REVIEW.md for the source audit and detailed mapping."
+CROSS_LAB = "Lab 1 received a positive grade, with Partial feedback on component scope and UI dependency on the AIEngine. Its nine domain concepts map to roles, preferences, recipes, purchase records and stock/waste state, not necessarily one code class each. The optional local-LLM responsibility is now implemented through a separate adapter; camera/mood inference remains deferred. Loyalty first appears in the supplied Lab 2, not the Lab 1 diagrams. See docs/CROSS_LAB_REVIEW.md for the detailed source mapping."
 EXPERIMENT = "The instructor strongly recommends additional experimentation, but does not state a fourth mandatory task. No optional exercise has been selected or claimed as completed. Mutation tests could use a disposable copy without removing any submitted functionality. Any personal reflection for a later exercise must be written by the student; none is generated here."
-PROVENANCE = "The preserved files in docs/baseline are exactly the submitted Lab 2 artifacts extracted from the supplied ZIP. This chat previously assisted creation of Lab 2; it would be inaccurate to label that submission an independently human-authored baseline. The comparison uses the actual submitted group version, then separates the feedback correction from the later LLM-assisted refinement. No later correction is silently substituted for the submitted baseline."
+PROVENANCE = "The comparison uses the actual submitted Lab 2 files, preserved with hashes in docs/baseline. That submission was already AI-assisted in this conversation, so it is not an independently human-elicited baseline. This limitation is disclosed for instructor review. Later reference corrections are not substituted for the submitted version."
 PROMPT_STRATEGY = "Use the actual system description, feedback and course slides as grounding; constrain all requirements to the six-column lecture template; retain the submitted baseline; check each source capability against stories/requirements/backlog; separate source mandates from proposed design assumptions; select ten coherent demonstrable feature groups; implement and test approval, rejection, ownership, retry, safety and offline paths. This was one evolving chat request with student clarifications, not an invented sequence of separate prompting experiments."
 ASSUMPTIONS = [
     "Prototype money uses integer ore (100 ore = SEK 1); demo prices/nutrition/ingredient quantities are illustrative and are not production dietary specifications.",
@@ -42,8 +43,10 @@ ASSUMPTIONS = [
     "Mood opt-in and the proposed 2-second response target are design refinements; the original brief does not prescribe consent UI, a numerical latency target or point-conversion rules.",
     "Weather/time, NFC/key signals, machine sensors, payment approval and email are simulated locally. Manual ordering and stored-value prepaid payments work while the simulated network is offline.",
     "Online-only payment requests can be persisted as pending without dispensing. Reconnect and customer Retry performs authorization/revalidation once; the prototype never assumes that a wallet can approve offline.",
-    "Camera mood inference and the optional local LLM are elicited but deferred from the selected ten features. A keyword parser and a mood selector are not presented as AI implementations.",
+    "Camera mood inference remains deferred. F11 adds actual optional local Qwen3 4B inference through Ollama 0.40.6, beyond the ten selected groups; it proposes supported recipes but cannot purchase or modify accounts.",
     "No physical brew command or real card authorization occurs. Admin diagnostics can be exported locally; there is no deployed remote diagnostic service or physical key reader.",
+    "Technician-only Test scenarios controls the persistent external payment mode (Normal/Decline). Customer checkout cannot submit an outcome override. Existing accounts/orders are retained; historical purchases are not reassigned after the authentication fix.",
+    "The model may need a cold load; server inference has a 90-second bound and manual ordering stays independent. The proposed menu/quote latency target excludes optional inference. Model proposals require customer review and fresh server validation.",
 ]
 
 
@@ -90,8 +93,8 @@ def backlog_sort(record):
     return (-record["importance"], record["id"])
 
 
-def write_markdown():
-    """Purpose: export editable artifacts and Astah descriptions. Inputs: module records. Returns: None."""
+def write_markdown(include_reference=False):
+    """Purpose: export current artifacts and optional historical references. Inputs: module records/reference flag. Returns: None."""
     docs = ROOT / "docs"
     docs.mkdir(exist_ok=True)
     records2 = lab2_records()
@@ -104,26 +107,30 @@ def write_markdown():
             "## Initial product backlog", "Importance is a proposed 0-100 ordering score (higher first). Estimate is relative story points, not hours. Estimates require group refinement. Description is retained in addition to the slide columns; Notes carries requirement/story links. No sprint commitment is asserted without team capacity.", table_md(backlog_headers, backlog_rows(records2, 2)),
             "## Use-case correction", "Customer -- Customize Beverage (solid association). Process Natural Language Order --<<extend>>--> Customize Beverage. Customize Beverage --<<include>>--> Check Ingredient Availability. Analyze Mood --<<extend>>--> Generate Recommendations when enabled/opted in. Redeem Loyalty --<<extend>>--> Process Payment. Technician has independent solid associations with Manage Inventory and View Error Logs; viewing logs is not a mandatory refill step. Extensions point toward their base use case.",
             "## Assumptions", "\n".join("- " + item for item in ASSUMPTIONS[:4]), "## Sources", "Provided system description and Lab 2 guidelines; instructor feedback page 1; Lecture-02-2026 slides 20-23, 30-31, 38, 43 and 47-48. The book reading remains the group's responsibility; no claim is made that the students have completed it."]
-    (docs / "LAB2_CORRECTED.md").write_text("\n\n".join(lab2) + "\n", encoding="utf-8")
+    reference = docs / "reference" / "lab2"
+    if include_reference:
+        reference.mkdir(parents=True, exist_ok=True)
+        (reference / "REVIEW.md").write_text("\n\n".join(lab2) + "\n", encoding="utf-8")
     text3 = ["# SmartBrew AI - Group 28 - Lab 3", "Updated: 2026-10-21", "## Task A - Elicitation", OVERVIEW,
-             "### Cross-lab continuity and course policy", CROSS_LAB, POLICY,
-             "### Models and provenance", MODEL, "Tasks A, B and C in this revision use this same model through the Codex application. Earlier Lab 2 assistant model/version was not recorded and is not retroactively invented.", PROVENANCE,
-             "### Prompt strategy", PROMPT_STRATEGY, "Main prompts, student clarifications and assistant response excerpts are recorded in AI_CONVERSATION.md. Generated code is retained in Git; do not describe the artifacts as independently human authored.",
+             "### Cross-lab continuity", CROSS_LAB,
+             "### Models and provenance", MODEL, "This is the development assistant for Tasks A-C. The runtime drink model is separately identified as local Qwen3 4B through Ollama 0.40.6. Earlier Lab 2 model/version was not recorded.", PROVENANCE,
+             "### Prompt strategy", PROMPT_STRATEGY, "Main prompts and selected responses are recorded in AI_CONVERSATION.md and the separate PDF appendix; generated code and revisions are retained in Git.",
              "### Source inventory", table_md(["Source", "System capability"], SOURCES),
              "### User stories", table_md(["ID", "Name", "Story", "Requirement links"], STORIES3),
              "### Functional requirements", table_md(headers, requirement_rows([r for r in LAB3 if r["id"].startswith("FR-") ])),
              "### Non-functional requirements", table_md(headers, requirement_rows([r for r in LAB3 if r["id"].startswith("NFR-") ])),
-             "### Initial product backlog", "Same required format as corrected Lab 2. Importance 0-100, high first; estimate in relative story points. Proposed values are not measured team velocity or a promised delivery date. Dependencies: accounts before private recipes/history; quotes/availability before checkout; approved purchase before loyalty/receipts. Optional AI and physical integrations remain backlog work.", table_md(backlog_headers, backlog_rows(LAB3, 3)),
+             "### Initial product backlog", "Lecture format with Description and trace links retained. Importance 0-100, high first; estimates are relative story points, not measured velocity. This is an initial planning artifact, not a claim that every full-system requirement is implemented. F01-F10 and optional F11 have demonstration steps; camera and physical integrations remain deferred.", table_md(backlog_headers, backlog_rows(LAB3, 3)),
              "### Comparison with the submitted Lab 2", PROVENANCE, table_md(["Topic", "Submitted Lab 2", "LLM revision", "Decision and reason"], COMPARISON),
              "### Rejected design alternatives", "These are options evaluated and rejected during this generation, not fabricated earlier model responses.", table_md(["Option", "Decision / justification"], REJECTIONS),
              "### Critical evaluation of the assistant", "The earlier assistant checked names in a serialized Astah ZIP and PDF and overclaimed completeness. The actual feedback identified the missing requirement fields. A supported-API inspection in this revision additionally found that Process Payment contained the natural-language description, Analyze Mood had no completed fields, Check Ingredient Availability was absent from the diagram canvas, and optional/mandatory relationships conflicted with descriptions. This shows why matching names is insufficient. The expanded elicitation improves coverage and traceability, but point rules, consent and latency targets remain design proposals; hardware and external-service realism require separate validation.",
              "## Task B - Selected implementation", table_md(["Feature", "Functionality", "Requirements", "Demonstration"], FEATURES),
+             "### Optional addition", table_md(["Feature", "Functionality", "Requirements", "Demonstration"], OPTIONAL_FEATURE),
              "### Scope and assumptions", "\n".join("- " + item for item in ASSUMPTIONS),
-             "### Architecture", "A Python HTTP adapter serves a vanilla JavaScript interface. A service layer enforces authorization and business rules. SQLite persists accounts, hashed sessions, recipes, orders, stock, waste, pending requests, events and email simulator outbox. Checkout uses a write transaction and unique request key. QR generation uses the pinned qrcode library. No external service is required after installation.",
-             "### Validation", "See QA_RESULTS.md and evidence/ for actual recorded runs. Unit tests use isolated temporary databases. Browser checks use a separate QA database and verify desktop/mobile layout and end-to-end flows. A recommendation-service failure regression reproduced a blank menu; rendering essential ordering before optional ranking and imposing a 1.2-second ranking timeout fixed the dependency. Passing simulator tests does not validate actual hardware, financial processors, SMTP or camera/LLM inference.",
+             "### Architecture", "The HTTP adapter and service layer enforce identity, ownership and purchase rules. SQLite holds persistent local state; checkout uses one write transaction and a unique request key. Customer ordering and technician maintenance/testing share one app but separate protected actions. The optional model adapter is loopback-only and has no ordering side effects. See ARCHITECTURE.md for responsibilities and trust boundaries.",
+             "### Validation and revisions", "QA_RESULTS.md and evidence/ contain actual runs. The student exposed a browser authentication defect: hidden demo NFC data overrode entered passwords. A failing regression reproduced it; explicit methods and two-customer browser tests now verify identity, ownership and restart persistence. Earlier passing tests were insufficient because they only used Alex for browser customer login. Other fixes preserve pending loyalty selections, independent manual ordering during recommendation failure and complete order snapshots. Real local-model tests are separate from adapter fixtures; an invented usual-drink response and cold-start timeout were retained as observed failures before refinement. Simulator tests do not validate real hardware or financial/email processors.",
              "### Recommended extra experimentation", EXPERIMENT,
              "## Task C - Repository and documentation", "Repository: https://github.com/kaantanidir/Software_Engi_1_LAB3 . README.md contains environment, installation, execution, tests and all ten feature demos. Each authored Python/JavaScript/Java function documents purpose, inputs and outputs. Vendored Lucide is third-party library code with its license retained. Runtime data, local packages and temporary files are excluded from Git.",
-             "### Student review before submission", "Review the exact point conversion, pending-payment policy, estimates and optional-feature scope. Read and understand the implementation and run the walkthrough. The baseline comparison is intentionally labeled group submission previously assisted by AI; confirm that disclosure with the course if a strictly independent human baseline is required.",
+             "### Review before submission", "Review point conversion, pending-payment policy, estimates and model limitations, then run the walkthrough. Detailed prompts/model use are in the appendix. The submitted Lab 2 provenance needs instructor clarification if a strictly independent human baseline is required. Historical generated Lab 2 review aids are not submission materials under the supplied policy.",
              "### AI appendix", "The required simple PDF is output/pdf/G28Lab3_AI_Appendix.pdf. It contains the student-confirmed model label, prompt strategy, main prompt and key responses, subsequent clarifications and generated-code references. The historical record is normalized/selected, not a full verbatim export or a student-written personal reflection.",
              "### References", "Instructor feedback page 1; Lecture-02-2026 slides 20-23, 30-31, 38, 43 and 47-48; Lecture-03-2026 slides 17, 22, 28, 38-40; system description and assignment guidelines supplied in the chat. Henrik Kniberg, Scrum and XP from the Trenches: https://www.infoq.com/minibooks/download/scrum-xp-from-the-trenches/ (recommended course reading; student completion is not asserted)."]
     (docs / "LAB3_REPORT.md").write_text("\n\n".join(text3) + "\n", encoding="utf-8")
@@ -134,9 +141,10 @@ def write_markdown():
         for key, value in zip(["Preconditions", "InitiatingActor", "Goal", "MainScenario", "Alternatives"], values):
             uc.append("**" + key + "**\n\n" + value)
         tsv.append(name + "\t" + "\t".join(base64.b64encode(value.encode()).decode() for value in values))
-    (docs / "USE_CASE_DESCRIPTIONS.md").write_text("\n\n".join(uc), encoding="utf-8")
-    (ROOT / "tmp").mkdir(exist_ok=True)
-    (ROOT / "tmp" / "descriptions.tsv").write_text("\n".join(tsv), encoding="utf-8")
+    if include_reference:
+        (reference / "USE_CASE_DESCRIPTIONS.md").write_text("\n\n".join(uc), encoding="utf-8")
+        (ROOT / "tmp").mkdir(exist_ok=True)
+        (ROOT / "tmp" / "descriptions.tsv").write_text("\n".join(tsv), encoding="utf-8")
 
 
 STYLES = getSampleStyleSheet()
@@ -197,7 +205,7 @@ def build_pdf(lab):
         records = lab2_records()
     else:
         flow.append(paragraph("Task A - Requirements elicitation, critical comparison and prompt record"))
-        flow.append(paragraph("Model: " + MODEL)); flow.append(paragraph(PROVENANCE)); flow.append(paragraph(PROMPT_STRATEGY))
+        flow.append(paragraph("Development model: " + MODEL)); flow.append(paragraph("Runtime drink model: local Qwen3 4B through Ollama 0.40.6. The two model roles are distinct.")); flow.append(paragraph(PROVENANCE)); flow.append(paragraph(PROMPT_STRATEGY))
         flow.append(paragraph("Main student prompt and selected key responses: output/pdf/G28Lab3_AI_Appendix.pdf and docs/AI_CONVERSATION.md. This is a normalized interaction record, not a full historical export. Tasks A, B and C use the recorded model; the earlier Lab 2 version is unknown."))
         heading(flow,"User stories",True)
         flow.append(table(["ID","Name","Story","Requirements"], STORIES3,[18,42,157,48]))
@@ -234,21 +242,28 @@ def build_pdf(lab):
         flow.append(paragraph("These are options considered during this generation, not fabricated earlier model responses."))
         flow.append(table(["Option","Justification"],REJECTIONS,[90,175]))
         flow.append(Spacer(1,6*mm))
-        flow.append(paragraph("The previous assistant overclaimed consistency after checking only serialized names. It missed required requirement fields, the wrong payment description, an empty mood description and inconsistent optional relationships. This revision improves format/coverage and tests the implementation, but proposed point rules, latency and hardware assumptions still need student/stakeholder review."))
-        heading(flow,"Cross-lab continuity and course policy",True)
-        flow.append(paragraph(CROSS_LAB)); flow.append(paragraph(POLICY))
+        flow.append(paragraph("Initial name-only model checks missed requirement fields and wrong/empty use-case descriptions. Later, the student found a browser login defect that passing tests had missed: a hidden NFC value selected Alex instead of checking the entered password. The new regressions verify separate identities and ownership. Real-model testing also found an invented usual-drink recipe; the failed output was retained and clarification rules were refined. These observations distinguish observed evidence from an unsupported claim of completeness."))
+        heading(flow,"Cross-lab continuity and revisions",True)
+        flow.append(paragraph(CROSS_LAB))
         flow.append(paragraph("Read-only Lab 1 inspection preserved the original model and hashes. The visible User {Abstract} label is not backed by Astah's native abstract flag, although the grader accepted the class criteria. No original model is silently rewritten. Conceptual model mappings and implementation scope differences are documented in the cross-lab review."))
         flow.append(paragraph("Reliability follow-up: HTTP 503 from recommendations reproduced a blank menu in the isolated browser test. Essential ordering now renders before optional ranking, whose wait is limited to 1.2 seconds. Manual browsing, customization and payment retain their standard-menu path. This is an ordinary regression fix, not the unselected optional student experiment."))
+        flow.append(paragraph("Customer checkout no longer controls its payment result. Only the technician's Test scenarios area changes the persistent external-processor mode. Normal sign-in fields start empty, mixed authentication requests are rejected, and account changes clear private UI and assistant conversation. Existing data is preserved; historical orders are not automatically reassigned."))
+        flow.append(paragraph("Course policy: the earlier generated Lab 2 corrections remain review aids only, not submission materials. Original Lab 1-2 sources are unchanged. Lab 3 permits generation; the separate appendix records assistance and source provenance."))
         flow.append(paragraph(EXPERIMENT))
         heading(flow,"Task B - Ten selected feature groups",True)
         flow.append(table(["ID","Functionality","Requirements","Demonstration"],FEATURES,[16,59,52,138]))
+        heading(flow,"Optional F11 - Local drink assistant",True)
+        flow.append(table(["ID","Functionality","Requirements","Demonstration"],OPTIONAL_FEATURE,[16,59,52,138]))
+        flow.append(Spacer(1, 6*mm))
+        flow.append(paragraph("Install/start Ollama, pull qwen3:4b, optionally warm it with a simple prompt, then launch SmartBrew normally. The model download is about 2.5 GB. The tested system has about 32 GB RAM and a 6 GB RTX 3060 Laptop GPU. Actual model digest, requests, responses and timings are in evidence/local-ai-results.json; these are selected examples, not a general accuracy guarantee."))
+        flow.append(paragraph("The model returns a bounded recipe or clarification schema. The server rejects unsupported fields/options, recalculates price and checks current stock. Use recipe applies the proposal only after customer confirmation; checkout is separate. Inference cannot execute code or purchase. Missing/invalid/slow inference leaves manual ordering available. The cold-load wait is bounded at 90 seconds and excluded from menu/quote latency measurements."))
         heading(flow,"Implementation scope and assumptions",True)
         for item in ASSUMPTIONS: flow.append(paragraph(item)); flow.append(Spacer(1,2*mm))
         heading(flow,"Task C - Setup, repository and validation",True)
         flow.append(paragraph("Repository: https://github.com/kaantanidir/Software_Engi_1_LAB3"))
         flow.append(paragraph("Runtime: Python 3.12 (verified 3.12.14), modern browser, pinned qrcode 8.2 (colorama 0.4.6 on Windows). SQLite and HTTP service use the Python standard library. Setup: python -m venv .venv; activate; python -m pip install -r requirements.txt. Run: python app.py --port 8765. Visit http://127.0.0.1:8765. Tests: python -m unittest discover -s tests -v."))
         flow.append(paragraph("Demo customer: alex@smartbrew.test / DemoPass123!; registered NFC DEMO-NFC-001. Technician PIN 246810; master NFC MASTER-NFC-001. These are public simulator fixtures, not production credentials."))
-        flow.append(paragraph("README.md provides every feature's walkthrough, reset procedure and limitations. All authored functions document purpose/input/output. Runtime data and packages are excluded from Git. See docs/QA_RESULTS.md and evidence/ for actual test records. Approval in the simulator is not financial or hardware validation."))
+        flow.append(paragraph("README.md contains all feature walkthroughs. docs/README.md indexes architecture, verification, prompt records and historical sources; older Lab 2 notes are in docs/reference/lab2. All authored functions document purpose/input/output. Runtime data, model weights and local packages are excluded from Git. See docs/QA_RESULTS.md and evidence/ for actual tests. Simulator approval is not financial or hardware validation."))
         flow.append(paragraph("References: provided feedback, system description and assignment instructions; Lecture 2 slides 20-23, 30-31, 38, 43, 47-48; Lecture 3 slides 17, 22, 28 and 38-40. Recommended reading: Henrik Kniberg, Scrum and XP from the Trenches (InfoQ). No student reading completion is claimed.","SmallCustom"))
         heading(flow,"Appendix - Source coverage",True)
         flow.append(table(["Source","Capability","Requirement(s)"],[[sid,description,"; ".join(r["id"] for r in LAB3 if sid in r["source"].split(";")[0].split("/"))] for sid,description in SOURCES],[20,140,105],padding=5))
@@ -261,17 +276,13 @@ def build_ai_appendix():
     """Purpose: export required model/prompt PDF. Inputs: preserved prompt/interaction files. Returns: output PDF path."""
     conversation = (ROOT / "docs" / "AI_CONVERSATION.md").read_text(encoding="utf-8")
     main_prompt = (ROOT / "docs" / "MAIN_PROMPT.md").read_text(encoding="utf-8")
-    responses = conversation.split("## Assistant responses and student clarifications", 1)[1]
     preface = "\n\n".join([
         "# SmartBrew AI - Group 28 - Lab 3 AI appendix",
-        "Updated 2026-10-21. Tool: Codex desktop application. Tasks A (elicitation), B (complete code generation/testing) and C (documentation/repository): GPT-6.1 Sol, the exact selector label confirmed by the student. Exact backend build: not exposed. Earlier Lab 1/2 model versions: unknown, not reconstructed.",
+        "Updated 2026-10-21. This appendix records development assistance, the main supplied prompt and key interactions. The following record identifies the development and runtime models separately.",
         "## Record scope and prompt strategy",
         "This appendix includes the main supplied request, key responses and clarifications. Markdown whitespace is normalized. The later Lab 1/course-policy context is explicitly summarized rather than represented as a full verbatim export. Generated source files in the Git repository are the code responses. This record contains no private model reasoning, invented prompts or student-written personal reflection.",
-        PROMPT_STRATEGY,
-        "## Policy and baseline provenance", POLICY, PROVENANCE,
-        "The submitted Lab 2 cannot honestly be called independently human-elicited; the comparison discloses that limitation for instructor review. The Lab 1 original is preserved as supplied. Generated Lab 2 corrections are review references only, not submission materials.",
         main_prompt.strip(),
-        "## Key responses and student clarifications\n\n" + responses.strip(),
+        conversation.strip(),
     ])
     (ROOT / "docs" / "LAB3_AI_APPENDIX.md").write_text(preface + "\n", encoding="utf-8")
     path = ROOT / "output" / "pdf" / "G28Lab3_AI_Appendix.pdf"
@@ -295,11 +306,14 @@ def build_ai_appendix():
 
 
 def main():
-    """Purpose: export editable content and optional PDFs. Inputs: --text-only. Returns: None."""
+    """Purpose: export current documents and optional references. Inputs: --text-only/--include-reference. Returns: None."""
     import sys
-    write_markdown()
+    include_reference = "--include-reference" in sys.argv
+    write_markdown(include_reference)
     if "--text-only" not in sys.argv:
-        build_pdf(2); build_pdf(3); build_ai_appendix()
+        if include_reference:
+            build_pdf(2)
+        build_pdf(3); build_ai_appendix()
 
 
 if __name__ == "__main__":

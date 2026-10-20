@@ -1,16 +1,30 @@
 {
-  "recordedAt": "2026-10-20T22:35:41.811Z",
+  "recordedAt": "2026-10-20T23:54:01.590Z",
   "checks": [
     "F02: six menu drinks load",
     "F02: category filter",
+    "F01: ordinary login starts empty with NFC disabled",
+    "F01: logout clears receipt and private records",
+    "F01/F04/F07: new customer is not Alex and sees no other records",
+    "HTTP: another account cannot delete recipes or email purchases",
+    "HTTP: hidden NFC cannot bypass password sign-in",
+    "F01: wrong password does not sign in as Alex",
+    "F01/F04/F07: restart preserves the correct account and its records",
+    "F04: owner can delete their saved recipe",
+    "F01: explicit NFC sign-in remains available",
     "F01: customer credential login",
     "F03: live quote updates",
     "F04: named recipe create/rename",
     "F07/F08: checkout with loyalty discount",
+    "F03/F09: receipt contains syrup and extra-shot settings",
     "F09: actual QR SVG generated",
+    "Customer checkout has no payment-outcome control",
+    "Complete order review includes syrup and extra shots",
     "F07: declined payment reported",
+    "HTTP: customer cannot override payment simulation",
     "F07: one completed history entry",
     "F10: seven ingredient counters",
+    "F10: technician UI controls processor simulation",
     "F05: depleted customized ingredient blocks checkout",
     "F10: full bin halts checkout",
     "F10: diagnostic fault logged",
@@ -21,8 +35,14 @@
     "HTTP authorization rejects customer admin request",
     "Proposed local-response target: p95 below 2 seconds",
     "Proposed quote-response target: p95 below 2 seconds",
+    "F11: real local model returns a supported oat-latte proposal",
+    "F11: inference does not apply settings or purchase automatically",
+    "F11: explicit confirmation applies the validated settings",
+    "F11: account change clears conversation and proposal",
+    "F11: model failure leaves manual checkout available",
     "Mobile root has no horizontal overflow",
     "Menu photograph assets loaded",
+    "Visible controls have usable targets and input focus is visible",
     "Service failure: standard menu still loads",
     "Service failure: recommended mode falls back to usable menu",
     "Service failure: manual checkout still completes",
@@ -31,17 +51,59 @@
   "errors": [],
   "responseSample": {
     "count": 100,
-    "p95ms": 26.65520000000015
+    "p95ms": 13.069400000000314
   },
   "quoteSample": {
     "count": 100,
-    "p95ms": 19.339600000001155
+    "p95ms": 16.47400000000016
   },
   "mobile": {
     "width": 390,
     "scrollWidth": 390,
     "loadedImages": 6,
     "images": 6
+  },
+  "accessibility": {
+    "smallButtons": 0,
+    "focusVisible": true
+  },
+  "liveAI": {
+    "realInference": true,
+    "mockedModel": false,
+    "response": {
+      "kind": "recipe",
+      "message": "A strong oat latte at 75 degrees with one syrup shot and no extra espresso",
+      "quote": {
+        "config": {
+          "drink": "latte",
+          "milk": "oat",
+          "strength": "strong",
+          "temperature": 75,
+          "syrup": 1,
+          "extra": 0
+        },
+        "name": "Caffe Latte",
+        "price": 4200,
+        "kcal": 135,
+        "allergens": [
+          "oats"
+        ],
+        "ingredients": {
+          "beans": 13,
+          "water": 40,
+          "cups": 1,
+          "oat": 180,
+          "syrup": 10
+        },
+        "available": true,
+        "reasons": [],
+        "category": "Coffee",
+        "image": "latte.svg",
+        "nutrition_note": "Illustrative recipe estimates"
+      },
+      "model": "qwen3:4b",
+      "local": true
+    }
   },
   "browser": "155.0.8059.41",
   "node": "v24.19.0",

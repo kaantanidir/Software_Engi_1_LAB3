@@ -1,0 +1,6 @@
+2026-10-21: regression before the authentication fix, exit code 1.
+Test: test_login_rejects_mixed_authentication_methods
+Request mixed email/password credentials with the hidden DEMO-NFC-001 identifier.
+Expected: reject ambiguous authentication; actual: no RuleError was raised.
+Root cause: the browser submitted hidden NFC input and the server prioritized it over the entered password.
+The previous browser suite only exercised Alex's identity for customer login and therefore missed the bypass.

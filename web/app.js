@@ -2,6 +2,8 @@
 let state = {}, selected = 'latte', quote = null, category = 'All', recommendations = [];
 let authMode = 'login', editingRecipe = null, activeOrder = null, paymentKey = null, quoteRevision = 0, toastTimer;
 let recommendationStatus = 'loading', refreshRevision = 0;
+let adminTab = 'maintenance', maintenanceBusy = false;
+const busyForms = new Set();
 
 /** Purpose: resolve a DOM selector. Inputs: selector string. Returns: element or null. */
 function $(selector) { return document.querySelector(selector); }
@@ -11,10 +13,11 @@ function esc(value) { return String(value ?? '').replaceAll('&', '&amp;').replac
 function money(amount) { return new Intl.NumberFormat('en-SE', { style: 'currency', currency: 'SEK' }).format(amount / 100); }
 /** Purpose: refresh local Lucide icons. Inputs: document. Returns: void. */
 function icons() { lucide.createIcons(); }
-/** Purpose: call a local JSON endpoint. Inputs: path, optional body and timeout milliseconds. Returns: parsed response or rejected error. */
-async function api(path, body, timeoutMs = null) {
+/** Purpose: call a local JSON endpoint. Inputs: path, optional body, timeout and abort signal. Returns: parsed response or rejected error. */
+async function api(path, body, timeoutMs = null, signal = null) {
   const options = body === undefined ? {} : { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) };
-  if (timeoutMs !== null) options.signal = AbortSignal.timeout(timeoutMs);
+  if (signal) options.signal = signal;
+  else if (timeoutMs !== null) options.signal = AbortSignal.timeout(timeoutMs);
   const response = await fetch(path, options);
   const data = await response.json();
   if (!response.ok) throw new Error(data.error || 'Request failed.');
@@ -41,12 +44,30 @@ function applyConfig(value) {
   form.elements.syrup.value = value.syrup ?? 0;
   form.elements.extra.value = value.extra ?? 0;
 }
+/** Purpose: clear identity-bound UI when the session changes. Inputs: current DOM/state. Returns: void. */
+function clearPrivateState() {
+  clearTimeout(toastTimer); hideToast();
+  selected = 'latte'; category = 'All'; editingRecipe = null; activeOrder = null; paymentKey = null; quote = null;
+  quoteRevision++; adminTab = 'maintenance';
+  $('#customize-form').reset(); $('#auth-form').reset(); $('#payment-form').reset(); $('#recommend-toggle').checked = false;
+  $('#recipe-name').value = ''; $('#receipt-content').replaceChildren(); $('#checkout-summary').replaceChildren();
+  for (const dialog of document.querySelectorAll('dialog[open]')) dialog.close();
+  for (const button of document.querySelectorAll('[data-category]')) button.classList.toggle('active', button.dataset.category === 'All');
+  resetAssistant(); showView('menu');
+}
+/** Purpose: describe every purchased setting consistently. Inputs: recipe configuration. Returns: plain text. */
+function recipeDetails(value) {
+  return `${value.milk} milk · ${value.strength} · ${value.temperature} °C · ${value.syrup} syrup shots · ${value.extra} extra espresso shots`;
+}
 /** Purpose: load server state into all visible views. Inputs: none. Returns: Promise<void>. */
 async function refresh() {
   const revision = ++refreshRevision;
   const result = await api('/api/state');
   if (revision !== refreshRevision) return;
+  const identityChanged = (state.user?.id ?? null) !== (result.user?.id ?? null);
   state = result; recommendationStatus = 'loading'; recommendations = [];
+  if (identityChanged) { clearPrivateState(); if (state.user?.role === 'customer') applyConfig(state.user.preferences); }
+  $('#maintenance-nav').hidden = state.user?.role !== 'technician';
   $('#account-name').textContent = state.user?.name || 'Sign in';
   $('#account-button').title = state.user?.name || 'Sign in';
   $('#connection').textContent = state.settings.network ? 'Machine online' : 'Offline · local ordering';
@@ -99,7 +120,8 @@ async function updateQuote() {
     $('#nutrition').innerHTML = `<span>${quote.kcal} kcal</span><span>${quote.allergens.length ? 'Contains ' + esc(quote.allergens.join(', ')) : 'No listed allergens'}</span>`;
     $('#availability').textContent = quote.available ? 'Ingredients available' : quote.reasons.join(' · ');
     $('#availability').classList.toggle('error', !quote.available);
-    $('#checkout-button').disabled = !quote.available;
+    $('#checkout-button').disabled = !quote.available || state.user?.role === 'technician';
+    $('#checkout-button').title = state.user?.role === 'technician' ? 'Sign in as a customer or sign out to order' : '';
   } catch (error) { if (revision === quoteRevision) { $('#availability').textContent = error.message; $('#availability').classList.add('error'); } }
 }
 /** Purpose: render saved recipes with owner-only actions. Inputs: current state. Returns: void. */
@@ -123,22 +145,54 @@ function renderMaintenance() {
   const admin = state.user?.role === 'technician'; $('#export-logs').hidden = !admin;
   if (!admin) { $('#maintenance-content').innerHTML = '<div class="empty">Technician authentication required.<br><button data-tech-login><i data-lucide="key-round"></i>Technician sign in</button></div>'; return; }
   const settings = state.settings;
-  let stocks = '', bins = '', events = '', outbox = '';
-  for (const item of state.ingredients) stocks += `<tr><td><strong>${esc(item.name)}</strong></td><td><span class="meter"><span style="width:${Math.round(item.level / item.capacity * 100)}%"></span></span>${item.level} / ${item.capacity} ${esc(item.unit)}</td><td>${item.threshold}</td><td><input type="number" aria-label="${esc(item.name)} simulated level" id="stock-${esc(item.id)}" min="0" max="${item.capacity}" value="${item.level}"></td><td><button data-stock="${esc(item.id)}" title="Apply simulated sensor level"><i data-lucide="gauge"></i>Set</button> <button data-refill="${esc(item.id)}" title="Confirm full refill"><i data-lucide="package-plus"></i>Refill</button></td></tr>`;
-  for (const bin of state.bins) bins += `<div class="bin-row"><strong>${esc(bin.id)} · ${bin.level}%</strong><input type="number" min="0" max="150" value="${bin.level}" id="bin-${bin.id}" aria-label="${bin.id} waste percentage"><button data-waste="${bin.id}"><i data-lucide="gauge"></i>Set</button><button data-empty="${bin.id}"><i data-lucide="trash-2"></i>Empty</button></div>`;
+  let stocks = '', sensors = '', bins = '', wasteSensors = '', events = '', outbox = '';
+  for (const item of state.ingredients) {
+    stocks += `<tr><td><strong>${esc(item.name)}</strong></td><td><span class="meter"><span style="width:${Math.round(item.level / item.capacity * 100)}%"></span></span>${item.level} / ${item.capacity} ${esc(item.unit)}</td><td>${item.threshold}</td><td><button data-refill="${esc(item.id)}" title="Confirm full refill"><i data-lucide="package-plus"></i>Refill</button></td></tr>`;
+    sensors += `<tr><td>${esc(item.name)}</td><td><input type="number" aria-label="${esc(item.name)} simulated level" id="stock-${esc(item.id)}" min="0" max="${item.capacity}" value="${item.level}"></td><td><button data-stock="${esc(item.id)}"><i data-lucide="gauge"></i>Set</button></td></tr>`;
+  }
+  for (const bin of state.bins) {
+    bins += `<div class="bin-row service-bin"><strong>${esc(bin.id)} · ${bin.level}%</strong><button data-empty="${bin.id}"><i data-lucide="trash-2"></i>Record emptied</button></div>`;
+    wasteSensors += `<div class="bin-row service-bin"><label>${esc(bin.id)} waste %<input type="number" min="0" max="150" value="${bin.level}" id="bin-${bin.id}" aria-label="${bin.id} waste percentage"></label><button data-waste="${bin.id}"><i data-lucide="gauge"></i>Set</button></div>`;
+  }
   for (const event of state.events) events += `<tr><td>${esc(new Date(event.created).toLocaleTimeString())}</td><td><span class="pill ${event.severity === 'error' ? 'error' : ''}">${esc(event.severity)}</span></td><td>${esc(event.code)}</td><td>${esc(event.message)}</td></tr>`;
   for (const mail of state.outbox) outbox += `<tr><td>#${mail.order_id}</td><td>${esc(mail.recipient)}</td><td>Saved locally · ${esc(new Date(mail.created).toLocaleString())}</td></tr>`;
-  $('#maintenance-content').innerHTML = `<section class="admin-band"><h2>Service simulator</h2><form id="context-form" class="admin-context"><label>Network<select name="network"><option value="true" ${settings.network ? 'selected' : ''}>Online</option><option value="false" ${!settings.network ? 'selected' : ''}>Offline</option></select></label><label>Weather<select name="weather"><option value="cold" ${settings.weather === 'cold' ? 'selected' : ''}>Cold</option><option value="warm" ${settings.weather === 'warm' ? 'selected' : ''}>Warm</option></select></label><label>Time of day<select name="period"><option value="morning" ${settings.period === 'morning' ? 'selected' : ''}>Morning</option><option value="afternoon" ${settings.period === 'afternoon' ? 'selected' : ''}>Afternoon</option></select></label><label>Email service<select name="email_ok"><option value="true" ${settings.email_ok ? 'selected' : ''}>Available</option><option value="false" ${!settings.email_ok ? 'selected' : ''}>Unavailable</option></select></label><button type="submit" class="primary">Apply</button></form></section><section class="admin-band"><h2>Ingredients & cups</h2><div class="table-wrap"><table><thead><tr><th>Ingredient</th><th>Current / capacity</th><th>Minimum</th><th>Sensor simulator</th><th>Actions</th></tr></thead><tbody>${stocks}</tbody></table></div></section><section class="admin-band"><h2>Waste bins</h2>${bins}</section><section class="admin-band"><h2>Machine fault <span class="pill ${settings.fault ? 'error' : ''}">${esc(settings.fault || 'No active fault')}</span></h2><div class="fault-controls"><button data-fault="GRINDER_JAM">Simulate grinder jam</button><button data-fault="HEATER_FAULT">Simulate heater fault</button><button data-fault=""><i data-lucide="check"></i>Clear fault</button></div></section><section class="admin-band"><h2>Diagnostic event log</h2><div class="table-wrap"><table><thead><tr><th>Time</th><th>Severity</th><th>Code</th><th>Message</th></tr></thead><tbody>${events}</tbody></table></div></section><section class="admin-band"><h2>Email simulator outbox</h2><div class="table-wrap"><table><thead><tr><th>Order</th><th>Recipient</th><th>Status</th></tr></thead><tbody>${outbox || '<tr><td colspan="3">No simulated emails yet.</td></tr>'}</tbody></table></div></section>`;
+  $('#maintenance-content').innerHTML = `
+    <div class="segments admin-tabs" role="tablist" aria-label="Technician workspace">
+      <button role="tab" data-admin-tab="maintenance" aria-selected="${adminTab === 'maintenance'}" class="${adminTab === 'maintenance' ? 'active' : ''}">Maintenance</button>
+      <button role="tab" data-admin-tab="testing" aria-selected="${adminTab === 'testing'}" class="${adminTab === 'testing' ? 'active' : ''}">Test scenarios</button>
+    </div>
+    <div ${adminTab === 'maintenance' ? '' : 'hidden'}>
+      <section class="admin-band"><h2>Ingredients & cups</h2><div class="table-wrap"><table><thead><tr><th>Ingredient</th><th>Current / capacity</th><th>Minimum</th><th>Refill</th></tr></thead><tbody>${stocks}</tbody></table></div></section>
+      <section class="admin-band"><h2>Waste bins</h2>${bins}</section>
+      <section class="admin-band"><h2>Diagnostic event log</h2><div class="table-wrap"><table><thead><tr><th>Time</th><th>Severity</th><th>Code</th><th>Message</th></tr></thead><tbody>${events}</tbody></table></div></section>
+      <section class="admin-band"><h2>Email simulator outbox</h2><div class="table-wrap"><table><thead><tr><th>Order</th><th>Recipient</th><th>Status</th></tr></thead><tbody>${outbox || '<tr><td colspan="3">No simulated emails yet.</td></tr>'}</tbody></table></div></section>
+    </div>
+    <div ${adminTab === 'testing' ? '' : 'hidden'}>
+      <section class="admin-band"><h2>External payment processor <span class="pill ${settings.payment_mode === 'decline' ? 'error' : ''}">${settings.payment_mode === 'decline' ? 'Decline active' : 'Normal'}</span></h2>
+        <form id="simulation-form" class="simulation-controls"><label>Payment simulation<select name="payment_mode"><option value="normal" ${settings.payment_mode === 'normal' ? 'selected' : ''}>Normal</option><option value="decline" ${settings.payment_mode === 'decline' ? 'selected' : ''}>Decline</option></select></label><button type="submit"><i data-lucide="check"></i>Apply</button></form>
+      </section>
+      <section class="admin-band"><h2>Service context</h2><form id="context-form" class="admin-context"><label>Network<select name="network"><option value="true" ${settings.network ? 'selected' : ''}>Online</option><option value="false" ${!settings.network ? 'selected' : ''}>Offline</option></select></label><label>Weather<select name="weather"><option value="cold" ${settings.weather === 'cold' ? 'selected' : ''}>Cold</option><option value="warm" ${settings.weather === 'warm' ? 'selected' : ''}>Warm</option></select></label><label>Time of day<select name="period"><option value="morning" ${settings.period === 'morning' ? 'selected' : ''}>Morning</option><option value="afternoon" ${settings.period === 'afternoon' ? 'selected' : ''}>Afternoon</option></select></label><label>Email service<select name="email_ok"><option value="true" ${settings.email_ok ? 'selected' : ''}>Available</option><option value="false" ${!settings.email_ok ? 'selected' : ''}>Unavailable</option></select></label><button type="submit" class="primary">Apply</button></form></section>
+      <section class="admin-band"><h2>Ingredient sensors</h2><div class="table-wrap"><table><thead><tr><th>Ingredient</th><th>Simulated level</th><th>Apply</th></tr></thead><tbody>${sensors}</tbody></table></div></section>
+      <section class="admin-band"><h2>Waste sensors</h2>${wasteSensors}</section>
+      <section class="admin-band"><h2>Machine fault <span class="pill ${settings.fault ? 'error' : ''}">${esc(settings.fault || 'No active fault')}</span></h2><div class="fault-controls"><button data-fault="GRINDER_JAM">Simulate grinder jam</button><button data-fault="HEATER_FAULT">Simulate heater fault</button><button data-fault=""><i data-lucide="check"></i>Clear fault</button></div></section>
+    </div>`;
+  setMaintenanceBusy(maintenanceBusy); icons();
 }
 /** Purpose: select login/registration/NFC/technician controls. Inputs: mode. Returns: void. */
 function setAuthMode(mode) {
   authMode = mode;
+  const form = $('#auth-form'); form.reset();
   $('#name-field').hidden = mode !== 'register'; $('#email-field').hidden = mode === 'nfc' || mode === 'technician'; $('#password-field').hidden = mode === 'nfc'; $('#nfc-field').hidden = mode !== 'nfc';
   $('#auth-title').textContent = mode === 'register' ? 'Create account' : mode === 'technician' ? 'Technician access' : 'Sign in';
   $('#auth-submit').textContent = mode === 'register' ? 'Create account' : mode === 'nfc' ? 'Simulate card tap' : 'Sign in';
   $('#password-field').firstChild.textContent = mode === 'technician' ? 'Technician PIN' : 'Password';
-  $('#auth-form').elements.password.value = mode === 'technician' ? '246810' : 'DemoPass123!';
-  $('#auth-hint').textContent = mode === 'technician' ? 'Demo technician PIN: 246810 · Master NFC: MASTER-NFC-001' : mode === 'register' ? 'Choose a password with at least 10 characters.' : 'Demo: alex@smartbrew.test / DemoPass123!';
+  form.elements.name.disabled = mode !== 'register'; form.elements.name.required = mode === 'register';
+  form.elements.email.disabled = mode === 'nfc' || mode === 'technician';
+  form.elements.password.disabled = mode === 'nfc'; form.elements.password.minLength = mode === 'register' ? 10 : 0;
+  form.elements.password.autocomplete = mode === 'register' ? 'new-password' : 'current-password';
+  form.elements.nfc.disabled = mode !== 'nfc'; form.elements.nfc.required = mode === 'nfc';
+  $('#fill-demo').hidden = mode === 'register';
+  $('#fill-demo span').textContent = mode === 'technician' ? 'Use demo technician' : mode === 'nfc' ? 'Use demo NFC card' : 'Use demo account';
   for (const button of document.querySelectorAll('[data-auth]')) button.classList.toggle('active', button.dataset.auth === mode);
   $('#auth-error').textContent = '';
 }
@@ -154,18 +208,22 @@ function openCheckout(pending = null) {
   if (!quote?.available) { toast('Choose an available recipe.'); return; }
   paymentKey = pending?.id || crypto.randomUUID();
   $('#payment-form').reset(); if (pending) { $('#payment-form').elements.method.value = pending.method; $('#payment-form').elements.points.value = pending.points; }
-  $('#checkout-summary').textContent = `${quote.name} · ${quote.config.milk} · ${quote.config.strength} · ${quote.config.temperature} °C`;
+  $('#checkout-summary').innerHTML = `<strong>${esc(quote.name)}</strong><p>${esc(recipeDetails(quote.config))}</p>`;
   $('#points-balance').textContent = `(${state.user?.points || 0} available · 1 point = SEK 0.10)`;
   $('#payment-form').elements.points.disabled = state.user?.role !== 'customer';
   $('#payment-form').elements.points.max = Math.min(state.user?.points || 0, Math.floor(quote.price / 10));
   $('#payment-error').textContent = ''; updatePaymentTotal(); $('#checkout-dialog').showModal();
 }
 /** Purpose: calculate displayed loyalty discount. Inputs: points control/quote. Returns: void. */
-function updatePaymentTotal() { const points = Number($('#payment-form').elements.points.value || 0); $('#payment-total').textContent = money(Math.max(0, quote.price - points * 10)); }
+function updatePaymentTotal() {
+  const points = Number($('#payment-form').elements.points.value || 0);
+  $('#payment-subtotal').textContent = money(quote.price); $('#payment-discount').textContent = money(points * 10);
+  $('#payment-total').textContent = money(Math.max(0, quote.price - points * 10));
+}
 /** Purpose: show a completed order and real QR. Inputs: order object. Returns: void. */
 function showReceipt(order) {
   activeOrder = order;
-  $('#receipt-content').innerHTML = `<p><strong>#${order.id} · ${esc(order.recipe.name)}</strong></p><p>Paid ${esc(money(order.paid))} · Discount ${esc(money(order.discount))}</p><img src="/receipt/${encodeURIComponent(order.receipt)}/qr.svg" alt="QR containing purchase receipt"><p><a href="/receipt/${encodeURIComponent(order.receipt)}" target="_blank" rel="noopener">Open receipt</a></p>`;
+  $('#receipt-content').innerHTML = `<p><strong>#${order.id} · ${esc(order.recipe.name)}</strong></p><p>${esc(recipeDetails(order.recipe.config))}</p><p>Subtotal ${esc(money(order.amount))}<br>Discount ${esc(money(order.discount))}<br>Paid ${esc(money(order.paid))}</p><img src="/receipt/${encodeURIComponent(order.receipt)}/qr.svg" alt="QR containing purchase receipt"><p><a href="/receipt/${encodeURIComponent(order.receipt)}" target="_blank" rel="noopener">Open receipt</a></p>`;
   $('#receipt-message').textContent = 'The QR contains receipt text and can be scanned without a network connection.';
   $('#email-receipt').hidden = state.user?.role !== 'customer'; $('#receipt-dialog').showModal();
 }
@@ -177,8 +235,18 @@ function openRecipeDialog(recipe = null) {
   $('#recipe-name').value = recipe?.name || (editingRecipe ? findRecipe(editingRecipe)?.name : '') || '';
   $('#recipe-error').textContent = ''; $('#recipe-dialog').showModal();
 }
-/** Purpose: execute a protected maintenance operation then refresh. Inputs: action/data. Returns: Promise<void>. */
-async function maintain(action, data) { await api('/api/admin/' + action, data); await refresh(); toast('Maintenance state updated.'); }
+/** Purpose: prevent edits being replaced by an in-flight maintenance refresh. Inputs: busy flag. Returns: void. */
+function setMaintenanceBusy(value) {
+  maintenanceBusy = value;
+  for (const control of document.querySelectorAll('#maintenance-content button, #maintenance-content input, #maintenance-content select')) control.disabled = value;
+}
+/** Purpose: execute one protected maintenance update and render its committed state. Inputs: action/data. Returns: Promise<void>. */
+async function maintain(action, data) {
+  if (maintenanceBusy) return;
+  setMaintenanceBusy(true);
+  try { await api('/api/admin/' + action, data); await refresh(); toast('Maintenance state updated.'); }
+  finally { setMaintenanceBusy(false); }
+}
 /** Purpose: dispatch button navigation and item actions. Inputs: click event. Returns: Promise<void>. */
 async function handleClick(event) {
   const button = event.target.closest('button'); if (!button) return;
@@ -186,8 +254,22 @@ async function handleClick(event) {
     if (button.classList.contains('close-dialog')) { button.closest('dialog').close(); return; }
     if (button.dataset.view) { showView(button.dataset.view); return; }
     if (button.dataset.category) { category = button.dataset.category; for (const item of document.querySelectorAll('[data-category]')) item.classList.toggle('active', item === button); renderMenu(); return; }
-    if (button.dataset.drink) { selected = button.dataset.drink; editingRecipe = null; renderMenu(); await updateQuote(); return; }
+    if (button.dataset.drink) {
+      selected = button.dataset.drink; editingRecipe = null;
+      if ($('#recommend-toggle').checked && recommendationStatus === 'ready') for (const entry of recommendations) if (entry.config.drink === selected) { applyConfig(entry.config); break; }
+      renderMenu(); await updateQuote(); return;
+    }
+    if (button.dataset.adminTab) { adminTab = button.dataset.adminTab; renderMaintenance(); return; }
     if (button.dataset.auth) { setAuthMode(button.dataset.auth); return; }
+    if (button.id === 'fill-demo') {
+      const form = $('#auth-form');
+      if (authMode === 'nfc') form.elements.nfc.value = 'DEMO-NFC-001';
+      else if (authMode === 'technician') form.elements.password.value = '246810';
+      else { form.elements.email.value = 'alex@smartbrew.test'; form.elements.password.value = 'DemoPass123!'; }
+      return;
+    }
+    if (button.id === 'assistant-apply') { await applyAssistantRecipe(); return; }
+    if (button.id === 'assistant-clear') { resetAssistant(); return; }
     if (button.id === 'account-button' || button.hasAttribute('data-open-auth')) { openAuth(); return; }
     if (button.hasAttribute('data-tech-login')) { openAuth('technician'); return; }
     if (button.id === 'logout') { await api('/api/auth/logout', {}); $('#auth-dialog').close(); await refresh(); return; }
@@ -211,10 +293,13 @@ async function handleClick(event) {
 async function handleSubmit(event) {
   event.preventDefault();
   const form = event.target, data = Object.fromEntries(new FormData(form));
+  if (busyForms.has(form.id)) return;
+  busyForms.add(form.id);
+  const submitter = event.submitter; if (submitter) submitter.disabled = true;
   try {
     if (form.id === 'auth-form') {
       $('#auth-error').textContent = '';
-      const body = authMode === 'nfc' ? { nfc: data.nfc } : authMode === 'technician' ? { email: 'tech@smartbrew.test', password: data.password } : data;
+      const body = authMode === 'nfc' ? { method: 'nfc', nfc: data.nfc } : authMode === 'technician' ? { method: 'password', email: 'tech@smartbrew.test', password: data.password } : authMode === 'register' ? { name: data.name, email: data.email, password: data.password } : { method: 'password', email: data.email, password: data.password };
       await api('/api/auth/' + (authMode === 'register' ? 'register' : 'login'), body); $('#auth-dialog').close(); await refresh();
       if (state.user.role === 'customer') { applyConfig(state.user.preferences); await updateQuote(); }
     } else if (form.id === 'recipe-form') {
@@ -222,22 +307,28 @@ async function handleSubmit(event) {
       const result = await api('/api/recipes/' + (editingRecipe ? 'update' : 'save'), body); editingRecipe = result.id; $('#recipe-dialog').close(); await refresh(); toast('Recipe saved.');
     } else if (form.id === 'payment-form') {
       $('#pay-button').disabled = true; $('#payment-error').textContent = '';
-      const result = await api('/api/checkout', { config: config(), key: paymentKey, method: data.method, points: Number(data.points || 0), outcome: data.outcome });
+      const result = await api('/api/checkout', { config: config(), key: paymentKey, method: data.method, points: Number(data.points || 0) });
       $('#checkout-dialog').close(); await refresh();
       if (result.status === 'completed') showReceipt(result.order); else { showView('history'); toast(result.message); }
     } else if (form.id === 'context-form') await maintain('context', { network: data.network === 'true', weather: data.weather, period: data.period, email_ok: data.email_ok === 'true' });
+    else if (form.id === 'simulation-form') await maintain('simulation', { payment_mode: data.payment_mode });
+    else if (form.id === 'assistant-form') await askAssistant(data.request);
   } catch (error) {
     const errorElement = form.id === 'auth-form' ? $('#auth-error') : form.id === 'payment-form' ? $('#payment-error') : form.id === 'recipe-form' ? $('#recipe-error') : null;
     if (errorElement) errorElement.textContent = error.message; else toast(error.message);
-  } finally { $('#pay-button').disabled = false; }
+  } finally { busyForms.delete(form.id); if (submitter) submitter.disabled = false; $('#pay-button').disabled = false; }
 }
 /** Purpose: update interactive controls. Inputs: input event. Returns: Promise<void>. */
 async function handleInput(event) { if (event.target.closest('#customize-form')) await updateQuote(); if (event.target.name === 'points') updatePaymentTotal(); }
 /** Purpose: toggle recommendation order. Inputs: change event. Returns: void. */
 function handleChange(event) { if (event.target.id === 'recommend-toggle') renderMenu(); }
+/** Purpose: refresh identity when returning from another session tab. Inputs: browser focus event. Returns: Promise<void>. */
+async function refreshOnFocus() { try { await refresh(); } catch (error) { toast(error.message); } }
 /** Purpose: initialize handlers/state with recoverable errors. Inputs: DOM ready. Returns: Promise<void>. */
 async function boot() {
   document.addEventListener('click', handleClick); document.addEventListener('submit', handleSubmit); document.addEventListener('input', handleInput); document.addEventListener('change', handleChange);
+  window.addEventListener('focus', refreshOnFocus);
+  checkAssistant();
   try { await refresh(); if (state.user?.role === 'customer') { applyConfig(state.user.preferences); await updateQuote(); } } catch (error) { toast(error.message); }
 }
 boot();

@@ -1,3 +1,19 @@
+test_availability_is_rechecked_after_inference (test_assistant.AssistantTests.test_availability_is_rechecked_after_inference)
+Purpose: deny unavailable stock despite model suggestion. Inputs: depleted stock and valid model fixture. Returns: None. ... ok
+test_busy_inference_returns_without_queuing (test_assistant.AssistantTests.test_busy_inference_returns_without_queuing)
+Purpose: bound local compute concurrency. Inputs: occupied inference slot. Returns: None. ... ok
+test_clarification_does_not_invent_a_recipe (test_assistant.AssistantTests.test_clarification_does_not_invent_a_recipe)
+Purpose: allow an explicit clarification. Inputs: null-config response fixture. Returns: None. ... ok
+test_rejects_model_price_and_unsupported_options (test_assistant.AssistantTests.test_rejects_model_price_and_unsupported_options)
+Purpose: reject financial fields and invalid options. Inputs: adversarial response fixtures. Returns: None. ... ok
+test_rejects_system_history_and_oversized_input (test_assistant.AssistantTests.test_rejects_system_history_and_oversized_input)
+Purpose: constrain request size/roles. Inputs: invalid customer messages. Returns: None. ... ok
+test_remote_endpoints_and_cloud_tags_are_rejected (test_assistant.AssistantTests.test_remote_endpoints_and_cloud_tags_are_rejected)
+Purpose: keep configured inference local. Inputs: remote URLs/cloud tags. Returns: None. ... ok
+test_unavailable_model_does_not_block_manual_quote (test_assistant.AssistantTests.test_unavailable_model_does_not_block_manual_quote)
+Purpose: preserve manual ordering during inference failure. Inputs: failed adapter request. Returns: None. ... ok
+test_valid_proposal_has_no_ordering_side_effects (test_assistant.AssistantTests.test_valid_proposal_has_no_ordering_side_effects)
+Purpose: verify proposals use server pricing without purchase. Inputs: valid model test double. Returns: None. ... ok
 test_access_control_and_hashed_credentials (test_service.SmartBrewTests.test_access_control_and_hashed_credentials)
 Purpose: verify security refinements. Inputs: customer/guest/DB rows. Returns: None. ... ok
 test_account_credentials_nfc_and_defaults (test_service.SmartBrewTests.test_account_credentials_nfc_and_defaults)
@@ -10,12 +26,16 @@ test_decline_has_no_partial_effects (test_service.SmartBrewTests.test_decline_ha
 Purpose: verify atomic failure across stock/points/waste/balance. Inputs: forced decline. Returns: None. ... ok
 test_idempotent_concurrent_checkout (test_service.SmartBrewTests.test_idempotent_concurrent_checkout)
 Purpose: verify concurrent retries cannot duplicate a purchase. Inputs: same key in two threads. Returns: None. ... ok
+test_login_rejects_mixed_authentication_methods (test_service.SmartBrewTests.test_login_rejects_mixed_authentication_methods)
+Purpose: prevent the hidden-NFC password bypass. Inputs: mixed or incomplete credentials. Returns: None. ... ok
 test_loyalty_success_limits_and_free_purchase (test_service.SmartBrewTests.test_loyalty_success_limits_and_free_purchase)
 Purpose: verify F08 bounded redemption/earning. Inputs: earned points and order totals. Returns: None. ... ok
 test_menu_categories_nutrition (test_service.SmartBrewTests.test_menu_categories_nutrition)
 Purpose: verify F02 menu details. Inputs: seeded catalog. Returns: None. ... ok
 test_offline_pending_reconciles_once_and_prepaid_works (test_service.SmartBrewTests.test_offline_pending_reconciles_once_and_prepaid_works)
 Purpose: verify offline fallback without false approval. Inputs: wallet pending/reconnect/prepaid. Returns: None. ... ok
+test_only_technicians_control_payment_simulation (test_service.SmartBrewTests.test_only_technicians_control_payment_simulation)
+Purpose: keep payment simulation server-controlled. Inputs: protected settings and forged checkout fields. Returns: None. ... ok
 test_payment_snapshot_and_persistence (test_service.SmartBrewTests.test_payment_snapshot_and_persistence)
 Purpose: verify F07 immutable records. Inputs: completed custom order. Returns: None. ... ok
 test_prepaid_insufficient_balance (test_service.SmartBrewTests.test_prepaid_insufficient_balance)
@@ -26,12 +46,16 @@ test_quote_customization_and_validation (test_service.SmartBrewTests.test_quote_
 Purpose: verify F03 settings, pricing and validation. Inputs: custom recipe. Returns: None. ... ok
 test_recommendation_context_history_and_availability (test_service.SmartBrewTests.test_recommendation_context_history_and_availability)
 Purpose: verify F06 ranking signals/fallback. Inputs: weather/time/history/stock. Returns: None. ... ok
+test_recommendations_use_the_customers_actual_preferences (test_service.SmartBrewTests.test_recommendations_use_the_customers_actual_preferences)
+Purpose: rank purchasable personalized variants. Inputs: oat preference and depleted dairy. Returns: None. ... ok
 test_refills_waste_halts_faults_and_diagnostics (test_service.SmartBrewTests.test_refills_waste_halts_faults_and_diagnostics)
 Purpose: verify F10 maintenance and safety. Inputs: full bins/fault/refill. Returns: None. ... ok
 test_saved_recipe_management_and_ownership (test_service.SmartBrewTests.test_saved_recipe_management_and_ownership)
 Purpose: verify F04 CRUD and ownership. Inputs: two customers. Returns: None. ... ok
+test_separate_accounts_keep_private_records_after_relogin (test_service.SmartBrewTests.test_separate_accounts_keep_private_records_after_relogin)
+Purpose: preserve owner isolation across sign-in/restart. Inputs: two independent customer sessions. Returns: None. ... ok
 
 ----------------------------------------------------------------------
-Ran 16 tests in 10.774s
+Ran 28 tests in 12.478s
 
 OK
