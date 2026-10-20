@@ -1,0 +1,37 @@
+test_access_control_and_hashed_credentials (test_service.SmartBrewTests.test_access_control_and_hashed_credentials)
+Purpose: verify security refinements. Inputs: customer/guest/DB rows. Returns: None. ... ok
+test_account_credentials_nfc_and_defaults (test_service.SmartBrewTests.test_account_credentials_nfc_and_defaults)
+Purpose: verify F01 identity/preferences persistence. Inputs: seeded/new accounts. Returns: None. ... ok
+test_all_payment_methods (test_service.SmartBrewTests.test_all_payment_methods)
+Purpose: verify all five simulated payment adapters. Inputs: method fixtures. Returns: None. ... ok
+test_availability_threshold_and_quantity (test_service.SmartBrewTests.test_availability_threshold_and_quantity)
+Purpose: verify F05 threshold and checkout revalidation. Inputs: changing stock. Returns: None. ... ok
+test_decline_has_no_partial_effects (test_service.SmartBrewTests.test_decline_has_no_partial_effects)
+Purpose: verify atomic failure across stock/points/waste/balance. Inputs: forced decline. Returns: None. ... ok
+test_idempotent_concurrent_checkout (test_service.SmartBrewTests.test_idempotent_concurrent_checkout)
+Purpose: verify concurrent retries cannot duplicate a purchase. Inputs: same key in two threads. Returns: None. ... ok
+test_loyalty_success_limits_and_free_purchase (test_service.SmartBrewTests.test_loyalty_success_limits_and_free_purchase)
+Purpose: verify F08 bounded redemption/earning. Inputs: earned points and order totals. Returns: None. ... ok
+test_menu_categories_nutrition (test_service.SmartBrewTests.test_menu_categories_nutrition)
+Purpose: verify F02 menu details. Inputs: seeded catalog. Returns: None. ... ok
+test_offline_pending_reconciles_once_and_prepaid_works (test_service.SmartBrewTests.test_offline_pending_reconciles_once_and_prepaid_works)
+Purpose: verify offline fallback without false approval. Inputs: wallet pending/reconnect/prepaid. Returns: None. ... ok
+test_payment_snapshot_and_persistence (test_service.SmartBrewTests.test_payment_snapshot_and_persistence)
+Purpose: verify F07 immutable records. Inputs: completed custom order. Returns: None. ... ok
+test_prepaid_insufficient_balance (test_service.SmartBrewTests.test_prepaid_insufficient_balance)
+Purpose: reject insufficient prepaid funds. Inputs: zero-balance new user. Returns: None. ... ok
+test_qr_receipt_and_email_fallback (test_service.SmartBrewTests.test_qr_receipt_and_email_fallback)
+Purpose: verify F09 receipt ownership/outbox/fallback. Inputs: completed order/email outage. Returns: None. ... ok
+test_quote_customization_and_validation (test_service.SmartBrewTests.test_quote_customization_and_validation)
+Purpose: verify F03 settings, pricing and validation. Inputs: custom recipe. Returns: None. ... ok
+test_recommendation_context_history_and_availability (test_service.SmartBrewTests.test_recommendation_context_history_and_availability)
+Purpose: verify F06 ranking signals/fallback. Inputs: weather/time/history/stock. Returns: None. ... ok
+test_refills_waste_halts_faults_and_diagnostics (test_service.SmartBrewTests.test_refills_waste_halts_faults_and_diagnostics)
+Purpose: verify F10 maintenance and safety. Inputs: full bins/fault/refill. Returns: None. ... ok
+test_saved_recipe_management_and_ownership (test_service.SmartBrewTests.test_saved_recipe_management_and_ownership)
+Purpose: verify F04 CRUD and ownership. Inputs: two customers. Returns: None. ... ok
+
+----------------------------------------------------------------------
+Ran 16 tests in 10.774s
+
+OK

@@ -1,0 +1,17 @@
+* text=auto
+*.py text eol=lf
+*.java text eol=lf
+*.js text eol=lf
+*.cjs text eol=lf
+*.html text eol=lf
+*.css text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+*.json text eol=lf
+*.pdf binary
+*.asta binary
+*.zip binary
+*.png binary
+*.jpg binary
+# Keep whitespace from the PDF-derived evidence as extracted.
+docs/baseline/*.md -whitespace

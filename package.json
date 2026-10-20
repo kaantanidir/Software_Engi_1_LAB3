@@ -1,0 +1,8 @@
+{
+  "name": "smartbrew-g28-browser-checks",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Optional browser verification; the application itself does not require Node.js",
+  "scripts": { "test:browser": "node tools/browser_check.cjs" },
+  "devDependencies": { "playwright": "1.62.1" }
+}

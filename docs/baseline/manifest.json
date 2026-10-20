@@ -1,0 +1,17 @@
+{
+  "original_archive_sha256": "668d76f1d5dfba312d0399ef27432251dcb3fd0f7b51b87313df7a460923a077",
+  "G28Lab2.pdf": "65af182189218aaac82a9d0371b1196f9c9e92a7b9106894b044e985c5df84f3",
+  "G28Lab2.asta": "109e2df52057840ddfa0189c7d1383eeab6f1b09a4df7e47dee8adbb9d593508",
+  "feedback": {
+    "path": "C:\\Users\\HP\\Downloads\\G28Lab2 (1).pdf",
+    "sha256": "f814dff2cf1698205b590864e7f06a399e7af06d164fcb5dab3a817183e2fa9d"
+  },
+  "lecture2": {
+    "path": "C:\\Users\\HP\\Desktop\\VS UniStudies\\Software Engi 1\\Lab Lecture Slides\\Lecture-02-2026.pdf",
+    "sha256": "56e638ea5cdf4acf7f6f6e739c96943571a170742022d376af0a44b97c4013ad"
+  },
+  "lecture3": {
+    "path": "C:\\Users\\HP\\Desktop\\VS UniStudies\\Software Engi 1\\Lab Lecture Slides\\Lecture-03-2026.pdf",
+    "sha256": "6e46959c73d4a14d7035aecc9dd857520bd6e2ef9ec9948a6e9d515615cedef0"
+  }
+}

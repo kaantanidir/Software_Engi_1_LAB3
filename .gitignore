@@ -1,0 +1,11 @@
+.venv/
+.packages/
+__pycache__/
+*.pyc
+data/
+tmp/
+*.lock
+*.bak
+*.log
+docs/baseline/lecture*-text.md
+/output/G28Lab3_Project.zip

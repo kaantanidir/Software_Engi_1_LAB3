@@ -1,0 +1,1 @@
+"""Isolated SmartBrew regression tests."""

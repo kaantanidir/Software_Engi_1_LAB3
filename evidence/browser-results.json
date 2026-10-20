@@ -1,0 +1,46 @@
+{
+  "recordedAt": "2026-10-20T22:05:26.537Z",
+  "checks": [
+    "F02: six menu drinks load",
+    "F02: category filter",
+    "F01: customer credential login",
+    "F03: live quote updates",
+    "F04: named recipe create/rename",
+    "F07/F08: checkout with loyalty discount",
+    "F09: actual QR SVG generated",
+    "F07: declined payment reported",
+    "F07: one completed history entry",
+    "F10: seven ingredient counters",
+    "F05: depleted customized ingredient blocks checkout",
+    "F10: full bin halts checkout",
+    "F10: diagnostic fault logged",
+    "F06: offline recommendations use local context",
+    "F07: prepaid completes offline",
+    "F07: unsupported offline wallet is pending",
+    "F07: pending payment reconciles on retry",
+    "HTTP authorization rejects customer admin request",
+    "Proposed local-response target: p95 below 2 seconds",
+    "Proposed quote-response target: p95 below 2 seconds",
+    "Mobile root has no horizontal overflow",
+    "Menu photograph assets loaded",
+    "No uncaught browser errors"
+  ],
+  "errors": [],
+  "responseSample": {
+    "count": 100,
+    "p95ms": 15.735599999999977
+  },
+  "quoteSample": {
+    "count": 100,
+    "p95ms": 12.125400000000809
+  },
+  "mobile": {
+    "width": 390,
+    "scrollWidth": 390,
+    "loadedImages": 6,
+    "images": 6
+  },
+  "browser": "155.0.8059.41",
+  "node": "v24.19.0",
+  "simulatedIntegrations": true
+}
