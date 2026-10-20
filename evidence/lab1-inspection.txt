@@ -1,0 +1,198 @@
+[0.016s][warning][cds] This file is not the one used while building the shared archive file: 'C:\Program Files\astah-professional\jre\lib\modules', size has changed
+2026-10-21 00:39:58,996 [AWT-EventQueue-0] JP.co.esm.caddies.jomt.jutil.m <INFO> - stack=5m
+ASTAH 12.0.0
+CLASS User {Abstract} ABSTRACT=false STEREOTYPES=[] OWNER=G28Lab1
+DEFINITION 
+ATTRIBUTE userId: String
+name: String
+email:String
+COMPONENT AIEngine ABSTRACT=false STEREOTYPES=[] OWNER=G28Lab1
+DEFINITION 
+PORT  TYPE=
+PROVIDES RecommendationService
+PORT  TYPE=
+PORT  TYPE=
+REQUIRES FacialAnalysis
+CLASS FacialAnalysis ABSTRACT=false STEREOTYPES=[interface] OWNER=G28Lab1
+DEFINITION 
+CLASS Class1 ABSTRACT=false STEREOTYPES=[] OWNER=G28Lab1
+DEFINITION 
+COMPONENT Camera ABSTRACT=false STEREOTYPES=[] OWNER=G28Lab1
+DEFINITION 
+PORT  TYPE=
+PROVIDES FacialAnalysis
+COMPONENT MoodAnalyzer ABSTRACT=false STEREOTYPES=[] OWNER=G28Lab1
+DEFINITION 
+PORT  TYPE=
+PORT  TYPE=
+PROVIDES MoodAnalysis
+COMPONENT UserInterface_Touchscreen ABSTRACT=false STEREOTYPES=[] OWNER=G28Lab1
+DEFINITION 
+PORT  TYPE=
+REQUIRES CheckoutService
+PORT  TYPE=
+REQUIRES RecommendationService
+PORT  TYPE=
+REQUIRES BeveragePreparationService
+CLASS Order ABSTRACT=false STEREOTYPES=[] OWNER=G28Lab1
+DEFINITION 
+ATTRIBUTE orderId: String
+createdAt: DateTime
+status: OrderStatus
+customizationSummary:String
+CLASS Technician ABSTRACT=false STEREOTYPES=[] OWNER=G28Lab1
+DEFINITION 
+ATTRIBUTE technicianId: String
+accessLevel:String
+CLASS  Inventory ABSTRACT=false STEREOTYPES=[] OWNER=G28Lab1
+DEFINITION 
+ATTRIBUTE coffeeBeansLevel:float
+ATTRIBUTE wasteBinCapacity:float
+ATTRIBUTE inventoryId:String
+CLASS CheckoutService ABSTRACT=false STEREOTYPES=[interface] OWNER=G28Lab1
+DEFINITION 
+CLASS Ingredient ABSTRACT=false STEREOTYPES=[] OWNER=G28Lab1
+DEFINITION 
+ATTRIBUTE ingredientId:float
+ATTRIBUTE currentLevel:float
+ATTRIBUTE name:String
+ATTRIBUTE minimumThreshold:int
+COMPONENT PaymentProcessingModule ABSTRACT=false STEREOTYPES=[] OWNER=G28Lab1
+DEFINITION 
+PORT  TYPE=
+PROVIDES CheckoutService
+CLASS BeverageRecipe ABSTRACT=false STEREOTYPES=[] OWNER=G28Lab1
+DEFINITION 
+ATTRIBUTE recipeId: String
+name: String
+milkType: String
+coffeeStrength: String
+temperature: String
+syrupShots: Integer
+nutritionInfo: String
+isSavedRecipe:boolean
+CLASS AccountStatus ABSTRACT=false STEREOTYPES=[] OWNER=G28Lab1
+DEFINITION 
+COMPONENT LocalLLMAgent ABSTRACT=false STEREOTYPES=[] OWNER=G28Lab1
+DEFINITION 
+PORT  TYPE=
+PORT  TYPE=
+REQUIRES MoodAnalysis
+CLASS PreferenceProfile ABSTRACT=false STEREOTYPES=[] OWNER=G28Lab1
+DEFINITION 
+ATTRIBUTE preferredMilkType: String
+preferredStrength: String
+preferredTemperature:String
+CLASS String ABSTRACT=false STEREOTYPES=[] OWNER=G28Lab1
+DEFINITION 
+CLASS Customer ABSTRACT=false STEREOTYPES=[] OWNER=G28Lab1
+DEFINITION 
+ATTRIBUTE accountStatus:AccountStatus
+CLASS MoodAnalysis ABSTRACT=false STEREOTYPES=[interface] OWNER=G28Lab1
+DEFINITION 
+CLASS BeveragePreparationService ABSTRACT=false STEREOTYPES=[interface] OWNER=G28Lab1
+DEFINITION 
+CLASS PaymentStatus ABSTRACT=false STEREOTYPES=[] OWNER=G28Lab1
+DEFINITION 
+CLASS Payment ABSTRACT=false STEREOTYPES=[] OWNER=G28Lab1
+DEFINITION 
+ATTRIBUTE paymentId:String
+ATTRIBUTE amount:float
+ATTRIBUTE status:PaymentStatus
+ATTRIBUTE paymentMethod:PaymentMethod
+COMPONENT BrewingHardwareController ABSTRACT=false STEREOTYPES=[] OWNER=G28Lab1
+DEFINITION 
+PORT  TYPE=
+PROVIDES BeveragePreparationService
+CLASS PaymentMethod ABSTRACT=false STEREOTYPES=[] OWNER=G28Lab1
+DEFINITION 
+CLASS RecommendationService ABSTRACT=false STEREOTYPES=[interface] OWNER=G28Lab1
+DEFINITION 
+CLASS Class0 ABSTRACT=false STEREOTYPES=[] OWNER=G28Lab1
+DEFINITION 
+ASSOCIATION 
+END Ingredient ROLE= MULTIPLICITY= COMPOSITION=true AGGREGATION=false
+END  Inventory ROLE= MULTIPLICITY= COMPOSITION=false AGGREGATION=false
+ASSOCIATION 
+END MoodAnalyzer ROLE=MoodAnalyzer MULTIPLICITY= COMPOSITION=false AGGREGATION=false
+END AIEngine ROLE= MULTIPLICITY= COMPOSITION=true AGGREGATION=false
+ASSOCIATION 
+END Technician ROLE= MULTIPLICITY=1..* COMPOSITION=false AGGREGATION=false
+END  Inventory ROLE=refills MULTIPLICITY=1 COMPOSITION=false AGGREGATION=false
+ASSOCIATION 
+END BeverageRecipe ROLE= MULTIPLICITY=0..1 COMPOSITION=false AGGREGATION=false
+END Order ROLE=based on MULTIPLICITY=0..* COMPOSITION=false AGGREGATION=false
+ASSOCIATION 
+END Payment ROLE=processed via MULTIPLICITY=0..1 COMPOSITION=false AGGREGATION=false
+END Order ROLE= MULTIPLICITY=1 COMPOSITION=false AGGREGATION=false
+ASSOCIATION 
+END  Inventory ROLE= MULTIPLICITY=1 COMPOSITION=true AGGREGATION=false
+END Ingredient ROLE=contains MULTIPLICITY=1..* COMPOSITION=false AGGREGATION=false
+ASSOCIATION 
+END Customer ROLE=includes MULTIPLICITY=1 COMPOSITION=true AGGREGATION=false
+END PreferenceProfile ROLE= MULTIPLICITY=0..* COMPOSITION=false AGGREGATION=false
+ASSOCIATION 
+END BeverageRecipe ROLE= MULTIPLICITY=0..* COMPOSITION=false AGGREGATION=false
+END Ingredient ROLE=requires MULTIPLICITY=1..* COMPOSITION=false AGGREGATION=false
+ASSOCIATION 
+END Customer ROLE= MULTIPLICITY=1 COMPOSITION=false AGGREGATION=false
+END Order ROLE=places MULTIPLICITY=0..* COMPOSITION=false AGGREGATION=false
+ASSOCIATION 
+END LocalLLMAgent ROLE=LocalLLMAgent MULTIPLICITY= COMPOSITION=false AGGREGATION=false
+END AIEngine ROLE= MULTIPLICITY= COMPOSITION=true AGGREGATION=false
+GENERALIZATION Customer -> User {Abstract}
+GENERALIZATION Technician -> User {Abstract}
+DEPENDENCY MoodAnalysis -> MoodAnalysis NAME=
+DEPENDENCY BeveragePreparationService -> BeveragePreparationService NAME=
+DEPENDENCY CheckoutService -> CheckoutService NAME=
+DEPENDENCY MoodAnalysis -> MoodAnalysis NAME=
+DEPENDENCY FacialAnalysis -> FacialAnalysis NAME=
+DEPENDENCY RecommendationService -> RecommendationService NAME=
+DIAGRAM Class Diagram
+NODE Frame LABEL=pkg   MODEL=null PARENT=null
+NODE Class LABEL=Customer MODEL=Customer PARENT=null
+NODE Class LABEL=Technician MODEL=Technician PARENT=null
+NODE Class LABEL=User {Abstract} MODEL=User {Abstract} PARENT=null
+NODE Class LABEL=PreferenceProfile MODEL=PreferenceProfile PARENT=null
+NODE Class LABEL=BeverageRecipe MODEL=BeverageRecipe PARENT=null
+NODE Class LABEL=Order MODEL=Order PARENT=null
+NODE Class LABEL= Inventory MODEL= Inventory PARENT=null
+NODE Class LABEL=Payment MODEL=Payment PARENT=null
+NODE Class LABEL=Ingredient MODEL=Ingredient PARENT=null
+NODE Note LABEL=compostion  relationship MODEL= PARENT=null
+NODE Note LABEL=Conceptual Model descripes that descripes the domian of the system MODEL= PARENT=null
+NODE Note LABEL=Classes act as a blueprint not obj MODEL= PARENT=null
+NODE Note LABEL=preferredMilkType describe data related to the class that represents information the system needs to maintain. MODEL= PARENT=null
+NODE Note LABEL=iGeneralization relationship inhertinace MODEL= PARENT=null
+DIAGRAM Component Diagram0
+NODE  LABEL=cmp   MODEL=null PARENT=null
+NODE Component LABEL=UserInterface_Touchscreen MODEL=UserInterface_Touchscreen PARENT=null
+NODE Component LABEL=PaymentProcessingModule MODEL=PaymentProcessingModule PARENT=null
+NODE Component LABEL=BrewingHardwareController MODEL=BrewingHardwareController PARENT=null
+NODE Component LABEL=AIEngine MODEL=AIEngine PARENT=null
+NODE  LABEL=LocalLLMAgent MODEL=LocalLLMAgent PARENT=AIEngine
+NODE  LABEL=MoodAnalyzer MODEL=MoodAnalyzer PARENT=AIEngine
+NODE  LABEL= MODEL= PARENT=AIEngine
+NODE  LABEL= MODEL= PARENT=BrewingHardwareController
+NODE  LABEL= MODEL= PARENT=UserInterface_Touchscreen
+NODE  LABEL= MODEL= PARENT=PaymentProcessingModule
+NODE  LABEL=CheckoutService MODEL=CheckoutService PARENT=null
+NODE  LABEL= MODEL= PARENT=UserInterface_Touchscreen
+NODE  LABEL=RecommendationService MODEL=RecommendationService PARENT=null
+NODE  LABEL=RecommendationService MODEL=RecommendationService PARENT=null
+NODE  LABEL=CheckoutService MODEL=CheckoutService PARENT=null
+NODE  LABEL= MODEL= PARENT=UserInterface_Touchscreen
+NODE  LABEL=BeveragePreparationService MODEL=BeveragePreparationService PARENT=null
+NODE  LABEL=BeveragePreparationService MODEL=BeveragePreparationService PARENT=null
+NODE  LABEL= MODEL= PARENT=LocalLLMAgent
+NODE  LABEL= MODEL= PARENT=MoodAnalyzer
+NODE  LABEL= MODEL= PARENT=LocalLLMAgent
+NODE  LABEL= MODEL= PARENT=MoodAnalyzer
+NODE  LABEL=MoodAnalysis MODEL=MoodAnalysis PARENT=AIEngine
+NODE  LABEL=MoodAnalysis MODEL=MoodAnalysis PARENT=AIEngine
+NODE Component LABEL=Camera MODEL=Camera PARENT=null
+NODE  LABEL= MODEL= PARENT=AIEngine
+NODE  LABEL=FacialAnalysis MODEL=FacialAnalysis PARENT=null
+NODE  LABEL= MODEL= PARENT=Camera
+NODE  LABEL=FacialAnalysis MODEL=FacialAnalysis PARENT=null
+2026-10-21 00:39:59,466 [main] JP.co.esm.caddies.uml.mindmap.MMUserIconManager <INFO> - file: C:\Users\HP\.astah\professional\JudeMMUserIconP.xml

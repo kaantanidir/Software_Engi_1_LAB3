@@ -51,6 +51,8 @@ function inspectLayout() {
 }
 /** Purpose: compare durations numerically. Inputs: two numbers. Returns: numeric sort order. */
 function compareNumbers(a, b) { return a - b; }
+/** Purpose: simulate an unavailable recommendation service. Inputs: Playwright route. Returns: fulfilled 503 response. */
+async function failRecommendations(route) { await route.fulfill({ status: 503, contentType: 'application/json', body: '{"error":"Recommendations unavailable"}' }); }
 /** Purpose: execute the full QA flow with cleanup. Inputs: environment PYTHON/CHROME_PATH. Returns: Promise<void>. */
 async function main() {
   fs.mkdirSync(path.join(root, 'tmp'), { recursive: true }); fs.mkdirSync(path.join(root, 'evidence'), { recursive: true });
@@ -133,6 +135,13 @@ async function main() {
     await page.locator('[data-view=menu]').click(); await page.setViewportSize({ width: 390, height: 844 }); await page.waitForLoadState('networkidle');
     const mobile = await page.evaluate(inspectLayout); check('Mobile root has no horizontal overflow', mobile.scrollWidth <= mobile.width); check('Menu photograph assets loaded', mobile.images > 0 && mobile.loadedImages === mobile.images);
     await page.screenshot({ path: path.join(root, 'evidence', 'mobile.png'), fullPage: true });
+    await page.route('**/api/recommendations', failRecommendations);
+    await page.reload(); await page.waitForLoadState('networkidle');
+    check('Service failure: standard menu still loads', await page.locator('.drink-card').count() === 6);
+    await page.locator('#recommend-toggle').check();
+    check('Service failure: recommended mode falls back to usable menu', await page.locator('.drink-card').count() === 6 && !(await page.locator('#checkout-button').isDisabled()));
+    await purchase(); await page.locator('#receipt-dialog').waitFor();
+    check('Service failure: manual checkout still completes', (await page.locator('#receipt-content').textContent()).includes('Paid'));
     check('No uncaught browser errors', errors.length === 0);
     fs.writeFileSync(path.join(root, 'evidence', 'browser-results.json'), JSON.stringify({ recordedAt: new Date().toISOString(), checks, errors, responseSample: { count: 100, p95ms: p95 }, quoteSample: { count: 100, p95ms: quoteP95 }, mobile, browser: browser.version(), node: process.version, simulatedIntegrations: true }, null, 2));
   } finally { if (browser) await browser.close(); if (child && child.exitCode === null) child.kill(); }

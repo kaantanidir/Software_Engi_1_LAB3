@@ -13,5 +13,7 @@
 *.zip binary
 *.png binary
 *.jpg binary
-# Keep whitespace from the PDF-derived evidence as extracted.
+# Keep original whitespace in extracted sources and read-only audit evidence.
 docs/baseline/*.md -whitespace
+docs/baseline/lab1/*.md -whitespace
+evidence/lab1-inspection.txt -whitespace

@@ -6,7 +6,7 @@ Session began 2026-10-20 and continued into 2026-10-21, Europe/Berlin. This reco
 
 | Task | Assistant/model | Provenance |
 | --- | --- | --- |
-| Lab 2 correction | Codex, GPT-6.1 Sol | Student supplied exact selector label in this session. |
+| Lab 2 correction (review reference only) | Codex, GPT-6.1 Sol | Generated before restrictive general course rules were supplied; not permitted for Lab 2 submission. |
 | Lab 3 A - elicitation and comparison | Codex, GPT-6.1 Sol | Same ongoing interaction, grounded in supplied sources. |
 | Lab 3 B - complete code generation, testing and revisions | Codex, GPT-6.1 Sol | Source outputs and verification retained in repository. |
 | Lab 3 C - documentation/repository | Codex, GPT-6.1 Sol | README, function comments and report generated in this session. |
@@ -169,3 +169,33 @@ Execution record, not invented conversational prompts:
 8. Documents and screenshots were rendered/reviewed, with final test and repository status recorded in `docs/QA_RESULTS.md`.
 
 This record discloses that both the original baseline and new implementation involved AI. Students should add their own critical reflections or rejected suggestions if they subsequently change the generated work; no student-written evaluation is fabricated here.
+
+## Subsequent Lab 1 review and policy clarification - 2026-10-21
+
+Student supplied `G28Lab1.pdf` as feedback, `G28Lab1.zip` as the submission, the Lab 1/system/general course instructions and the instructor's recommendation for additional experimentation. Main request excerpt (verbatim; the lengthy accompanying course quotations are summarized next):
+
+> again pdf contains feedback, zip has submission.
+
+> I have provided all lab 1,2,3 instructions, feedback of 1 and 2, submission of 1 and 2.
+
+Source-context summary, not a verbatim prompt: general rules prohibit generated Lab 1-2 text/models and restrict AI to explanations/grammar; AI use needs a PDF appendix with tool/version/prompts. Lab 3 permits end-to-end generation. The instructor strongly recommends extra experimentation and requests a personally written reflection for any extra exercise performed.
+
+Assistant response excerpt:
+
+> The general instructions add an important distinction: Labs 1-2 prohibit submitting AI-generated text or models, while Lab 3 explicitly allows generation. I'll keep the generated Lab 2 correction labeled as a review aid and check that the repository makes that clear. The instructor's extra experiment also requires a reflection you write yourself.
+
+Assistant question:
+
+> For the instructor's optional experiment, which would you like to try yourself? I can prepare a repeatable exercise; you would write the personal reflection.
+
+Student:
+
+> do we need to, wouldnt disabling or mutating would decrease functionallityt of the project
+
+Assistant:
+
+> The message presents the extra experiment as recommended, rather than a required fourth task.
+>
+> A mutation would run only in a disposable test copy: deliberately break one rule, check whether a test catches it, then discard the copy. Your main project keeps all ten features. I'll finish the consistency review first; we can leave the optional experiment out for now.
+
+Observed follow-up work: read-only supported-API inspection and native exports confirmed nine visible domain concepts, a positive Lab 1 grade with two component-related Partial findings, and no loyalty feature documented in Lab 1. Original hashes were preserved. A normal browser regression (HTTP 503 injected into an isolated QA browser) reproduced a blank menu caused by awaiting recommendations before state rendering. The UI was changed to render essential ordering first, time-limit optional ranking and retain standard-menu fallback. This is reliability validation, not an optional student experiment. The generated Lab 2 references were relabeled, a cross-lab review was added, and the required Lab 3 AI appendix was exported as PDF. No personally written student reflection was invented.

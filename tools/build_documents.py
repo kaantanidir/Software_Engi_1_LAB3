@@ -30,6 +30,9 @@ FEATURES = [
 ]
 
 OVERVIEW = "SmartBrew AI is a personalized coffee-machine system for office customers and maintenance technicians. The full requirements cover profiles, saved recipes, context/mood recommendations, customization, supplies, payments, receipts, diagnostics, privacy and service-failure fallback. The group's custom feature is loyalty redemption. The executable prototype implements ten selected feature groups with persistent local state and a browser interface."
+POLICY = "Previously generated Lab 2 correction: AI-GENERATED REVIEW REFERENCE ONLY - NOT FOR LAB 1 OR LAB 2 SUBMISSION. The general course rules supplied after this reference was generated prohibit submitting generated text/models for those labs. Original submissions are unchanged. Lab 3 explicitly permits generation; disclosure does not override the Lab 1-2 restriction."
+CROSS_LAB = "Lab 1 received a positive grade. Its component coverage was marked Partial ('A bit minimalistic'); its relationship feedback questioned whether the UI needs the AIEngine. The saved diagram has nine domain concepts: User, Customer, Technician, PreferenceProfile, BeverageRecipe, Order, Payment, Inventory and Ingredient. These map to roles, preferences, recipes, purchase records and stock/waste state, not necessarily one code class each. Camera inference and the nested real LLM/mood modules remain deferred. Loyalty is first documented in the supplied Lab 2, not the Lab 1 diagrams. See docs/CROSS_LAB_REVIEW.md for the source audit and detailed mapping."
+EXPERIMENT = "The instructor strongly recommends additional experimentation, but does not state a fourth mandatory task. No optional exercise has been selected or claimed as completed. Mutation tests could use a disposable copy without removing any submitted functionality. Any personal reflection for a later exercise must be written by the student; none is generated here."
 PROVENANCE = "The preserved files in docs/baseline are exactly the submitted Lab 2 artifacts extracted from the supplied ZIP. This chat previously assisted creation of Lab 2; it would be inaccurate to label that submission an independently human-authored baseline. The comparison uses the actual submitted group version, then separates the feedback correction from the later LLM-assisted refinement. No later correction is silently substituted for the submitted baseline."
 PROMPT_STRATEGY = "Use the actual system description, feedback and course slides as grounding; constrain all requirements to the six-column lecture template; retain the submitted baseline; check each source capability against stories/requirements/backlog; separate source mandates from proposed design assumptions; select ten coherent demonstrable feature groups; implement and test approval, rejection, ownership, retry, safety and offline paths. This was one evolving chat request with student clarifications, not an invented sequence of separate prompting experiments."
 ASSUMPTIONS = [
@@ -94,7 +97,7 @@ def write_markdown():
     records2 = lab2_records()
     headers = ["ID", "Description", "Inputs", "Outputs", "Precondition", "Postcondition"]
     backlog_headers = ["ID", "Name", "Importance", "Estimate", "Description", "How to demo", "Notes"]
-    lab2 = ["# SmartBrew AI - Group 28 - Lab 2 correction", "Date: 2026-10-20", OVERVIEW,
+    lab2 = ["# SmartBrew AI - Group 28 - Lab 2 review reference", "Policy clarification: 2026-10-21", POLICY, OVERVIEW,
             "## What changed after feedback", "The feedback gave a positive final grade. This revision fills the requirement template (Lecture 2, slide 47), places Customer/Technician on the left and Payment Processor on the right, makes Customize Beverage the customer's entry and the base of natural-language extension, and repairs the saved use-case descriptions. It also clarifies omissions found during source coverage review. The original archive is unchanged.",
             "## User stories", table_md(["ID", "Name", "Story"], [[f"US-{i:02d}", GROUPS2[i-1][0], story] for i, story in enumerate(STORIES2, 1)]),
             "## Requirements", "For combined operations, each labeled pre/postcondition applies to that operation; registration and login are alternative paths. This retains the original thirteen IDs.", table_md(headers, requirement_rows(records2)),
@@ -102,7 +105,8 @@ def write_markdown():
             "## Use-case correction", "Customer -- Customize Beverage (solid association). Process Natural Language Order --<<extend>>--> Customize Beverage. Customize Beverage --<<include>>--> Check Ingredient Availability. Analyze Mood --<<extend>>--> Generate Recommendations when enabled/opted in. Redeem Loyalty --<<extend>>--> Process Payment. Technician has independent solid associations with Manage Inventory and View Error Logs; viewing logs is not a mandatory refill step. Extensions point toward their base use case.",
             "## Assumptions", "\n".join("- " + item for item in ASSUMPTIONS[:4]), "## Sources", "Provided system description and Lab 2 guidelines; instructor feedback page 1; Lecture-02-2026 slides 20-23, 30-31, 38, 43 and 47-48. The book reading remains the group's responsibility; no claim is made that the students have completed it."]
     (docs / "LAB2_CORRECTED.md").write_text("\n\n".join(lab2) + "\n", encoding="utf-8")
-    text3 = ["# SmartBrew AI - Group 28 - Lab 3", "Date: 2026-10-20", "## Task A - Elicitation", OVERVIEW,
+    text3 = ["# SmartBrew AI - Group 28 - Lab 3", "Updated: 2026-10-21", "## Task A - Elicitation", OVERVIEW,
+             "### Cross-lab continuity and course policy", CROSS_LAB, POLICY,
              "### Models and provenance", MODEL, "Tasks A, B and C in this revision use this same model through the Codex application. Earlier Lab 2 assistant model/version was not recorded and is not retroactively invented.", PROVENANCE,
              "### Prompt strategy", PROMPT_STRATEGY, "Main prompts, student clarifications and assistant response excerpts are recorded in AI_CONVERSATION.md. Generated code is retained in Git; do not describe the artifacts as independently human authored.",
              "### Source inventory", table_md(["Source", "System capability"], SOURCES),
@@ -116,12 +120,14 @@ def write_markdown():
              "## Task B - Selected implementation", table_md(["Feature", "Functionality", "Requirements", "Demonstration"], FEATURES),
              "### Scope and assumptions", "\n".join("- " + item for item in ASSUMPTIONS),
              "### Architecture", "A Python HTTP adapter serves a vanilla JavaScript interface. A service layer enforces authorization and business rules. SQLite persists accounts, hashed sessions, recipes, orders, stock, waste, pending requests, events and email simulator outbox. Checkout uses a write transaction and unique request key. QR generation uses the pinned qrcode library. No external service is required after installation.",
-             "### Validation", "See QA_RESULTS.md and evidence/ for actual recorded runs. Unit tests use isolated temporary databases. Browser checks use a separate QA database and verify desktop/mobile layout and end-to-end flows. Passing simulator tests does not validate actual hardware, financial processors, SMTP or camera/LLM inference.",
+             "### Validation", "See QA_RESULTS.md and evidence/ for actual recorded runs. Unit tests use isolated temporary databases. Browser checks use a separate QA database and verify desktop/mobile layout and end-to-end flows. A recommendation-service failure regression reproduced a blank menu; rendering essential ordering before optional ranking and imposing a 1.2-second ranking timeout fixed the dependency. Passing simulator tests does not validate actual hardware, financial processors, SMTP or camera/LLM inference.",
+             "### Recommended extra experimentation", EXPERIMENT,
              "## Task C - Repository and documentation", "Repository: https://github.com/kaantanidir/Software_Engi_1_LAB3 . README.md contains environment, installation, execution, tests and all ten feature demos. Each authored Python/JavaScript/Java function documents purpose, inputs and outputs. Vendored Lucide is third-party library code with its license retained. Runtime data, local packages and temporary files are excluded from Git.",
              "### Student review before submission", "Review the exact point conversion, pending-payment policy, estimates and optional-feature scope. Read and understand the implementation and run the walkthrough. The baseline comparison is intentionally labeled group submission previously assisted by AI; confirm that disclosure with the course if a strictly independent human baseline is required.",
+             "### AI appendix", "The required simple PDF is output/pdf/G28Lab3_AI_Appendix.pdf. It contains the student-confirmed model label, prompt strategy, main prompt and key responses, subsequent clarifications and generated-code references. The historical record is normalized/selected, not a full verbatim export or a student-written personal reflection.",
              "### References", "Instructor feedback page 1; Lecture-02-2026 slides 20-23, 30-31, 38, 43 and 47-48; Lecture-03-2026 slides 17, 22, 28, 38-40; system description and assignment guidelines supplied in the chat. Henrik Kniberg, Scrum and XP from the Trenches: https://www.infoq.com/minibooks/download/scrum-xp-from-the-trenches/ (recommended course reading; student completion is not asserted)."]
     (docs / "LAB3_REPORT.md").write_text("\n\n".join(text3) + "\n", encoding="utf-8")
-    uc = ["# Corrected use-case descriptions", "Template: Lecture 2 slides 30-31. The saved Astah project contains the same descriptions."]
+    uc = ["# Use-case review reference descriptions", POLICY, "Template: Lecture 2 slides 30-31. The AI-generated Astah reference contains the same descriptions; neither is for Lab 2 submission."]
     tsv = []
     for name, values in USECASES.items():
         uc.append("## " + name)
@@ -137,6 +143,8 @@ STYLES = getSampleStyleSheet()
 STYLES.add(ParagraphStyle(name="Cell", fontName="Helvetica", fontSize=8.3, leading=11.2, spaceAfter=0, alignment=TA_LEFT))
 STYLES.add(ParagraphStyle(name="BodyCustom", fontName="Helvetica", fontSize=10, leading=14, spaceAfter=9))
 STYLES.add(ParagraphStyle(name="SmallCustom", fontName="Helvetica", fontSize=8.5, leading=12, textColor=colors.HexColor("#4e635d")))
+STYLES.add(ParagraphStyle(name="Speaker", parent=STYLES["SmallCustom"], keepWithNext=True))
+STYLES["Heading2"].keepWithNext = True
 
 
 def paragraph(value, style="BodyCustom"):
@@ -162,8 +170,8 @@ def table(headers, rows, widths, padding=8):
 def footer(canvas, doc):
     """Purpose: draw page identity/number. Inputs: canvas/document. Returns: None."""
     canvas.saveState(); canvas.setFont("Helvetica", 8); canvas.setFillColor(colors.HexColor("#5b7066"))
-    canvas.drawString(16*mm, 10*mm, "SmartBrew AI | Group 28 | 2026-10-20")
-    canvas.drawRightString(281*mm, 10*mm, str(doc.page)); canvas.restoreState()
+    canvas.drawString(16*mm, 10*mm, "SmartBrew AI | Group 28 | 2026-10-21")
+    canvas.drawRightString(doc.pagesize[0]-16*mm, 10*mm, str(doc.page)); canvas.restoreState()
 
 
 def heading(flow, title, page=False):
@@ -179,9 +187,10 @@ def build_pdf(lab):
     path = output / ("G28Lab2_Corrected.pdf" if lab == 2 else "G28Lab3_Report.pdf")
     doc = SimpleDocTemplate(str(path), pagesize=landscape(A4), rightMargin=16*mm, leftMargin=16*mm, topMargin=15*mm, bottomMargin=18*mm, title=f"SmartBrew AI - Group 28 - Lab {lab}", author="Group 28 (LLM-assisted revision)")
     flow = []
-    heading(flow, f"SmartBrew AI - Group 28 - Lab {lab}" + (" correction" if lab == 2 else " report"))
+    heading(flow, f"SmartBrew AI - Group 28 - Lab {lab}" + (" review reference" if lab == 2 else " report"))
     flow.append(paragraph(OVERVIEW))
     if lab == 2:
+        flow.append(paragraph(POLICY))
         flow.append(paragraph("Feedback: positive overall. Main correction: requirements now include Inputs, Outputs, Precondition and Postcondition, following Lecture 2 slide 47. Diagram layout, customer entry, saved descriptions and optional relationships are repaired. Thirteen original requirement/story IDs are retained; added clarifications are documented."))
         heading(flow, "User stories")
         flow.append(table(["ID","Name","Story"],[[f"US-{i:02d}",GROUPS2[i-1][0],story] for i,story in enumerate(STORIES2,1)],[19,58,188]))
@@ -189,7 +198,7 @@ def build_pdf(lab):
     else:
         flow.append(paragraph("Task A - Requirements elicitation, critical comparison and prompt record"))
         flow.append(paragraph("Model: " + MODEL)); flow.append(paragraph(PROVENANCE)); flow.append(paragraph(PROMPT_STRATEGY))
-        flow.append(paragraph("Exact student prompts and key assistant responses: docs/AI_CONVERSATION.md. Tasks A, B and C use the recorded model; the earlier Lab 2 version is unknown."))
+        flow.append(paragraph("Main student prompt and selected key responses: output/pdf/G28Lab3_AI_Appendix.pdf and docs/AI_CONVERSATION.md. This is a normalized interaction record, not a full historical export. Tasks A, B and C use the recorded model; the earlier Lab 2 version is unknown."))
         heading(flow,"User stories",True)
         flow.append(table(["ID","Name","Story","Requirements"], STORIES3,[18,42,157,48]))
         records = LAB3
@@ -226,6 +235,11 @@ def build_pdf(lab):
         flow.append(table(["Option","Justification"],REJECTIONS,[90,175]))
         flow.append(Spacer(1,6*mm))
         flow.append(paragraph("The previous assistant overclaimed consistency after checking only serialized names. It missed required requirement fields, the wrong payment description, an empty mood description and inconsistent optional relationships. This revision improves format/coverage and tests the implementation, but proposed point rules, latency and hardware assumptions still need student/stakeholder review."))
+        heading(flow,"Cross-lab continuity and course policy",True)
+        flow.append(paragraph(CROSS_LAB)); flow.append(paragraph(POLICY))
+        flow.append(paragraph("Read-only Lab 1 inspection preserved the original model and hashes. The visible User {Abstract} label is not backed by Astah's native abstract flag, although the grader accepted the class criteria. No original model is silently rewritten. Conceptual model mappings and implementation scope differences are documented in the cross-lab review."))
+        flow.append(paragraph("Reliability follow-up: HTTP 503 from recommendations reproduced a blank menu in the isolated browser test. Essential ordering now renders before optional ranking, whose wait is limited to 1.2 seconds. Manual browsing, customization and payment retain their standard-menu path. This is an ordinary regression fix, not the unselected optional student experiment."))
+        flow.append(paragraph(EXPERIMENT))
         heading(flow,"Task B - Ten selected feature groups",True)
         flow.append(table(["ID","Functionality","Requirements","Demonstration"],FEATURES,[16,59,52,138]))
         heading(flow,"Implementation scope and assumptions",True)
@@ -243,12 +257,49 @@ def build_pdf(lab):
     return path
 
 
+def build_ai_appendix():
+    """Purpose: export required model/prompt PDF. Inputs: preserved prompt/interaction files. Returns: output PDF path."""
+    conversation = (ROOT / "docs" / "AI_CONVERSATION.md").read_text(encoding="utf-8")
+    main_prompt = (ROOT / "docs" / "MAIN_PROMPT.md").read_text(encoding="utf-8")
+    responses = conversation.split("## Assistant responses and student clarifications", 1)[1]
+    preface = "\n\n".join([
+        "# SmartBrew AI - Group 28 - Lab 3 AI appendix",
+        "Updated 2026-10-21. Tool: Codex desktop application. Tasks A (elicitation), B (complete code generation/testing) and C (documentation/repository): GPT-6.1 Sol, the exact selector label confirmed by the student. Exact backend build: not exposed. Earlier Lab 1/2 model versions: unknown, not reconstructed.",
+        "## Record scope and prompt strategy",
+        "This appendix includes the main supplied request, key responses and clarifications. Markdown whitespace is normalized. The later Lab 1/course-policy context is explicitly summarized rather than represented as a full verbatim export. Generated source files in the Git repository are the code responses. This record contains no private model reasoning, invented prompts or student-written personal reflection.",
+        PROMPT_STRATEGY,
+        "## Policy and baseline provenance", POLICY, PROVENANCE,
+        "The submitted Lab 2 cannot honestly be called independently human-elicited; the comparison discloses that limitation for instructor review. The Lab 1 original is preserved as supplied. Generated Lab 2 corrections are review references only, not submission materials.",
+        main_prompt.strip(),
+        "## Key responses and student clarifications\n\n" + responses.strip(),
+    ])
+    (ROOT / "docs" / "LAB3_AI_APPENDIX.md").write_text(preface + "\n", encoding="utf-8")
+    path = ROOT / "output" / "pdf" / "G28Lab3_AI_Appendix.pdf"
+    doc = SimpleDocTemplate(str(path), pagesize=A4, rightMargin=16*mm, leftMargin=16*mm,
+                            topMargin=16*mm, bottomMargin=18*mm, title="SmartBrew AI - Lab 3 model and prompt appendix",
+                            author="Group 28 (LLM-assisted record)")
+    flow = []
+    for block in preface.split("\n\n"):
+        block = block.strip()
+        if not block.strip() or block.strip() == "---":
+            continue
+        if block.startswith("#"):
+            flow.append(paragraph(block.lstrip("# "), "Heading2"))
+        else:
+            style = "Speaker" if block in ("Assistant:", "Student:", "Assistant clarification:", "Assistant question:", "Assistant response excerpt:") else "SmallCustom"
+            flow.append(paragraph(block, style))
+            flow.append(Spacer(1, 2*mm))
+    doc.build(flow, onFirstPage=footer, onLaterPages=footer)
+    print(path)
+    return path
+
+
 def main():
     """Purpose: export editable content and optional PDFs. Inputs: --text-only. Returns: None."""
     import sys
     write_markdown()
     if "--text-only" not in sys.argv:
-        build_pdf(2); build_pdf(3)
+        build_pdf(2); build_pdf(3); build_ai_appendix()
 
 
 if __name__ == "__main__":

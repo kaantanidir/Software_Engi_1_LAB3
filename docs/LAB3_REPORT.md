@@ -1,10 +1,16 @@
 # SmartBrew AI - Group 28 - Lab 3
 
-Date: 2026-10-20
+Updated: 2026-10-21
 
 ## Task A - Elicitation
 
 SmartBrew AI is a personalized coffee-machine system for office customers and maintenance technicians. The full requirements cover profiles, saved recipes, context/mood recommendations, customization, supplies, payments, receipts, diagnostics, privacy and service-failure fallback. The group's custom feature is loyalty redemption. The executable prototype implements ten selected feature groups with persistent local state and a browser interface.
+
+### Cross-lab continuity and course policy
+
+Lab 1 received a positive grade. Its component coverage was marked Partial ('A bit minimalistic'); its relationship feedback questioned whether the UI needs the AIEngine. The saved diagram has nine domain concepts: User, Customer, Technician, PreferenceProfile, BeverageRecipe, Order, Payment, Inventory and Ingredient. These map to roles, preferences, recipes, purchase records and stock/waste state, not necessarily one code class each. Camera inference and the nested real LLM/mood modules remain deferred. Loyalty is first documented in the supplied Lab 2, not the Lab 1 diagrams. See docs/CROSS_LAB_REVIEW.md for the source audit and detailed mapping.
+
+Previously generated Lab 2 correction: AI-GENERATED REVIEW REFERENCE ONLY - NOT FOR LAB 1 OR LAB 2 SUBMISSION. The general course rules supplied after this reference was generated prohibit submitting generated text/models for those labs. Original submissions are unchanged. Lab 3 explicitly permits generation; disclosure does not override the Lab 1-2 restriction.
 
 ### Models and provenance
 
@@ -209,7 +215,11 @@ A Python HTTP adapter serves a vanilla JavaScript interface. A service layer enf
 
 ### Validation
 
-See QA_RESULTS.md and evidence/ for actual recorded runs. Unit tests use isolated temporary databases. Browser checks use a separate QA database and verify desktop/mobile layout and end-to-end flows. Passing simulator tests does not validate actual hardware, financial processors, SMTP or camera/LLM inference.
+See QA_RESULTS.md and evidence/ for actual recorded runs. Unit tests use isolated temporary databases. Browser checks use a separate QA database and verify desktop/mobile layout and end-to-end flows. A recommendation-service failure regression reproduced a blank menu; rendering essential ordering before optional ranking and imposing a 1.2-second ranking timeout fixed the dependency. Passing simulator tests does not validate actual hardware, financial processors, SMTP or camera/LLM inference.
+
+### Recommended extra experimentation
+
+The instructor strongly recommends additional experimentation, but does not state a fourth mandatory task. No optional exercise has been selected or claimed as completed. Mutation tests could use a disposable copy without removing any submitted functionality. Any personal reflection for a later exercise must be written by the student; none is generated here.
 
 ## Task C - Repository and documentation
 
@@ -218,6 +228,10 @@ Repository: https://github.com/kaantanidir/Software_Engi_1_LAB3 . README.md cont
 ### Student review before submission
 
 Review the exact point conversion, pending-payment policy, estimates and optional-feature scope. Read and understand the implementation and run the walkthrough. The baseline comparison is intentionally labeled group submission previously assisted by AI; confirm that disclosure with the course if a strictly independent human baseline is required.
+
+### AI appendix
+
+The required simple PDF is output/pdf/G28Lab3_AI_Appendix.pdf. It contains the student-confirmed model label, prompt strategy, main prompt and key responses, subsequent clarifications and generated-code references. The historical record is normalized/selected, not a full verbatim export or a student-written personal reflection.
 
 ### References
 

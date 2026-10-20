@@ -1,6 +1,8 @@
-# SmartBrew AI - Group 28 - Lab 2 correction
+# SmartBrew AI - Group 28 - Lab 2 review reference
 
-Date: 2026-10-20
+Policy clarification: 2026-10-21
+
+Previously generated Lab 2 correction: AI-GENERATED REVIEW REFERENCE ONLY - NOT FOR LAB 1 OR LAB 2 SUBMISSION. The general course rules supplied after this reference was generated prohibit submitting generated text/models for those labs. Original submissions are unchanged. Lab 3 explicitly permits generation; disclosure does not override the Lab 1-2 restriction.
 
 SmartBrew AI is a personalized coffee-machine system for office customers and maintenance technicians. The full requirements cover profiles, saved recipes, context/mood recommendations, customization, supplies, payments, receipts, diagnostics, privacy and service-failure fallback. The group's custom feature is loyalty redemption. The executable prototype implements ten selected feature groups with persistent local state and a browser interface.
 

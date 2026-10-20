@@ -1,6 +1,7 @@
 /* SmartBrew browser adapter. All prices are integer ore until presentation. */
 let state = {}, selected = 'latte', quote = null, category = 'All', recommendations = [];
 let authMode = 'login', editingRecipe = null, activeOrder = null, paymentKey = null, quoteRevision = 0, toastTimer;
+let recommendationStatus = 'loading', refreshRevision = 0;
 
 /** Purpose: resolve a DOM selector. Inputs: selector string. Returns: element or null. */
 function $(selector) { return document.querySelector(selector); }
@@ -10,9 +11,11 @@ function esc(value) { return String(value ?? '').replaceAll('&', '&amp;').replac
 function money(amount) { return new Intl.NumberFormat('en-SE', { style: 'currency', currency: 'SEK' }).format(amount / 100); }
 /** Purpose: refresh local Lucide icons. Inputs: document. Returns: void. */
 function icons() { lucide.createIcons(); }
-/** Purpose: call a local JSON endpoint. Inputs: path and optional body. Returns: parsed response or rejected error. */
-async function api(path, body) {
-  const response = await fetch(path, body === undefined ? {} : { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+/** Purpose: call a local JSON endpoint. Inputs: path, optional body and timeout milliseconds. Returns: parsed response or rejected error. */
+async function api(path, body, timeoutMs = null) {
+  const options = body === undefined ? {} : { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) };
+  if (timeoutMs !== null) options.signal = AbortSignal.timeout(timeoutMs);
+  const response = await fetch(path, options);
   const data = await response.json();
   if (!response.ok) throw new Error(data.error || 'Request failed.');
   return data;
@@ -40,14 +43,25 @@ function applyConfig(value) {
 }
 /** Purpose: load server state into all visible views. Inputs: none. Returns: Promise<void>. */
 async function refresh() {
-  state = await api('/api/state');
-  const result = await api('/api/recommendations'); recommendations = result.recommendations;
+  const revision = ++refreshRevision;
+  const result = await api('/api/state');
+  if (revision !== refreshRevision) return;
+  state = result; recommendationStatus = 'loading'; recommendations = [];
   $('#account-name').textContent = state.user?.name || 'Sign in';
   $('#account-button').title = state.user?.name || 'Sign in';
   $('#connection').textContent = state.settings.network ? 'Machine online' : 'Offline · local ordering';
   $('#balance').innerHTML = state.user?.role === 'customer' ? `<strong>${state.user.points} points</strong><br>Employee balance ${esc(money(state.user.balance))}` : 'Guest ordering available';
   renderMenu(); renderRecipes(); renderHistory(); renderMaintenance();
   await updateQuote(); icons();
+  try {
+    const ranking = await api('/api/recommendations', undefined, 1200);
+    if (revision !== refreshRevision) return;
+    recommendations = ranking.recommendations; recommendationStatus = 'ready';
+  } catch (error) {
+    if (revision !== refreshRevision) return;
+    recommendationStatus = 'unavailable';
+  }
+  renderMenu();
 }
 /** Purpose: show a view and active navigation. Inputs: view key. Returns: void. */
 function showView(view) {
@@ -57,17 +71,18 @@ function showView(view) {
 /** Purpose: render menu/filter/recommendation choices. Inputs: global state/category. Returns: void. */
 function renderMenu() {
   const useRecommendations = $('#recommend-toggle').checked;
-  const entries = useRecommendations ? recommendations : state.menu || [];
+  const ranked = useRecommendations && recommendationStatus === 'ready';
+  const entries = ranked ? recommendations : state.menu || [];
   let html = '';
   for (const drink of entries) {
     if (category !== 'All' && drink.category !== category) continue;
     const id = drink.config.drink;
     const image = id === 'espresso' || id === 'americano' ? 'espresso' : id === 'mocha' || id === 'cocoa' ? 'chocolate' : 'latte';
-    const reason = useRecommendations ? drink.reasons[0] : (drink.available ? 'Available' : drink.reasons[0]);
+    const reason = ranked ? drink.reasons[0] : (drink.available ? 'Available' : drink.reasons[0]);
     html += `<button class="drink-card ${id === selected ? 'selected' : ''} ${drink.available ? '' : 'unavailable'}" data-drink="${esc(id)}" aria-pressed="${id === selected}"><img class="drink-photo" src="/images/${image}.jpg" alt="${esc(drink.name)} serving illustration"><div class="drink-info"><strong>${esc(drink.name)}</strong><p class="drink-meta">${esc(drink.category)} · ${drink.kcal} kcal<br>${drink.allergens.length ? 'Contains ' + esc(drink.allergens.join(', ')) : 'No listed allergens'}</p><span class="recommend-label ${drink.available ? '' : 'blocked'}">${esc(reason)}</span><div class="drink-price"><span>${esc(money(drink.price))}</span><i data-lucide="${id === selected ? 'circle-check' : 'plus'}"></i></div></div></button>`;
   }
   $('#drink-grid').innerHTML = html || '<p class="empty">No available drinks in this selection.</p>';
-  $('#recommend-context').textContent = useRecommendations ? `Context: ${state.settings.period} · ${state.settings.network ? state.settings.weather + ' weather (simulator)' : 'local history/preferences; weather unavailable'}` : 'Nutrition values are illustrative estimates. Final ingredients and availability follow your customization.';
+  $('#recommend-context').textContent = useRecommendations ? (ranked ? `Context: ${state.settings.period} · ${state.settings.network ? state.settings.weather + ' weather (simulator)' : 'local history/preferences; weather unavailable'}` : recommendationStatus === 'loading' ? 'Loading recommendations; standard menu shown.' : 'Recommendations unavailable; standard menu shown.') : 'Nutrition values are illustrative estimates. Final ingredients and availability follow your customization.';
   icons();
 }
 /** Purpose: update quote without allowing stale responses to overwrite newer choices. Inputs: control values. Returns: Promise<void>. */

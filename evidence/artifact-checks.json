@@ -1,7 +1,7 @@
 {
   "python": "3.12.14",
   "platform": "Windows-11-10.0.26300-SP0",
-  "pythonFunctionsDocumented": 63,
+  "pythonFunctionsDocumented": 65,
   "coverage": {
     "S01": [
       "FR-01",
@@ -74,7 +74,10 @@
   },
   "pdfPages": {
     "lab2": 12,
-    "lab3": 19
+    "lab3": 20,
+    "aiAppendix": 5
   },
-  "baselineHashesVerified": true
+  "baselineHashesVerified": true,
+  "lab1BaselineHashVerified": true,
+  "lab2GeneratedOutputsAreReviewOnly": true
 }

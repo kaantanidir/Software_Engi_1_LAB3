@@ -1,5 +1,5 @@
 {
-  "recordedAt": "2026-10-20T22:05:26.537Z",
+  "recordedAt": "2026-10-20T22:35:41.811Z",
   "checks": [
     "F02: six menu drinks load",
     "F02: category filter",
@@ -23,16 +23,19 @@
     "Proposed quote-response target: p95 below 2 seconds",
     "Mobile root has no horizontal overflow",
     "Menu photograph assets loaded",
+    "Service failure: standard menu still loads",
+    "Service failure: recommended mode falls back to usable menu",
+    "Service failure: manual checkout still completes",
     "No uncaught browser errors"
   ],
   "errors": [],
   "responseSample": {
     "count": 100,
-    "p95ms": 15.735599999999977
+    "p95ms": 26.65520000000015
   },
   "quoteSample": {
     "count": 100,
-    "p95ms": 12.125400000000809
+    "p95ms": 19.339600000001155
   },
   "mobile": {
     "width": 390,

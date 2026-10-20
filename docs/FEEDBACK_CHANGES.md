@@ -1,5 +1,7 @@
 # Feedback and the concrete correction
 
+**AI-generated review reference only, not for Lab 1 or Lab 2 submission.** The general policy supplied later prohibits submitting generated text/models for those labs. The original files remain untouched. This comparison is retained as Lab 3 analysis and historical provenance.
+
 Source: instructor feedback, page 1 of the provided feedback PDF; Lecture 2 slides 20-23, 30-31 and 47-48.
 
 | Finding | Original | Correction |

@@ -1,0 +1,8 @@
+2026-10-21: isolated browser regression before the fix (exit code 1).
+The normal feature, responsive-layout and timing checks reached the new failure test.
+Injected response: GET /api/recommendations -> HTTP 503.
+AssertionError [ERR_ASSERTION]: Service failure: standard menu still loads
+actual: false
+expected: true
+Root cause: refresh awaited recommendations before rendering /api/state or loading a quote.
+No production feature was removed or disabled; only the QA browser intercepted this response.

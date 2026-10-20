@@ -1,4 +1,4 @@
-"""Validate coursework coverage/function comments and assemble the Lab 2 submission."""
+"""Validate coursework coverage/function comments and assemble the labeled Lab 2 review bundle."""
 
 import ast
 import hashlib
@@ -58,10 +58,19 @@ def main():
     manifest = json.loads((ROOT / "docs" / "baseline" / "manifest.json").read_text())
     for name in ("G28Lab2.pdf", "G28Lab2.asta"):
         assert hashlib.sha256((ROOT / "docs" / "baseline" / name).read_bytes()).hexdigest() == manifest[name], "Baseline changed"
+    lab1 = ROOT / "docs" / "baseline" / "lab1"
+    manifest1 = json.loads((lab1 / "manifest.json").read_text())
+    assert hashlib.sha256((lab1 / "G28Lab1.asta").read_bytes()).hexdigest() == manifest1["G28Lab1.asta"], "Lab 1 baseline changed"
+    appendix = PdfReader(ROOT / "output" / "pdf" / "G28Lab3_AI_Appendix.pdf")
+    appendix_text = "\n".join(page.extract_text() for page in appendix.pages)
+    for phrase in ("GPT-6.1 Sol", "Task A", "Task B", "Task C", "do we need to", "personal reflection"):
+        assert phrase in appendix_text, "Missing appendix content: " + phrase
+    counts["aiAppendix"] = len(appendix.pages)
     with ZipFile(ROOT / "output" / "G28Lab2_Corrected.zip", "w", ZIP_DEFLATED) as bundle:
         bundle.write(ROOT / "output" / "G28Lab2.asta", "Lab2_G28/G28Lab2.asta")
         bundle.write(ROOT / "output" / "pdf" / "G28Lab2_Corrected.pdf", "Lab2_G28/G28Lab2.pdf")
-    evidence = {"python": platform.python_version(), "platform": platform.platform(), "pythonFunctionsDocumented": functions, "coverage": coverage, "pdfPages": counts, "baselineHashesVerified": True}
+        bundle.writestr("Lab2_G28/AI_REFERENCE_ONLY.txt", "AI-GENERATED REVIEW REFERENCE ONLY. NOT FOR LAB 1 OR LAB 2 SUBMISSION.\nGeneral course rules prohibit generated text/models in those submissions.\nOriginal submissions are preserved in docs/baseline of the Lab 3 repository.\n")
+    evidence = {"python": platform.python_version(), "platform": platform.platform(), "pythonFunctionsDocumented": functions, "coverage": coverage, "pdfPages": counts, "baselineHashesVerified": True, "lab1BaselineHashVerified": True, "lab2GeneratedOutputsAreReviewOnly": True}
     (ROOT / "evidence" / "artifact-checks.json").write_text(json.dumps(evidence, indent=2), encoding="utf-8")
     print(json.dumps(evidence, indent=2))
 

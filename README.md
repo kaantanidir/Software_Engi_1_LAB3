@@ -1,20 +1,24 @@
 # SmartBrew AI - Group 28
 
-Lab 3 prototype and an explicit correction of the submitted Lab 2. SmartBrew is a coffee-machine ordering system with personal recipes, context-based recommendations, stock validation, checkout, loyalty, receipts and protected maintenance.
+Lab 3 prototype with a cross-lab review and preserved original submissions. SmartBrew is a coffee-machine ordering system with personal recipes, context-based recommendations, stock validation, checkout, loyalty, receipts and protected maintenance.
 
 **AI assistance:** GPT-6.1 Sol, as confirmed by the student from the model selector, was used for Lab 3 Tasks A, B and C and this Lab 2 revision. The earlier Lab 2 submission was also assisted in this chat; its exact model/version was not recorded. See [the conversation record](docs/AI_CONVERSATION.md) and [the comparison](docs/LAB3_REPORT.md).
+
+**Course-policy distinction:** Labs 1-2 prohibit submitting AI-generated text/models; Lab 3 permits generation. The generated Lab 2 corrections below are **review references only, not submission files**. Their filenames predate receipt of that policy. Original submissions are unchanged. An AI appendix does not make generated Lab 1-2 work permissible. See [the cross-lab review](docs/CROSS_LAB_REVIEW.md).
 
 ## Deliverables
 
 | Item | Location |
 | --- | --- |
-| Corrected Lab 2 PDF | [output/pdf/G28Lab2_Corrected.pdf](output/pdf/G28Lab2_Corrected.pdf) |
-| Corrected Astah project | [output/G28Lab2.asta](output/G28Lab2.asta) |
-| Corrected Lab 2 package | [output/G28Lab2_Corrected.zip](output/G28Lab2_Corrected.zip) |
+| AI-generated Lab 2 review PDF (not for submission) | [output/pdf/G28Lab2_Corrected.pdf](output/pdf/G28Lab2_Corrected.pdf) |
+| AI-generated Astah reference (not for submission) | [output/G28Lab2.asta](output/G28Lab2.asta) |
+| Lab 2 review bundle (not for submission) | [output/G28Lab2_Corrected.zip](output/G28Lab2_Corrected.zip) |
 | Lab 3 report PDF | [output/pdf/G28Lab3_Report.pdf](output/pdf/G28Lab3_Report.pdf) |
+| Lab 3 model/prompt appendix PDF | [output/pdf/G28Lab3_AI_Appendix.pdf](output/pdf/G28Lab3_AI_Appendix.pdf) |
+| Lab 1 to Lab 3 continuity and policy review | [docs/CROSS_LAB_REVIEW.md](docs/CROSS_LAB_REVIEW.md) |
 | Editable Lab 2 / Lab 3 documents | [docs/LAB2_CORRECTED.md](docs/LAB2_CORRECTED.md), [docs/LAB3_REPORT.md](docs/LAB3_REPORT.md) |
-| Original submitted comparison baseline | [docs/baseline](docs/baseline) with SHA-256 manifest |
-| Use-case descriptions | [docs/USE_CASE_DESCRIPTIONS.md](docs/USE_CASE_DESCRIPTIONS.md) |
+| Original Lab 1 and Lab 2 baselines | [docs/baseline](docs/baseline) with SHA-256 manifests |
+| AI-generated use-case reference descriptions (not for submission) | [docs/USE_CASE_DESCRIPTIONS.md](docs/USE_CASE_DESCRIPTIONS.md) |
 | Test evidence and actual limitations | [docs/QA_RESULTS.md](docs/QA_RESULTS.md), [evidence](evidence) |
 
 ## Environment
@@ -74,7 +78,7 @@ Alex starts with **250 loyalty points** and **SEK 200** employee prepaid balance
 | **F03 Validated customization** | FR-05 | Select Latte; choose oat, strong, 75 C, two syrup shots and one extra espresso. Quote is **SEK 51**; changing options recalculates price/nutrition. Unsupported values are rejected by the service even if submitted outside the UI. |
 | **F04 Named recipes** | FR-06 | Select **Save recipe**, name it Morning Oat, open **My recipes**. Rename it with the pencil. **Order** restores settings. Change settings then **Save recipe** to update the loaded recipe. Delete with the trash icon. Another account cannot access/edit it. |
 | **F05 Ingredient availability** | FR-07, NFR-03 | Sign in as technician, open **Maintenance**, set oat's simulated level to 99 (minimum 100). Return to an oat drink: checkout is blocked. **Refill** resets oat to capacity. A level of 150 also cannot supply a 180 ml Latte, even though above threshold. Checkout rechecks stock. |
-| **F06 Recommendations** | FR-08/19 | Toggle **Recommended first**. Buy a drink to add history. In Maintenance change simulated weather/time and observe scores/reasons. Offline mode excludes weather but keeps local ordering/recommendations. Scores are a documented local heuristic, not an LLM. |
+| **F06 Recommendations** | FR-08/19 | Toggle **Recommended first**. Buy a drink to add history. In Maintenance change simulated weather/time and observe scores/reasons. Offline mode excludes weather but keeps local ordering/recommendations. A failed or slow ranking request falls back to the standard menu without blocking manual checkout. Scores are a local heuristic, not an LLM. |
 | **F07 Checkout/history and offline handling** | FR-11/12/20, NFR-03 | Checkout using each EMV/contactless/wallet/prepaid simulator. Set processor **Decline** and verify no completed order/stock/points change. Approved orders appear in **Purchases** with original recipe settings. Turn network offline in Maintenance: prepaid can complete; a signed-in wallet request becomes pending, with no charge/dispense. Reconnect, sign in as the same customer, open Purchases and **Retry** the pending request. It completes once after approval and current-stock validation. |
 | **F08 Loyalty** | FR-13 | As Alex, redeem 100 points at checkout for **SEK 10** discount. Points are deducted only on success; the purchase earns one point per whole SEK actually paid. Over-balance/over-price redemption is rejected. |
 | **F09 Receipts** | FR-14 | Complete a purchase; inspect the generated QR or open its receipt page. The QR encodes actual receipt text and can be decoded offline. **Email receipt** writes a local simulator outbox entry, visible to the technician. Turn email off to show QR fallback. No external email is sent. |
@@ -105,7 +109,7 @@ If using an already installed Chrome instead, set `CHROME_PATH` to its executabl
 - `smartbrew/service.py`: business rules and SQLite persistence. Purchases use `BEGIN IMMEDIATE`, a unique request key and a single commit for transaction, stock, waste, prepaid and points changes.
 - `web/`: responsive interface with local photographs/icons. No CDN is contacted during ordering.
 - `tests/`: isolated business-rule regressions. `tools/browser_check.cjs`: real browser walkthrough and responsive checks.
-- `tools/coursework_data.py`: shared requirements/story/backlog source; `tools/build_documents.py` exports Markdown/PDF; `tools/AstahRepair.java` repairs a copy using the licensed Astah API.
+- `tools/coursework_data.py`: shared requirements/story/backlog source; `tools/build_documents.py` exports Markdown/PDF; `tools/AstahRepair.java` generated the Lab 2 review copy before the restrictive Lab 1-2 rules were supplied. It must not be used to generate a Lab 1-2 submission.
 
 The prototype **simulates** weather/time, NFC/key signals, sensors, dispensing, processor approval and email delivery. It does not connect to EMV hardware, Apple Pay/Google Pay, a camera, a physical machine or SMTP. Prepaid balance and loyalty are real local bookkeeping, not external financial services. Diagnostic JSON export is implemented; a remote diagnostic deployment is not.
 
@@ -116,6 +120,10 @@ Camera mood inference and the optional local LLM remain explicit backlog items o
 The original feedback gave Lab 2 a **positive grade** but requested complete requirement fields and layout/customer-entry fixes. The revised PDFs follow the exact six requirement columns from Lecture 2 slide 47. Backlogs use the slide's columns plus Description and trace notes; importance is 0-100 and estimates are relative story points.
 
 The original submitted group artifact is preserved rather than relabeled as human-only work. Review the comparison, prompting record and all proposed assumptions, and run the walkthrough before presenting the assignment. The assigned Scrum reading remains the students' responsibility; this project does not assert that anyone has completed that reading.
+
+Lab 1 received a positive grade; the component feedback questioned minimal scope and UI dependency on the AI engine. The nine visible domain concepts map to the prototype's data and responsibilities, not necessarily nine literal code classes. Loyalty first appears in the supplied Lab 2 submission, not in the Lab 1 diagrams. These distinctions are recorded in the cross-lab review.
+
+The instructor's extra experiment is strongly recommended, not stated as an additional mandatory task. None has been selected or claimed here. A future mutation exercise can use a disposable copy, leaving all ten features intact; its personal reflection must be written by the student. Routine regression tests are not presented as a student-performed optional experiment.
 
 To regenerate documents (optional; the PDFs are already included):
 

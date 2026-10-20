@@ -1,6 +1,8 @@
-# Corrected use-case descriptions
+# Use-case review reference descriptions
 
-Template: Lecture 2 slides 30-31. The saved Astah project contains the same descriptions.
+Previously generated Lab 2 correction: AI-GENERATED REVIEW REFERENCE ONLY - NOT FOR LAB 1 OR LAB 2 SUBMISSION. The general course rules supplied after this reference was generated prohibit submitting generated text/models for those labs. Original submissions are unchanged. Lab 3 explicitly permits generation; disclosure does not override the Lab 1-2 restriction.
+
+Template: Lecture 2 slides 30-31. The AI-generated Astah reference contains the same descriptions; neither is for Lab 2 submission.
 
 ## Browse Menu and Nutrition
 
