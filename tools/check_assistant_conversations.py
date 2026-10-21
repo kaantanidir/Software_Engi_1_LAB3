@@ -104,12 +104,12 @@ def main():
     except Exception as error:
         evidence["error"] = f"{type(error).__name__}: {error}"
     finally:
-        destination = ROOT / "evidence" / "assistant-conversations.json"
+        destination = ROOT / "evidence" / "current" / "assistant-conversations.json"
         destination.parent.mkdir(parents=True, exist_ok=True)
-        destination.write_text(json.dumps(evidence, indent=2), encoding="utf-8")
+        destination.write_text(json.dumps(evidence, indent=2), encoding="utf-8", newline="\n")
         print(f"Saved live results (including failures): {destination}", flush=True)
     if not evidence["passed"]:
-        raise SystemExit("Live checks failed or were incomplete; inspect evidence/assistant-conversations.json.")
+        raise SystemExit("Live checks failed or were incomplete; inspect evidence/current/assistant-conversations.json.")
 
 
 if __name__ == "__main__":

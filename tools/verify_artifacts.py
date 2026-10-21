@@ -65,34 +65,34 @@ FINAL_ZIP_WHITELIST = (
     "docs/baseline/lab1/feedback-text.md",
     "docs/baseline/lab1/manifest.json",
     "evidence/README.md",
-    "evidence/artifact-checks.json",
-    "evidence/assistant-conversations-first-run.json",
-    "evidence/assistant-conversations-second-run.json",
-    "evidence/assistant-conversations.json",
-    "evidence/assistant-heldout-baseline.json",
-    "evidence/assistant-heldout-postchange-first-run.json",
-    "evidence/assistant-heldout-postchange.json",
-    "evidence/assistant-long-chat-wording-failure.json",
-    "evidence/assistant-long-chat.json",
-    "evidence/authentication-regression-before.txt",
-    "evidence/browser-f06-first-run-failure.json",
-    "evidence/browser-failure.json",
-    "evidence/browser-results.json",
-    "evidence/desktop.png",
-    "evidence/lab1-export/G28Lab1/Class Diagram.png",
-    "evidence/lab1-export/G28Lab1/Component Diagram0.png",
-    "evidence/lab1-inspection.txt",
-    "evidence/local-ai-initial-review.txt",
-    "evidence/local-ai-results.json",
-    "evidence/local-assistant.png",
-    "evidence/maintenance.png",
-    "evidence/mobile.png",
-    "evidence/receipt.png",
-    "evidence/recommendation-regression-before.txt",
-    "evidence/test-scenarios.png",
-    "evidence/unit-tests.txt",
-    "output/pdf/G28Lab3_AI_Appendix.pdf",
-    "output/pdf/G28Lab3_Report.pdf",
+    "evidence/current/artifact-checks.json",
+    "evidence/current/assistant-conversations.json",
+    "evidence/current/assistant-heldout-postchange.json",
+    "evidence/current/assistant-long-chat.json",
+    "evidence/current/browser-results.json",
+    "evidence/current/desktop.png",
+    "evidence/current/local-ai-results.json",
+    "evidence/current/local-assistant.png",
+    "evidence/current/maintenance.png",
+    "evidence/current/mobile.png",
+    "evidence/current/receipt.png",
+    "evidence/current/test-scenarios.png",
+    "evidence/current/unit-tests.txt",
+    "evidence/history/assistant-conversations-first-run.json",
+    "evidence/history/assistant-conversations-second-run.json",
+    "evidence/history/assistant-heldout-baseline.json",
+    "evidence/history/assistant-heldout-postchange-first-run.json",
+    "evidence/history/assistant-long-chat-wording-failure.json",
+    "evidence/history/authentication-regression-before.txt",
+    "evidence/history/browser-f06-first-run-failure.json",
+    "evidence/history/browser-failure.json",
+    "evidence/history/lab1-export/G28Lab1/Class Diagram.png",
+    "evidence/history/lab1-export/G28Lab1/Component Diagram0.png",
+    "evidence/history/lab1-inspection.txt",
+    "evidence/history/local-ai-initial-review.txt",
+    "evidence/history/recommendation-regression-before.txt",
+    "output/G28Lab3_AI_Appendix.pdf",
+    "output/G28Lab3_Report.pdf",
 )
 
 FORBIDDEN_ZIP_PREFIXES = (
@@ -104,12 +104,10 @@ FORBIDDEN_ZIP_PREFIXES = (
     "__pycache__/",
     "docs/development/",
     "docs/reference/lab2/",
-    "evidence/astah-export/",
-    "output/G28Lab2",
-    "output/pdf/G28Lab2",
+    "evidence/history/astah-export/",
+    "evidence/history/use-cases.png",
     "output/G28Lab3_Project.zip",
-    "tools/Astah",
-    "tools/inspect_",
+    "tools/archive/",
     "docs/baseline/lecture",
 )
 
@@ -149,20 +147,21 @@ def validate_project_zip_policy():
         "docs/development/ASSISTANT_IMPLEMENTATION_UPDATE.md",
         "docs/development/GEMINI_HANDOFF.md",
         "docs/reference/lab2/REVIEW.md",
-        "output/G28Lab2.asta",
-        "output/G28Lab2_Corrected.zip",
-        "output/pdf/G28Lab2_Corrected.pdf",
+        "docs/reference/lab2/G28Lab2.asta",
+        "docs/reference/lab2/G28Lab2_Corrected.zip",
+        "docs/reference/lab2/G28Lab2_Corrected.pdf",
         "output/G28Lab3_Project.zip",
-        "tools/AstahRepair.java",
-        "tools/inspect_sources.py",
-        "tools/inspect_lab1.py",
+        "tools/archive/AstahRepair.java",
+        "tools/archive/inspect_sources.py",
+        "tools/archive/inspect_lab1.py",
+        "evidence/history/use-cases.png",
+        "evidence/history/astah-export/G28Lab2/UseCase Diagram0.png",
         "data/smartbrew.sqlite3",
         "data/local-ai/models/model.gguf",
         ".venv/Scripts/python.exe",
         ".packages/node_modules",
         "tmp/browser-abc/qa.db",
         "smartbrew/__pycache__/service.cpython-312.pyc",
-        "output/G28Lab2.asta.bak",
     ):
         rejected = False
         try:
@@ -216,7 +215,7 @@ def main():
         coverage[source] = [r["id"] for r in LAB3 if source in r["source"].split(";")[0].split("/")]
         assert coverage[source], "Uncovered source: " + source
     functions = 0
-    for folder in (ROOT, ROOT / "smartbrew", ROOT / "tests", ROOT / "tools"):
+    for folder in (ROOT, ROOT / "smartbrew", ROOT / "tests", ROOT / "tools", ROOT / "tools" / "archive"):
         for file in folder.glob("*.py"):
             tree = ast.parse(file.read_text(encoding="utf-8"))
             for node in ast.walk(tree):
@@ -247,11 +246,14 @@ def main():
         return
     from PIL import Image, ImageDraw
     from pypdf import PdfReader
-    for label, name in (("lab2", "G28Lab2_Corrected.pdf"), ("lab3", "G28Lab3_Report.pdf")):
-        reader = PdfReader(ROOT / "output" / "pdf" / name)
+    for label, pdf_path in (
+        ("lab2", ROOT / "docs" / "reference" / "lab2" / "G28Lab2_Corrected.pdf"),
+        ("lab3", ROOT / "output" / "G28Lab3_Report.pdf"),
+    ):
+        reader = PdfReader(pdf_path)
         text = "\n".join(p.extract_text() for p in reader.pages)
         for header in ("Description", "Inputs", "Outputs", "Precondition", "Postcondition", "Importance", "Estimate", "How to demo"):
-            assert header in text, f"Missing {header} in {name}"
+            assert header in text, f"Missing {header} in {pdf_path.name}"
         if label == "lab3":
             for record in LAB3:
                 assert record["id"] in text
@@ -273,20 +275,20 @@ def main():
                 sheet.paste(thumb, (x, y))
                 draw.text((x, y - 20), file.stem, fill="black")
             sheet.save(ROOT / "tmp" / f"contact-{label}-{start//6+1}.png")
-    appendix = PdfReader(ROOT / "output" / "pdf" / "G28Lab3_AI_Appendix.pdf")
+    appendix = PdfReader(ROOT / "output" / "G28Lab3_AI_Appendix.pdf")
     appendix_text = "\n".join(page.extract_text() for page in appendix.pages)
     for phrase in ("GPT-6.1 Sol", "Task A", "Task B", "Task C", "do we need to", "personal reflection"):
         assert phrase in appendix_text, "Missing appendix content: " + phrase
     counts["aiAppendix"] = len(appendix.pages)
     if "--include-reference" in sys.argv:
-        with ZipFile(ROOT / "output" / "G28Lab2_Corrected.zip", "w", ZIP_DEFLATED) as bundle:
-            bundle.write(ROOT / "output" / "G28Lab2.asta", "Lab2_G28/G28Lab2.asta")
-            bundle.write(ROOT / "output" / "pdf" / "G28Lab2_Corrected.pdf", "Lab2_G28/G28Lab2.pdf")
+        with ZipFile(ROOT / "docs" / "reference" / "lab2" / "G28Lab2_Corrected.zip", "w", ZIP_DEFLATED) as bundle:
+            bundle.write(ROOT / "docs" / "reference" / "lab2" / "G28Lab2.asta", "Lab2_G28/G28Lab2.asta")
+            bundle.write(ROOT / "docs" / "reference" / "lab2" / "G28Lab2_Corrected.pdf", "Lab2_G28/G28Lab2.pdf")
             bundle.writestr("Lab2_G28/AI_REFERENCE_ONLY.txt", "AI-GENERATED REVIEW REFERENCE ONLY. NOT FOR LAB 1 OR LAB 2 SUBMISSION.\nGeneral course rules prohibit generated text/models in those submissions.\nOriginal submissions are preserved in docs/baseline of the Lab 3 repository.\n")
+    evidence = {"python": platform.python_version(), "platform": platform.platform(), "pythonFunctionsDocumented": functions, "coverage": coverage, "pdfPages": counts, "baselineHashesVerified": True, "lab1BaselineHashVerified": True, "lab2GeneratedOutputsAreReviewOnly": True, "readmeAndIndexLocalLinksVerified": check_document_links(), "projectZipWhitelistVerified": whitelisted_count}
+    (ROOT / "evidence" / "current" / "artifact-checks.json").write_text(json.dumps(evidence, indent=2) + "\n", encoding="utf-8", newline="\n")
     if "--build-project-zip" in sys.argv:
         build_project_zip()
-    evidence = {"python": platform.python_version(), "platform": platform.platform(), "pythonFunctionsDocumented": functions, "coverage": coverage, "pdfPages": counts, "baselineHashesVerified": True, "lab1BaselineHashVerified": True, "lab2GeneratedOutputsAreReviewOnly": True, "readmeAndIndexLocalLinksVerified": check_document_links(), "projectZipWhitelistVerified": whitelisted_count}
-    (ROOT / "evidence" / "artifact-checks.json").write_text(json.dumps(evidence, indent=2), encoding="utf-8")
     print(json.dumps(evidence, indent=2))
 
 

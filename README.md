@@ -72,7 +72,7 @@ On this workspace, `tools/start_local_ai.ps1` can also start the project-local p
 
 The adapter requests structured JSON, rejects unsupported fields/options, and recalculates price and stock availability on the server. It cannot place orders, edit accounts or authorize payment. Conversation is held in the page and cleared on account changes. The model is fallible: review its proposal. A missing model, invalid response or timeout leaves manual ordering available. The model wait is bounded at 90 seconds; it is not part of the menu/quote latency target.
 
-The verified hardware has about 32 GB RAM and an RTX 3060 Laptop GPU with 6 GB VRAM. This is a tested machine, not a promised minimum hardware specification. Model weights are not bundled in Git. The exact tested model digest and live responses are in `evidence/local-ai-results.json`.
+The verified hardware has about 32 GB RAM and an RTX 3060 Laptop GPU with 6 GB VRAM. This is a tested machine, not a promised minimum hardware specification. Model weights are not bundled in Git. The exact tested model digest and live responses are in `evidence/current/local-ai-results.json`.
 
 ## Run the Tests
 
@@ -80,7 +80,7 @@ The verified hardware has about 32 GB RAM and an RTX 3060 Laptop GPU with 6 GB V
 .\.venv\Scripts\python.exe -m unittest discover -s tests -v
 ```
 
-The unit suite runs **33 tests** against isolated temporary databases under `tmp/tests` (recorded in `evidence/unit-tests.txt`). Model-adapter unit tests use labelled test doubles and do not require Ollama. Actual local inference is tested separately:
+The unit suite runs **33 tests** against isolated temporary databases under `tmp/tests` (recorded in `evidence/current/unit-tests.txt`). Model-adapter unit tests use labelled test doubles and do not require Ollama. Actual local inference is tested separately:
 
 ```powershell
 .\.venv\Scripts\python.exe tools/check_local_ai.py
@@ -89,7 +89,7 @@ The unit suite runs **33 tests** against isolated temporary databases under `tmp
 .\.venv\Scripts\python.exe tools/check_assistant_heldout_baseline.py
 ```
 
-These commands test the original four live requests (`evidence/local-ai-results.json`), the 12-turn taste and follow-up conversation suite (`evidence/assistant-conversations.json`), the 9-turn extended drink-switching sequence (`evidence/assistant-long-chat.json`), and the 8-turn multi-turn context/constraint regression suite (`evidence/assistant-heldout-postchange.json`, with the pre-change baseline preserved in `evidence/assistant-heldout-baseline.json`). See the [assistant implementation update](docs/development/ASSISTANT_IMPLEMENTATION_UPDATE.md) for the integration and contribution record.
+These commands test the original four live requests (`evidence/current/local-ai-results.json`), the 12-turn taste and follow-up conversation suite (`evidence/current/assistant-conversations.json`), the 9-turn extended drink-switching sequence (`evidence/current/assistant-long-chat.json`), and the 8-turn multi-turn context/constraint regression suite (`evidence/current/assistant-heldout-postchange.json`, with the pre-change baseline preserved in `evidence/history/assistant-heldout-baseline.json`). See the [assistant implementation update](docs/development/ASSISTANT_IMPLEMENTATION_UPDATE.md) for the integration and contribution record.
 
 Optional browser audit (Node 20+, Playwright 1.62.1):
 
@@ -100,7 +100,7 @@ $env:PYTHON = (Resolve-Path .\.venv\Scripts\python.exe).Path
 npm run test:browser
 ```
 
-The browser audit starts its own server on 8766 and uses separate temporary data, including a server restart. With `$env:SMARTBREW_LIVE_AI = '1'`, it runs **58 checks** (recorded in `evidence/browser-results.json`), covering all ten feature groups, the expanded F06 recommendation context controls/modes, and live F11 multi-turn recipe application and clearing. Set `CHROME_PATH` to an installed Chrome executable to use that instead of Playwright's browser. Recorded results and limitations are in [the verification record](docs/QA_RESULTS.md).
+The browser audit starts its own server on 8766 and uses separate temporary data, including a server restart. With `$env:SMARTBREW_LIVE_AI = '1'`, it runs **58 checks** (recorded in `evidence/current/browser-results.json`), covering all ten feature groups, the expanded F06 recommendation context controls/modes, and live F11 multi-turn recipe application and clearing. Set `CHROME_PATH` to an installed Chrome executable to use that instead of Playwright's browser. Recorded results and limitations are in [the verification record](docs/QA_RESULTS.md).
 
 With Ollama/model running, set `$env:SMARTBREW_LIVE_AI = '1'` before the browser command to additionally test actual inference, explicit recipe application and conversation clearing. The normal browser audit does not require a model; its deliberate unavailable-model response is a failure-path test, not simulated evidence of real inference.
 
@@ -113,18 +113,19 @@ With Ollama/model running, set `$env:SMARTBREW_LIVE_AI = '1'` before the browser
 | `smartbrew/assistant.py` | Optional local-model adapter and output validation |
 | `web/` | Customer interface, protected technician views and receipt page |
 | `tests/` | Isolated business-rule and assistant validation tests |
-| `tools/` | Browser/live-model checks, document exports and read-only source audits |
+| `tools/` | Active Lab 3 browser/live-model checks and document exports (`tools/archive/` holds archived Lab 1-2 source scripts) |
 | `docs/` | Current report, architecture, AI-use record and documentation index |
 | `docs/baseline/` | Unchanged original submissions and source hashes |
+| `docs/development/` | Internal engineering and handoff notes retained in Git |
 | `docs/reference/lab2/` | Historical generated Lab 2 review aids, not submission materials |
-| `evidence/` | Recorded test results, screenshots and model responses |
-| `output/` | Exported documents and reference artifacts |
+| `evidence/` | Verification outputs (`evidence/current/`) and preserved historical/regression runs (`evidence/history/`) |
+| `output/` | Final Lab 3 deliverables (`G28Lab3_Report.pdf`, `G28Lab3_AI_Appendix.pdf`, `G28Lab3_Project.zip`) |
 | `data/`, `tmp/`, `.venv/` | Local data, scratch files and environment; excluded from Git |
 
 ## Report and AI Record
 
-- [Lab 3 report PDF](output/pdf/G28Lab3_Report.pdf)
-- [Model/prompt appendix PDF](output/pdf/G28Lab3_AI_Appendix.pdf)
+- [Lab 3 report PDF](output/G28Lab3_Report.pdf)
+- [Model/prompt appendix PDF](output/G28Lab3_AI_Appendix.pdf)
 - [Documentation index](docs/README.md)
 
 Lab 3 Tasks A-C and the initial local integration of a student-relayed Gemini web-chat draft were developed with Codex using the student-confirmed **GPT-6.1 Sol** selector label (before Gemini had local IDE access; that earlier web-chat Gemini version was not recorded). After opening the repository in Google Antigravity, **Gemini 4 Argon Medium** inspected the local files, implemented and tested the focused F11 multi-turn assistant corrections and the expanded F06 deterministic recommendation scoring and browser checks, and recorded the local verification evidence. Local **Qwen3:4b** through Ollama 0.40.6 is the prototype's runtime drink model, not a development assistant that generated the project. The appendix and AI record document prompts, decisions, observed errors and revisions. Students still need to understand and evaluate the work; no student-authored personal reflection is supplied.

@@ -251,7 +251,8 @@ function removeTempDir(tempDir, tmpRoot) {
 /** Purpose: execute the full QA flow with isolated temporary database cleanup. Inputs: environment PYTHON/CHROME_PATH. Returns: Promise<void>. */
 async function main() {
   const tmpRoot = path.join(root, 'tmp');
-  fs.mkdirSync(tmpRoot, { recursive: true }); fs.mkdirSync(path.join(root, 'evidence'), { recursive: true });
+  const currentEvidence = path.join(root, 'evidence', 'current');
+  fs.mkdirSync(tmpRoot, { recursive: true }); fs.mkdirSync(currentEvidence, { recursive: true });
   const temp = fs.mkdtempSync(path.join(tmpRoot, 'browser-'));
   console.log('TEMP_DIR_CREATED', temp);
   child = spawn(process.env.PYTHON || 'python', ['app.py', '--port', '8766', '--database', path.join(temp, 'qa.db')], { cwd: root, windowsHide: true, stdio: 'pipe' });
@@ -292,7 +293,7 @@ async function main() {
     await page.getByRole('heading', { name: 'Morning Focus' }).waitFor();
     check('F04: named recipe create/rename', true);
     await page.locator('[data-load-recipe]').click(); await page.waitForLoadState('networkidle');
-    await page.screenshot({ path: path.join(root, 'evidence', 'desktop.png'), fullPage: true });
+    await page.screenshot({ path: path.join(currentEvidence, 'desktop.png'), fullPage: true });
     await purchase('contactless', 100); await page.locator('#receipt-dialog').waitFor();
     check('F07/F08: checkout with loyalty discount', (await page.locator('#receipt-content').textContent()).includes('10'));
     check('F03/F09: receipt contains syrup and extra-shot settings', (await page.locator('#receipt-content').textContent()).includes('2 syrup shots') && (await page.locator('#receipt-content').textContent()).includes('1 extra espresso shots'));
@@ -300,7 +301,7 @@ async function main() {
     const svg = await page.request.get((await page.locator('#receipt-content img').getAttribute('src')));
     check('F09: actual QR SVG generated', svg.ok() && (await svg.text()).includes('<svg'));
     await page.locator('#email-receipt').click(); await textEquals('#receipt-message', 'local email simulator outbox');
-    await page.screenshot({ path: path.join(root, 'evidence', 'receipt.png'), fullPage: true });
+    await page.screenshot({ path: path.join(currentEvidence, 'receipt.png'), fullPage: true });
     await page.locator('#receipt-dialog .close-dialog').click();
     const admin = await browser.newContext({ baseURL: 'http://127.0.0.1:8766' });
     await admin.request.post('/api/auth/login', { data: { method: 'password', email: 'tech@smartbrew.test', password: '246810' } });
@@ -332,12 +333,12 @@ async function main() {
     await page.locator('[data-view=menu]').click(); await textEquals('#availability', 'Grounds bin full'); check('F10: full bin halts checkout', await page.locator('#checkout-button').isDisabled());
     await page.locator('[data-view=maintenance]').click(); await page.getByRole('tab', { name: 'Maintenance', exact: true }).click(); await page.locator('[data-empty=grounds]').click(); await page.waitForLoadState('networkidle');
     await page.waitForFunction(maintenanceReady);
-    await page.screenshot({ path: path.join(root, 'evidence', 'maintenance.png'), fullPage: true });
+    await page.screenshot({ path: path.join(currentEvidence, 'maintenance.png'), fullPage: true });
     await page.getByRole('tab', { name: 'Test scenarios' }).click();
     await page.locator('[data-fault=GRINDER_JAM]').click(); await page.waitForLoadState('networkidle');
     await textEquals('#maintenance-content', 'GRINDER_JAM');
     check('F10: diagnostic fault logged', (await page.locator('#maintenance-content').textContent()).includes('GRINDER_JAM'));
-    await page.screenshot({ path: path.join(root, 'evidence', 'test-scenarios.png'), fullPage: true });
+    await page.screenshot({ path: path.join(currentEvidence, 'test-scenarios.png'), fullPage: true });
     await page.locator('[data-fault=""]').click(); await textEquals('#maintenance-content', 'No active fault');
     await auditRecommendations();
     await network(false); await signOut(); await signIn(); await page.locator('[data-view=menu]').click();
@@ -371,7 +372,7 @@ async function main() {
       check('F11: real local model returns a supported oat-latte proposal', actual.local === true && actual.model === 'qwen3:4b' && actual.quote.config.milk === 'oat' && actual.quote.price === 4200);
       const after = await (await page.request.get('/api/state')).json();
       check('F11: inference does not apply settings or purchase automatically', await page.locator('#customize-form [name=milk]').inputValue() === 'dairy' && after.orders.length === before.orders.length && after.user.points === before.user.points);
-      await page.screenshot({ path: path.join(root, 'evidence', 'local-assistant.png'), fullPage: true });
+      await page.screenshot({ path: path.join(currentEvidence, 'local-assistant.png'), fullPage: true });
       await page.locator('#assistant-apply').click(); await textEquals('#quote-price', '42');
       check('F11: explicit confirmation applies the validated settings', await page.locator('#customize-form [name=milk]').inputValue() === 'oat' && await page.locator('#customize-form [name=syrup]').inputValue() === '1');
       liveAI = { realInference: true, mockedModel: false, response: actual };
@@ -388,7 +389,7 @@ async function main() {
     await page.unroute('**/api/assistant', failAssistant);
     await page.locator('[data-view=menu]').click(); await page.setViewportSize({ width: 390, height: 844 }); await page.waitForLoadState('networkidle');
     const mobile = await page.evaluate(inspectLayout); check('Mobile root has no horizontal overflow', mobile.scrollWidth <= mobile.width); check('Menu photograph assets loaded', mobile.images > 0 && mobile.loadedImages === mobile.images);
-    await page.screenshot({ path: path.join(root, 'evidence', 'mobile.png'), fullPage: true });
+    await page.screenshot({ path: path.join(currentEvidence, 'mobile.png'), fullPage: true });
     await page.locator('#assistant-request').focus();
     const accessibility = await page.evaluate(inspectAccessibility);
     check('Visible controls have usable targets and input focus is visible', accessibility.smallButtons === 0 && accessibility.focusVisible);
@@ -400,7 +401,7 @@ async function main() {
     await purchase(); await page.locator('#receipt-dialog').waitFor();
     check('Service failure: manual checkout still completes', (await page.locator('#receipt-content').textContent()).includes('Paid'));
     check('No uncaught browser errors', errors.length === 0);
-    fs.writeFileSync(path.join(root, 'evidence', 'browser-results.json'), JSON.stringify({ recordedAt: new Date().toISOString(), checks, errors, responseSample: { count: 100, p95ms: p95 }, quoteSample: { count: 100, p95ms: quoteP95 }, mobile, accessibility, liveAI, browser: browser.version(), node: process.version, simulatedIntegrations: true }, null, 2));
+    fs.writeFileSync(path.join(currentEvidence, 'browser-results.json'), JSON.stringify({ recordedAt: new Date().toISOString(), checks, errors, responseSample: { count: 100, p95ms: p95 }, quoteSample: { count: 100, p95ms: quoteP95 }, mobile, accessibility, liveAI, browser: browser.version(), node: process.version, simulatedIntegrations: true }, null, 2));
   } catch (error) {
     fs.writeFileSync(path.join(root, 'tmp', 'browser-failure.json'), JSON.stringify({ recordedAt: new Date().toISOString(), passed: false, checks, errors, assistantTurns, error: error.stack }, null, 2));
     if (page) await page.screenshot({ path: path.join(root, 'tmp', 'browser-failure.png'), fullPage: true });

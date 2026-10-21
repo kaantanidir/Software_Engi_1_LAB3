@@ -10,7 +10,7 @@ from pypdf import PdfReader
 
 def main():
     """Purpose: preserve Lab 1 evidence. Inputs: supplied archive/feedback paths. Returns: None; writes copies/hash/text."""
-    root = Path(__file__).resolve().parents[1]
+    root = Path(__file__).resolve().parents[2]
     target = root / "docs" / "baseline" / "lab1"
     target.mkdir(parents=True, exist_ok=True)
     archive = Path(r"C:/Users/HP/Downloads/G28Lab1.zip")

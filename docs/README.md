@@ -15,7 +15,7 @@ Start with the repository README for installation and the ten-feature walkthroug
 | [Cross-lab review](CROSS_LAB_REVIEW.md) | Lab 1 feedback, conceptual mapping and custom-feature chronology |
 | [Asset credits](ASSETS.md) | Third-party images, icons and licenses |
 
-Exported Lab 3 report and AI appendix PDFs are in `output/pdf/`. The editable appendix is `LAB3_AI_APPENDIX.md`; it is generated from the prompt and interaction records, not edited independently.
+Exported Lab 3 report and AI appendix PDFs are directly in `output/` (`output/G28Lab3_Report.pdf` and `output/G28Lab3_AI_Appendix.pdf`), alongside the final source bundle (`output/G28Lab3_Project.zip`). The editable appendix is `LAB3_AI_APPENDIX.md`; it is generated from the prompt and interaction records, not edited independently.
 
 ## Development & Handoff History
 
@@ -30,7 +30,7 @@ Internal engineering handoff notes in `docs/development/` remain in Git for deve
 
 `baseline/` contains the original Lab 2 model/PDF and the Lab 1 model, extracted feedback and SHA-256 manifests. These are comparison evidence, not rewritten submissions.
 
-`reference/lab2/` holds the earlier generated [review](reference/lab2/REVIEW.md), [use-case descriptions](reference/lab2/USE_CASE_DESCRIPTIONS.md) and [feedback analysis](reference/lab2/FEEDBACK_CHANGES.md). Their associated Astah/PDF/ZIP files remain in `output/` under historical names. They are **review aids only, not for Lab 1-2 submission**, under the supplied course AI policy.
+`reference/lab2/` holds the earlier generated [review](reference/lab2/REVIEW.md), [use-case descriptions](reference/lab2/USE_CASE_DESCRIPTIONS.md), [feedback analysis](reference/lab2/FEEDBACK_CHANGES.md), and the associated historical Astah/PDF/ZIP files (`G28Lab2.asta`, `G28Lab2_Corrected.pdf`, `G28Lab2_Corrected.zip`). They are **review aids only, not for Lab 1-2 submission**, under the supplied course AI policy.
 
 ## Rebuilding Documents
 

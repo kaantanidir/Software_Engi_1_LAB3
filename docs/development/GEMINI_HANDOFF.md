@@ -8,7 +8,7 @@ Prepared on 2026-10-21 for the student in Group 28. This document preserves the 
   - **Codex (`GPT-6.1 Sol`, student-confirmed selector label):** Authored Lab 3 Tasks A-C through commit `ee153a9`, prepared this handoff brief, and integrated an initial student-relayed Gemini web-chat proposal before Gemini had local IDE access (that earlier web-chat Gemini model version was not recorded).
   - **Google Antigravity (`Gemini 4 Argon Medium`):** After gaining direct local IDE access to this repository, inspected the codebase read-only, created and ran `tools/check_assistant_heldout_baseline.py`, implemented and verified the focused F11 multi-turn assistant correction (`smartbrew/assistant.py`), and specified, implemented and verified the expanded deterministic F06 recommendation scoring (`smartbrew/service.py`, `web/app.js`, `web/styles.css`, `tests/test_service.py`, `tools/browser_check.cjs`).
   - **Runtime drink model (`Qwen3:4b` through Ollama 0.40.6):** Local inference model inside the SmartBrew prototype; separate from the development assistants.
-- **Current verified state:** **33 unit tests** (`evidence/unit-tests.txt`), **58 browser checks** with `SMARTBREW_LIVE_AI=1` (`evidence/browser-results.json`), **12/12** conversation turns (`evidence/assistant-conversations.json`), **9/9** long-chat recipe turns (`evidence/assistant-long-chat.json`), and **8/8** multi-turn regression turns (`evidence/assistant-heldout-postchange.json`). See [ASSISTANT_IMPLEMENTATION_UPDATE.md](ASSISTANT_IMPLEMENTATION_UPDATE.md) and [../QA_RESULTS.md](../QA_RESULTS.md).
+- **Current verified state:** **33 unit tests** (`evidence/current/unit-tests.txt`), **58 browser checks** with `SMARTBREW_LIVE_AI=1` (`evidence/current/browser-results.json`), **12/12** conversation turns (`evidence/current/assistant-conversations.json`), **9/9** long-chat recipe turns (`evidence/current/assistant-long-chat.json`), and **8/8** multi-turn regression turns (`evidence/current/assistant-heldout-postchange.json`). See [ASSISTANT_IMPLEMENTATION_UPDATE.md](ASSISTANT_IMPLEMENTATION_UPDATE.md) and [../QA_RESULTS.md](../QA_RESULTS.md).
 
 ## 1. Original Message to the Next Assistant (Historical Brief)
 
@@ -108,7 +108,7 @@ Lab 1 and Lab 2 feedback/submissions were supplied earlier and preserved/extract
 | `web/app.js`, `web/assistant.js` | UI and conversation/proposal handling |
 | `tests/`, `tools/browser_check.cjs`, `tools/check_local_ai.py` | Automated verification |
 
-Original evidence stays in `docs/baseline/`; historical generated Lab 2 aids in `docs/reference/lab2/`. Current exported documents are in `output/pdf/`. `data/`, `tmp/`, local models and environments are excluded from Git. Do not upload runtime/model files or private databases.
+Original evidence stays in `docs/baseline/`; historical generated Lab 2 aids in `docs/reference/lab2/`. Current exported documents are in `output/`. `data/`, `tmp/`, local models and environments are excluded from Git. Do not upload runtime/model files or private databases.
 
 ## 6. Ten Implemented Feature Groups
 
@@ -144,7 +144,7 @@ Purchases atomically update stock, waste, balance and loyalty in SQLite. Retry k
 
 ## 8. Local LLM - What Exists and What Is Weak
 
-Ollama 0.40.6 with `qwen3:4b`; tested hardware approximately 32 GB RAM and RTX 3060 Laptop GPU with 6 GB VRAM. Portable runtime/models reside under ignored `data/local-ai/`; `tools/start_local_ai.ps1` supports starting them. Exact tested model metadata is in `evidence/local-ai-results.json`. Do not assume Gemini needs to replace the application's local model: using Gemini as a development assistant is a separate decision.
+Ollama 0.40.6 with `qwen3:4b`; tested hardware approximately 32 GB RAM and RTX 3060 Laptop GPU with 6 GB VRAM. Portable runtime/models reside under ignored `data/local-ai/`; `tools/start_local_ai.ps1` supports starting them. Exact tested model metadata is in `evidence/current/local-ai-results.json`. Do not assume Gemini needs to replace the application's local model: using Gemini as a development assistant is a separate decision.
 
 The adapter accepts loopback HTTP only, bypasses proxies, refuses redirects and requests schema-constrained recipe/clarify/unavailable JSON. Context contains menu/options, inventory, fault status and the current customer's preferences, not credentials, payment data or other users' history. History is bounded to six messages; request text to 600 characters. One inference runs at a time. Server timeout is 90 seconds; cold startup can be slow.
 
@@ -161,7 +161,7 @@ Code inspection supports this criticism: the prompt says to clarify ambiguous re
 
 ### Discussed Improvements (Subsequently Implemented and Verified)
 
-*Historical note: the items below were unimplemented when this brief was first drafted at commit `ee153a9`, and have now been implemented in `smartbrew/assistant.py` and `web/assistant.js` and verified in `evidence/assistant-conversations.json`, `evidence/assistant-long-chat.json`, and `evidence/assistant-heldout-postchange.json`.*
+*Historical note: the items below were unimplemented when this brief was first drafted at commit `ee153a9`, and have now been implemented in `smartbrew/assistant.py` and `web/assistant.js` and verified in `evidence/current/assistant-conversations.json`, `evidence/current/assistant-long-chat.json`, and `evidence/current/assistant-heldout-postchange.json`.*
 
 - Add accurate taste descriptors for existing drinks and explicit interpretation guidance for bitter, sweet, creamy, light, strong and coffee-forward.
 - Prefer a concrete proposal when there is enough information; ask only when missing information genuinely matters. "Usual" without a known favorite should still require clarification.
@@ -190,7 +190,7 @@ At commit `ee153a9` (historical pre-handoff snapshot), `Store.recommendations` u
 
 *Historical pre-handoff snapshot (commit `ee153a9`):* 28 unit tests, 46 browser checks and four actual local-model checks passed.
 *Intermediate Codex integration snapshot:* 30 unit tests, 50 browser checks and 12 conversation turns passed.
-*Current verified state (after Gemini 4 Argon Medium F11 and F06 implementation):* **33 unit tests** (`evidence/unit-tests.txt`), **58 browser checks** with `SMARTBREW_LIVE_AI=1` (`evidence/browser-results.json`), **4/4** original live requests (`evidence/local-ai-results.json`), **12/12** conversation turns (`evidence/assistant-conversations.json`), **9/9** long-chat recipe turns (`evidence/assistant-long-chat.json`), and **8/8** multi-turn regression turns (`evidence/assistant-heldout-postchange.json`).
+*Current verified state (after Gemini 4 Argon Medium F11 and F06 implementation):* **33 unit tests** (`evidence/current/unit-tests.txt`), **58 browser checks** with `SMARTBREW_LIVE_AI=1` (`evidence/current/browser-results.json`), **4/4** original live requests (`evidence/current/local-ai-results.json`), **12/12** conversation turns (`evidence/current/assistant-conversations.json`), **9/9** long-chat recipe turns (`evidence/current/assistant-long-chat.json`), and **8/8** multi-turn regression turns (`evidence/current/assistant-heldout-postchange.json`).
 
 Browser checks include distinct registrations/relogin, wrong passwords, ownership rejection, persistence after restart, technician restrictions, receipts, purchase flows, all F06 context selectors/modes/offline rules, live proposal application and conversation clearing. Desktop/mobile screenshots were inspected. Some failure paths intentionally use labeled test doubles; do not present them as real inference.
 
@@ -198,4 +198,4 @@ Tests use separate temporary databases; preserve the student's live database (`d
 
 ## 11. Completed Working Sequence
 
-All nine steps of the originally suggested sequence (read-only audit, isolated reproduction of assistant failures in `evidence/assistant-heldout-baseline.json`, focused F11 schema/context/prompt correction, F06 specification and non-destructive implementation, expanded unit and browser verification, and documentation synchronization) have now been completed and verified. See [ASSISTANT_IMPLEMENTATION_UPDATE.md](ASSISTANT_IMPLEMENTATION_UPDATE.md) and [../QA_RESULTS.md](../QA_RESULTS.md) for the complete record.
+All nine steps of the originally suggested sequence (read-only audit, isolated reproduction of assistant failures in `evidence/history/assistant-heldout-baseline.json`, focused F11 schema/context/prompt correction, F06 specification and non-destructive implementation, expanded unit and browser verification, and documentation synchronization) have now been completed and verified. See [ASSISTANT_IMPLEMENTATION_UPDATE.md](ASSISTANT_IMPLEMENTATION_UPDATE.md) and [../QA_RESULTS.md](../QA_RESULTS.md) for the complete record.

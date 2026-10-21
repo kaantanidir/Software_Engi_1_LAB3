@@ -66,6 +66,6 @@ test_separate_accounts_keep_private_records_after_relogin (test_service.SmartBre
 Purpose: preserve owner isolation across sign-in/restart. Inputs: two independent customer sessions. Returns: None. ... ok
 
 ----------------------------------------------------------------------
-Ran 33 tests in 14.439s
+Ran 33 tests in 14.783s
 
 OK

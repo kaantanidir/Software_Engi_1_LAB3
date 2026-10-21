@@ -16,4 +16,4 @@
 # Keep original whitespace in extracted sources and read-only audit evidence.
 docs/baseline/*.md -whitespace
 docs/baseline/lab1/*.md -whitespace
-evidence/lab1-inspection.txt -whitespace
+evidence/history/lab1-inspection.txt -whitespace

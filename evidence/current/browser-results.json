@@ -1,5 +1,5 @@
 {
-  "recordedAt": "2026-10-21T19:34:21.589Z",
+  "recordedAt": "2026-10-21T22:46:40.012Z",
   "checks": [
     "F02: six menu drinks load",
     "F02: category filter",
@@ -63,11 +63,11 @@
   "errors": [],
   "responseSample": {
     "count": 100,
-    "p95ms": 9.784900000000562
+    "p95ms": 10.501600000001417
   },
   "quoteSample": {
     "count": 100,
-    "p95ms": 8.29149999999936
+    "p95ms": 7.94629999999961
   },
   "mobile": {
     "width": 390,
@@ -173,7 +173,7 @@
           "model": "qwen3:4b",
           "local": true
         },
-        "milliseconds": 1880.9923999999992
+        "milliseconds": 1911.2573999999986
       },
       {
         "request": {
@@ -212,7 +212,7 @@
           "model": "qwen3:4b",
           "local": true
         },
-        "milliseconds": 898.1175000000003
+        "milliseconds": 857.9777000000031
       },
       {
         "request": {
@@ -286,7 +286,7 @@
           "model": "qwen3:4b",
           "local": true
         },
-        "milliseconds": 1777.4049000000014
+        "milliseconds": 1794.3437999999987
       }
     ]
   },

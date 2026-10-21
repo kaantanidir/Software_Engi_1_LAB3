@@ -50,7 +50,9 @@ def main():
             print(f"PASS {expected}: {elapsed}s", flush=True)
         evidence = {"runtime": client.request("/api/version"), "model": model, "liveInference": True,
                     "simulatedModelResponses": False, "results": results, "noOrderingSideEffects": True}
-        (ROOT / "evidence" / "local-ai-results.json").write_text(json.dumps(evidence, indent=2), encoding="utf-8")
+        target = ROOT / "evidence" / "current" / "local-ai-results.json"
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(json.dumps(evidence, indent=2), encoding="utf-8", newline="\n")
         print("Live local-model evidence saved.")
 
 

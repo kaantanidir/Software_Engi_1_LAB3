@@ -409,12 +409,12 @@ def main():
         evidence["error"] = f"{type(error).__name__}: {error}"
         raise
     finally:
-        target = ROOT / "evidence" / "assistant-heldout-postchange.json"
+        target = ROOT / "evidence" / "current" / "assistant-heldout-postchange.json"
         target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_text(json.dumps(evidence, indent=2), encoding="utf-8")
+        target.write_text(json.dumps(evidence, indent=2), encoding="utf-8", newline="\n")
         print(f"Saved post-change evidence to {target}", flush=True)
     if not evidence["passed"]:
-        raise SystemExit("One or more turns failed recipeCorrect or constraintsRetained; inspect evidence/assistant-heldout-postchange.json.")
+        raise SystemExit("One or more turns failed recipeCorrect or constraintsRetained; inspect evidence/current/assistant-heldout-postchange.json.")
 
 
 if __name__ == "__main__":

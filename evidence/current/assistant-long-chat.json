@@ -1,5 +1,5 @@
 {
-  "recordedAt": "2026-10-21T19:29:10.215776+00:00",
+  "recordedAt": "2026-10-21T22:41:46.237693+00:00",
   "results": [
     {
       "request": {
@@ -40,7 +40,7 @@
         "model": "qwen3:4b",
         "local": true
       },
-      "seconds": 1.507,
+      "seconds": 1.472,
       "noOrderingSideEffects": true,
       "namesProposedDrink": true
     },
@@ -99,7 +99,7 @@
         "model": "qwen3:4b",
         "local": true
       },
-      "seconds": 1.622,
+      "seconds": 1.582,
       "noOrderingSideEffects": true,
       "namesProposedDrink": true
     },
@@ -169,7 +169,7 @@
         "model": "qwen3:4b",
         "local": true
       },
-      "seconds": 1.487,
+      "seconds": 1.556,
       "noOrderingSideEffects": true,
       "namesProposedDrink": true
     },
@@ -247,7 +247,7 @@
         "model": "qwen3:4b",
         "local": true
       },
-      "seconds": 1.566,
+      "seconds": 1.603,
       "noOrderingSideEffects": true,
       "namesProposedDrink": true
     },
@@ -325,7 +325,7 @@
         "model": "qwen3:4b",
         "local": true
       },
-      "seconds": 1.779,
+      "seconds": 1.76,
       "noOrderingSideEffects": true,
       "namesProposedDrink": true
     },
@@ -403,7 +403,7 @@
         "model": "qwen3:4b",
         "local": true
       },
-      "seconds": 1.893,
+      "seconds": 1.755,
       "noOrderingSideEffects": true,
       "namesProposedDrink": true
     },
@@ -477,7 +477,7 @@
         "model": "qwen3:4b",
         "local": true
       },
-      "seconds": 1.859,
+      "seconds": 1.761,
       "noOrderingSideEffects": true,
       "namesProposedDrink": true
     },
@@ -551,7 +551,7 @@
         "model": "qwen3:4b",
         "local": true
       },
-      "seconds": 1.799,
+      "seconds": 1.794,
       "noOrderingSideEffects": true,
       "namesProposedDrink": true
     },
@@ -628,7 +628,7 @@
         "model": "qwen3:4b",
         "local": true
       },
-      "seconds": 1.727,
+      "seconds": 1.705,
       "noOrderingSideEffects": true,
       "namesProposedDrink": true
     }

@@ -52,8 +52,9 @@ def main():
     except Exception as error:
         evidence["error"] = f"{type(error).__name__}: {error}"
     finally:
-        target = ROOT / "evidence" / "assistant-long-chat.json"
-        target.write_text(json.dumps(evidence, indent=2), encoding="utf-8")
+        target = ROOT / "evidence" / "current" / "assistant-long-chat.json"
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(json.dumps(evidence, indent=2), encoding="utf-8", newline="\n")
         print(f"Saved {target}", flush=True)
     if not evidence["passed"]:
         raise SystemExit("Long conversation regression failed; inspect recorded responses.")

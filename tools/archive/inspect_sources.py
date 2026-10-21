@@ -11,7 +11,7 @@ from pypdf import PdfReader
 
 def main():
     """Purpose: preserve supplied sources. Inputs: known source paths. Returns: None; writes copies/text/hashes."""
-    root = Path(__file__).resolve().parents[1]
+    root = Path(__file__).resolve().parents[2]
     baseline = root / "docs" / "baseline"
     baseline.mkdir(parents=True, exist_ok=True)
     archive = Path(r"C:/Users/HP/Desktop/VS UniStudies/Software Engi 1/Lab2_G28.zip")
