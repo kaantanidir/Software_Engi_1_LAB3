@@ -9,12 +9,22 @@ Start with the repository README for installation and the ten-feature walkthroug
 | [Lab 3 report](LAB3_REPORT.md) | Requirements, user stories, backlog and comparison with the submitted Lab 2 |
 | [Architecture](ARCHITECTURE.md) | Responsibilities, data ownership, checkout and the optional model boundary |
 | [Verification record](QA_RESULTS.md) | Actual test results, screenshots, failures found and remaining limitations |
+| [Evidence index](../evidence/README.md) | Categorized index of verification outputs, runtime model evidence, regressions and baselines |
 | [AI interaction record](AI_CONVERSATION.md) | Tool/model roles, main prompts, key responses and revisions |
 | [Main supplied prompt](MAIN_PROMPT.md) | Original Lab 2 review / Lab 3 request and assignment text |
 | [Cross-lab review](CROSS_LAB_REVIEW.md) | Lab 1 feedback, conceptual mapping and custom-feature chronology |
 | [Asset credits](ASSETS.md) | Third-party images, icons and licenses |
 
 Exported Lab 3 report and AI appendix PDFs are in `output/pdf/`. The editable appendix is `LAB3_AI_APPENDIX.md`; it is generated from the prompt and interaction records, not edited independently.
+
+## Development & Handoff History
+
+Internal engineering handoff notes in `docs/development/` remain in Git for development traceability, and are excluded from the final evaluator `output/G28Lab3_Project.zip`:
+
+| Document | Read it for |
+| --- | --- |
+| [Assistant implementation update](development/ASSISTANT_IMPLEMENTATION_UPDATE.md) | Chronological F11 assistant and F06 recommendation updates, provenance and test outcomes |
+| [Continuation handoff](development/GEMINI_HANDOFF.md) | Historical continuation brief written at commit `ee153a9` and post-handoff completion summary |
 
 ## Preserved Sources and Historical References
 

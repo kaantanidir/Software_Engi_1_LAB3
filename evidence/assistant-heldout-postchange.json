@@ -1,0 +1,526 @@
+{
+  "recordedAt": "2026-10-21T19:29:25.912216+00:00",
+  "liveInference": true,
+  "simulatedModelResponses": false,
+  "evaluationNote": "Post-change evaluation of the three multi-turn scenarios (now known regression cases; original pre-change baseline is preserved in evidence/assistant-heldout-baseline.json). Separates recipeCorrect, constraintsRetained, proposed temperature assumptions, and conversationalSignals.",
+  "results": [
+    {
+      "scenario": "ScenarioA",
+      "turn": "A1",
+      "request": {
+        "message": "I need an intense wake-up cup with just a touch of sweetness, no milk.",
+        "history": [],
+        "context_config": null
+      },
+      "response": {
+        "kind": "recipe",
+        "message": "An intense espresso with one vanilla syrup shot and no milk for a quick wake-up boost.",
+        "quote": {
+          "config": {
+            "drink": "espresso",
+            "milk": "none",
+            "strength": "strong",
+            "temperature": 70,
+            "syrup": 1,
+            "extra": 0
+          },
+          "name": "Espresso",
+          "price": 2700,
+          "kcal": 29,
+          "allergens": [],
+          "ingredients": {
+            "beans": 12,
+            "water": 40,
+            "cups": 1,
+            "syrup": 10
+          },
+          "available": true,
+          "reasons": [],
+          "category": "Coffee",
+          "image": "espresso.svg",
+          "nutrition_note": "Illustrative recipe estimates"
+        },
+        "model": "qwen3:4b",
+        "local": true
+      },
+      "seconds": 1.626,
+      "noOrderingSideEffects": true,
+      "evaluation": {
+        "recipeCorrect": true,
+        "constraintsRetained": true,
+        "conversationalSignals": {
+          "namesProposedDrink": true
+        },
+        "notes": []
+      }
+    },
+    {
+      "scenario": "ScenarioA",
+      "turn": "A2",
+      "request": {
+        "message": "Actually, I'm in the mood for something bittersweet.",
+        "history": [
+          {
+            "role": "user",
+            "content": "I need an intense wake-up cup with just a touch of sweetness, no milk."
+          },
+          {
+            "role": "assistant",
+            "content": "An intense espresso with one vanilla syrup shot and no milk for a quick wake-up boost."
+          }
+        ],
+        "context_config": {
+          "drink": "espresso",
+          "milk": "none",
+          "strength": "strong",
+          "temperature": 70,
+          "syrup": 1,
+          "extra": 0
+        }
+      },
+      "response": {
+        "kind": "recipe",
+        "message": "A bittersweet mocha with one vanilla syrup shot and no milk for a strong, chocolatey kick.",
+        "quote": {
+          "config": {
+            "drink": "mocha",
+            "milk": "none",
+            "strength": "strong",
+            "temperature": 70,
+            "syrup": 1,
+            "extra": 0
+          },
+          "name": "Mocha",
+          "price": 4200,
+          "kcal": 175,
+          "allergens": [],
+          "ingredients": {
+            "beans": 13,
+            "water": 40,
+            "cups": 1,
+            "cocoa": 15,
+            "syrup": 10
+          },
+          "available": true,
+          "reasons": [],
+          "category": "Chocolate",
+          "image": "mocha.svg",
+          "nutrition_note": "Illustrative recipe estimates"
+        },
+        "model": "qwen3:4b",
+        "local": true
+      },
+      "seconds": 1.882,
+      "noOrderingSideEffects": true,
+      "evaluation": {
+        "recipeCorrect": true,
+        "constraintsRetained": true,
+        "conversationalSignals": {
+          "namesProposedDrink": true,
+          "identicalConfigToPreviousTurn": false
+        },
+        "notes": []
+      }
+    },
+    {
+      "scenario": "ScenarioA",
+      "turn": "A3",
+      "request": {
+        "message": "What else do you have that fits that?",
+        "history": [
+          {
+            "role": "user",
+            "content": "I need an intense wake-up cup with just a touch of sweetness, no milk."
+          },
+          {
+            "role": "assistant",
+            "content": "An intense espresso with one vanilla syrup shot and no milk for a quick wake-up boost."
+          },
+          {
+            "role": "user",
+            "content": "Actually, I'm in the mood for something bittersweet."
+          },
+          {
+            "role": "assistant",
+            "content": "A bittersweet mocha with one vanilla syrup shot and no milk for a strong, chocolatey kick."
+          }
+        ],
+        "context_config": {
+          "drink": "mocha",
+          "milk": "none",
+          "strength": "strong",
+          "temperature": 70,
+          "syrup": 1,
+          "extra": 0
+        }
+      },
+      "response": {
+        "kind": "recipe",
+        "message": "An intense strong Americano with one vanilla syrup shot and no milk for a bittersweet wake-up boost.",
+        "quote": {
+          "config": {
+            "drink": "americano",
+            "milk": "none",
+            "strength": "strong",
+            "temperature": 70,
+            "syrup": 1,
+            "extra": 0
+          },
+          "name": "Americano",
+          "price": 3200,
+          "kcal": 31,
+          "allergens": [],
+          "ingredients": {
+            "beans": 15,
+            "water": 180,
+            "cups": 1,
+            "syrup": 10
+          },
+          "available": true,
+          "reasons": [],
+          "category": "Coffee",
+          "image": "americano.svg",
+          "nutrition_note": "Illustrative recipe estimates"
+        },
+        "model": "qwen3:4b",
+        "local": true
+      },
+      "seconds": 1.804,
+      "noOrderingSideEffects": true,
+      "evaluation": {
+        "recipeCorrect": true,
+        "constraintsRetained": true,
+        "conversationalSignals": {
+          "namesProposedDrink": true,
+          "changedBaseDrink": true,
+          "leakedPlaceholderText": false
+        },
+        "notes": []
+      }
+    },
+    {
+      "scenario": "ScenarioB",
+      "turn": "B1",
+      "request": {
+        "message": "Something cozy, creamy, and plant-based, not too hot.",
+        "history": [],
+        "context_config": null
+      },
+      "response": {
+        "kind": "recipe",
+        "message": "A creamy plant-based latte at 65 degrees (not too hot) with no added sweetness.",
+        "quote": {
+          "config": {
+            "drink": "latte",
+            "milk": "oat",
+            "strength": "regular",
+            "temperature": 65,
+            "syrup": 0,
+            "extra": 0
+          },
+          "name": "Caffe Latte",
+          "price": 3900,
+          "kcal": 110,
+          "allergens": [
+            "oats"
+          ],
+          "ingredients": {
+            "beans": 10,
+            "water": 40,
+            "cups": 1,
+            "oat": 180
+          },
+          "available": true,
+          "reasons": [],
+          "category": "Coffee",
+          "image": "latte.svg",
+          "nutrition_note": "Illustrative recipe estimates"
+        },
+        "model": "qwen3:4b",
+        "local": true
+      },
+      "seconds": 1.613,
+      "noOrderingSideEffects": true,
+      "evaluation": {
+        "recipeCorrect": true,
+        "constraintsRetained": true,
+        "proposedAssumption_temp_le_65": true,
+        "conversationalSignals": {
+          "namesProposedDrink": true
+        },
+        "notes": []
+      }
+    },
+    {
+      "scenario": "ScenarioB",
+      "turn": "B2",
+      "request": {
+        "message": "Can we make it chocolatey?",
+        "history": [
+          {
+            "role": "user",
+            "content": "Something cozy, creamy, and plant-based, not too hot."
+          },
+          {
+            "role": "assistant",
+            "content": "A creamy plant-based latte at 65 degrees (not too hot) with no added sweetness."
+          }
+        ],
+        "context_config": {
+          "drink": "latte",
+          "milk": "oat",
+          "strength": "regular",
+          "temperature": 65,
+          "syrup": 0,
+          "extra": 0
+        }
+      },
+      "response": {
+        "kind": "recipe",
+        "message": "Switched to a regular oat mocha at 65 degrees for chocolatey goodness without extra sweetness.",
+        "quote": {
+          "config": {
+            "drink": "mocha",
+            "milk": "oat",
+            "strength": "regular",
+            "temperature": 65,
+            "syrup": 0,
+            "extra": 0
+          },
+          "name": "Mocha",
+          "price": 4200,
+          "kcal": 190,
+          "allergens": [
+            "oats"
+          ],
+          "ingredients": {
+            "beans": 10,
+            "water": 40,
+            "cups": 1,
+            "oat": 140,
+            "cocoa": 15
+          },
+          "available": true,
+          "reasons": [],
+          "category": "Chocolate",
+          "image": "mocha.svg",
+          "nutrition_note": "Illustrative recipe estimates"
+        },
+        "model": "qwen3:4b",
+        "local": true
+      },
+      "seconds": 1.806,
+      "noOrderingSideEffects": true,
+      "evaluation": {
+        "recipeCorrect": true,
+        "constraintsRetained": true,
+        "conversationalSignals": {
+          "namesProposedDrink": true
+        },
+        "notes": []
+      }
+    },
+    {
+      "scenario": "ScenarioB",
+      "turn": "B3",
+      "request": {
+        "message": "Keep that, just bump the heat up to 75 and add an extra shot of espresso.",
+        "history": [
+          {
+            "role": "user",
+            "content": "Something cozy, creamy, and plant-based, not too hot."
+          },
+          {
+            "role": "assistant",
+            "content": "A creamy plant-based latte at 65 degrees (not too hot) with no added sweetness."
+          },
+          {
+            "role": "user",
+            "content": "Can we make it chocolatey?"
+          },
+          {
+            "role": "assistant",
+            "content": "Switched to a regular oat mocha at 65 degrees for chocolatey goodness without extra sweetness."
+          }
+        ],
+        "context_config": {
+          "drink": "mocha",
+          "milk": "oat",
+          "strength": "regular",
+          "temperature": 65,
+          "syrup": 0,
+          "extra": 0
+        }
+      },
+      "response": {
+        "kind": "recipe",
+        "message": "A regular oat mocha at 75 degrees with one extra espresso shot.",
+        "quote": {
+          "config": {
+            "drink": "mocha",
+            "milk": "oat",
+            "strength": "regular",
+            "temperature": 75,
+            "syrup": 0,
+            "extra": 1
+          },
+          "name": "Mocha",
+          "price": 4800,
+          "kcal": 194,
+          "allergens": [
+            "oats"
+          ],
+          "ingredients": {
+            "beans": 19,
+            "water": 70,
+            "cups": 1,
+            "oat": 140,
+            "cocoa": 15
+          },
+          "available": true,
+          "reasons": [],
+          "category": "Chocolate",
+          "image": "mocha.svg",
+          "nutrition_note": "Illustrative recipe estimates"
+        },
+        "model": "qwen3:4b",
+        "local": true
+      },
+      "seconds": 1.66,
+      "noOrderingSideEffects": true,
+      "evaluation": {
+        "recipeCorrect": true,
+        "constraintsRetained": true,
+        "conversationalSignals": {
+          "namesProposedDrink": true
+        },
+        "notes": []
+      }
+    },
+    {
+      "scenario": "ScenarioC",
+      "turn": "C1",
+      "request": {
+        "message": "Give me the sweetest iced caramel latte you can make.",
+        "history": [],
+        "context_config": null
+      },
+      "response": {
+        "kind": "unavailable",
+        "message": "Iced drinks and caramel syrup are not available on this machine; we only serve hot drinks (50-90 C) with optional vanilla syrup.",
+        "quote": null,
+        "model": "qwen3:4b",
+        "local": true
+      },
+      "seconds": 1.033,
+      "noOrderingSideEffects": true,
+      "evaluation": {
+        "recipeCorrect": true,
+        "constraintsRetained": true,
+        "conversationalSignals": {
+          "kindReturned": "unavailable"
+        },
+        "notes": []
+      }
+    },
+    {
+      "scenario": "ScenarioC",
+      "turn": "C2",
+      "request": {
+        "message": "Okay, a hot vanilla oat latte with maximum sweetness then, and make it even sweeter on top of that.",
+        "history": [
+          {
+            "role": "user",
+            "content": "Give me the sweetest iced caramel latte you can make."
+          },
+          {
+            "role": "assistant",
+            "content": "Iced drinks and caramel syrup are not available on this machine; we only serve hot drinks (50-90 C) with optional vanilla syrup."
+          }
+        ],
+        "context_config": null
+      },
+      "response": {
+        "kind": "recipe",
+        "message": "A hot vanilla oat latte with maximum sweetness (4 vanilla syrup shots) at 70\u00b0C.",
+        "quote": {
+          "config": {
+            "drink": "latte",
+            "milk": "oat",
+            "strength": "regular",
+            "temperature": 70,
+            "syrup": 4,
+            "extra": 0
+          },
+          "name": "Caffe Latte",
+          "price": 5100,
+          "kcal": 210,
+          "allergens": [
+            "oats"
+          ],
+          "ingredients": {
+            "beans": 10,
+            "water": 40,
+            "cups": 1,
+            "oat": 180,
+            "syrup": 40
+          },
+          "available": true,
+          "reasons": [],
+          "category": "Coffee",
+          "image": "latte.svg",
+          "nutrition_note": "Illustrative recipe estimates"
+        },
+        "model": "qwen3:4b",
+        "local": true
+      },
+      "seconds": 1.614,
+      "noOrderingSideEffects": true,
+      "evaluation": {
+        "recipeCorrect": true,
+        "constraintsRetained": true,
+        "proposedAssumption_temp_ge_70": true,
+        "conversationalSignals": {
+          "namesProposedDrink": true,
+          "noUnrequestedExtraEspresso": true
+        },
+        "notes": []
+      }
+    }
+  ],
+  "passed": true,
+  "runtime": {
+    "version": "0.40.6"
+  },
+  "model": {
+    "name": "qwen3:4b",
+    "model": "qwen3:4b",
+    "modified_at": "2026-10-21T01:30:55.5168905+02:00",
+    "size": 2497293931,
+    "digest": "359d7dd4bcdab3d86b87d73ac27966f4dbb9f5efdfcc75d34a8764a09474fae7",
+    "details": {
+      "parent_model": "",
+      "format": "gguf",
+      "family": "qwen3",
+      "families": [
+        "qwen3"
+      ],
+      "parameter_size": "4.0B",
+      "quantization_level": "Q4_K_M",
+      "context_length": 262144,
+      "embedding_length": 2560,
+      "runner": "ggml"
+    },
+    "capabilities": [
+      "completion",
+      "tools",
+      "thinking"
+    ]
+  },
+  "summary": {
+    "totalTurns": 8,
+    "recipeCorrectCount": 8,
+    "constraintsRetainedCount": 8,
+    "noOrderingSideEffects": true
+  }
+}

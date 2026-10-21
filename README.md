@@ -48,7 +48,7 @@ One browser profile shares one signed-in session across tabs. For simultaneous c
 | **F03 Customization** | Select Latte, oat milk, strong, 75 C, two syrup shots and one extra espresso. The total is SEK 51. Review every setting before confirming payment. |
 | **F04 Saved recipes** | Save a named recipe. In My recipes, rename it with the pencil, load it with Order, modify and save it, then delete it. Another account cannot modify it. |
 | **F05 Availability** | As technician, use Test scenarios to set oat milk to 99 (minimum 100). An oat drink is blocked. Record a refill in Maintenance and verify availability returns. Quantity is checked as well as the threshold. |
-| **F06 Recommendations** | Save oat preferences and enable Recommended first. Ranking uses history and simulated time/weather. Selecting a recommendation applies its actual settings. Missing ranking service falls back to the standard menu. |
+| **F06 Recommendations** | Save oat preferences and enable Recommended first. Ranking uses completed purchase history, saved recipes, preference affinity, local clock or technician period override, and online temperature/weather condition. Selecting a recommendation applies its actual settings. Missing weather or ranking service falls back to local context and the standard menu. |
 | **F07 Checkout/history** | Purchase with each payment-method simulator. Purchases show the original settings. For a decline, set the technician's external processor to Decline first; customer checkout cannot choose its result. Decline changes no stock, points or balance. Restore Normal afterward. |
 | **F08 Loyalty** | As Alex, redeem 100 points for SEK 10 discount. A successful purchase earns one point per whole SEK actually paid. Rejected payments spend and earn no points. |
 | **F09 Receipts** | Open a purchase receipt and its actual generated QR. It contains the purchased settings and totals. Email receipt writes to the local simulator outbox; unavailable email retains QR access. No external email is sent. |
@@ -80,11 +80,16 @@ The verified hardware has about 32 GB RAM and an RTX 3060 Laptop GPU with 6 GB V
 .\.venv\Scripts\python.exe -m unittest discover -s tests -v
 ```
 
-Tests use isolated temporary databases under `tmp/tests`. Model-adapter unit tests use labelled test doubles and do not require Ollama. Actual inference is tested separately:
+The unit suite runs **33 tests** against isolated temporary databases under `tmp/tests` (recorded in `evidence/unit-tests.txt`). Model-adapter unit tests use labelled test doubles and do not require Ollama. Actual local inference is tested separately:
 
 ```powershell
 .\.venv\Scripts\python.exe tools/check_local_ai.py
+.\.venv\Scripts\python.exe tools/check_assistant_conversations.py
+.\.venv\Scripts\python.exe tools/check_assistant_long_chat.py
+.\.venv\Scripts\python.exe tools/check_assistant_heldout_baseline.py
 ```
+
+These commands test the original four live requests (`evidence/local-ai-results.json`), the 12-turn taste and follow-up conversation suite (`evidence/assistant-conversations.json`), the 9-turn extended drink-switching sequence (`evidence/assistant-long-chat.json`), and the 8-turn multi-turn context/constraint regression suite (`evidence/assistant-heldout-postchange.json`, with the pre-change baseline preserved in `evidence/assistant-heldout-baseline.json`). See the [assistant implementation update](docs/development/ASSISTANT_IMPLEMENTATION_UPDATE.md) for the integration and contribution record.
 
 Optional browser audit (Node 20+, Playwright 1.62.1):
 
@@ -95,7 +100,7 @@ $env:PYTHON = (Resolve-Path .\.venv\Scripts\python.exe).Path
 npm run test:browser
 ```
 
-The browser audit uses its own server on 8766 and separate data, including a server restart. Set `CHROME_PATH` to an installed Chrome executable to use that instead of Playwright's browser. Recorded results and limitations are in [the verification record](docs/QA_RESULTS.md).
+The browser audit starts its own server on 8766 and uses separate temporary data, including a server restart. With `$env:SMARTBREW_LIVE_AI = '1'`, it runs **58 checks** (recorded in `evidence/browser-results.json`), covering all ten feature groups, the expanded F06 recommendation context controls/modes, and live F11 multi-turn recipe application and clearing. Set `CHROME_PATH` to an installed Chrome executable to use that instead of Playwright's browser. Recorded results and limitations are in [the verification record](docs/QA_RESULTS.md).
 
 With Ollama/model running, set `$env:SMARTBREW_LIVE_AI = '1'` before the browser command to additionally test actual inference, explicit recipe application and conversation clearing. The normal browser audit does not require a model; its deliberate unavailable-model response is a failure-path test, not simulated evidence of real inference.
 
@@ -122,7 +127,7 @@ With Ollama/model running, set `$env:SMARTBREW_LIVE_AI = '1'` before the browser
 - [Model/prompt appendix PDF](output/pdf/G28Lab3_AI_Appendix.pdf)
 - [Documentation index](docs/README.md)
 
-Lab 3 Tasks A-C were developed with Codex using the student-confirmed **GPT-6.1 Sol** selector label. Qwen3 is the prototype's runtime drink model, not the assistant that generated the project. The appendix records prompts, decisions, observed errors and revisions. Students still need to understand and evaluate the work; no student-authored personal reflection is supplied.
+Lab 3 Tasks A-C and the initial local integration of a student-relayed Gemini web-chat draft were developed with Codex using the student-confirmed **GPT-6.1 Sol** selector label (before Gemini had local IDE access; that earlier web-chat Gemini version was not recorded). After opening the repository in Google Antigravity, **Gemini 4 Argon Medium** inspected the local files, implemented and tested the focused F11 multi-turn assistant corrections and the expanded F06 deterministic recommendation scoring and browser checks, and recorded the local verification evidence. Local **Qwen3:4b** through Ollama 0.40.6 is the prototype's runtime drink model, not a development assistant that generated the project. The appendix and AI record document prompts, decisions, observed errors and revisions. Students still need to understand and evaluate the work; no student-authored personal reflection is supplied.
 
 The original Lab 2 was also AI-assisted; that limitation is disclosed in the comparison rather than described as an independent human baseline. Earlier generated Lab 2 corrections are historical review aids only: the supplied course policy prohibits submitting generated text/models for Labs 1-2. Original submissions remain unchanged.
 

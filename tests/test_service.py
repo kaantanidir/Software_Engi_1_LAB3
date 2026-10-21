@@ -1,6 +1,7 @@
 """Regression tests for the selected features and their failure/authorization paths."""
 
 from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime
 import json
 from pathlib import Path
 import tempfile
@@ -121,9 +122,138 @@ class SmartBrewTests(unittest.TestCase):
         self.store.checkout(self.customer, self.body)
         ranked = self.store.recommendations(self.customer)["recommendations"]
         latte = next(d for d in ranked if d["config"]["drink"] == "latte")
-        self.assertIn("A recent favorite", latte["reasons"])
+        self.assertIn("A frequent choice", latte["reasons"])
         self.store.admin(self.tech, "stock", {"ingredient": "beans", "level": 0})
         self.assertTrue(all(d["config"]["drink"] == "cocoa" for d in self.store.recommendations()["recommendations"]))
+
+    def test_recommendation_periods_temperatures_conditions_and_tie_breaks(self):
+        """Purpose: verify every period, temperature, weather condition, offline rule and tie-breaker. Inputs: guest context matrix. Returns: None."""
+        expected_periods = (
+            ("morning", "espresso", 18, "Morning pick-me-up"),
+            ("afternoon", "latte", 16, "Smooth afternoon balance"),
+            ("evening", "cocoa", 18, "Gentle evening unwind"),
+            ("night", "cocoa", 20, "Late-hour comfort pick"),
+        )
+        for period, top_drink, top_score, reason in expected_periods:
+            self.store.admin(self.tech, "context", {"network": False, "weather": "cold", "condition": "snowy", "period": period, "email_ok": True})
+            payload = self.store.recommendations()
+            ranked = payload["recommendations"]
+            self.assertEqual(ranked[0]["config"]["drink"], top_drink)
+            self.assertEqual(ranked[0]["score"], top_score)
+            self.assertIn(reason, ranked[0]["reasons"])
+            self.assertIn("Local context; weather offline", ranked[0]["reasons"])
+            self.assertIn("weather unavailable", payload["context"])
+
+        expected_temps = (
+            ("cold", "cocoa", 18, "Rich warmth for cold weather"),
+            ("mild", "cappuccino", 15, "Balanced for mild weather"),
+            ("warm", "americano", 16, "Lighter profile for warm weather"),
+            ("hot", "americano", 17, "Clean, lighter profile for hot weather"),
+        )
+        for weather, target_drink, expected_score, reason in expected_temps:
+            self.store.admin(self.tech, "context", {"network": True, "weather": weather, "period": "night", "email_ok": True})
+            ranked = self.store.recommendations()["recommendations"]
+            entry = next(d for d in ranked if d["config"]["drink"] == target_drink)
+            if weather != "cold":
+                self.assertEqual(entry["score"], expected_score)
+            self.assertIn(reason, entry["reasons"])
+            for item in ranked:
+                for cond_reason in ("Crisp pick for sunny skies", "Smooth comfort for cloudy skies", "Cozy choice for a rainy day", "Extra-cozy for snowy weather"):
+                    self.assertNotIn(cond_reason, item["reasons"])
+
+        expected_conditions = (
+            ("unknown", "americano", 19, None),
+            ("sunny", "americano", 22, "Crisp pick for sunny skies"),
+            ("cloudy", "latte", 24, "Smooth comfort for cloudy skies"),
+            ("rainy", "latte", 23, "Cozy choice for a rainy day"),
+            ("snowy", "latte", 24, "Extra-cozy for snowy weather"),
+        )
+        for condition, target_drink, expected_score, reason in expected_conditions:
+            self.store.admin(self.tech, "context", {"network": True, "weather": "warm", "condition": condition, "period": "afternoon", "email_ok": True})
+            ranked = self.store.recommendations()["recommendations"]
+            entry = next(d for d in ranked if d["config"]["drink"] == target_drink)
+            self.assertEqual(entry["score"], expected_score)
+            if reason:
+                self.assertIn(reason, entry["reasons"])
+
+        self.store.admin(self.tech, "context", {"network": True, "weather": "cold", "condition": "rainy", "period": "morning", "email_ok": True})
+        rainy_morning = self.store.recommendations()["recommendations"]
+        self.assertEqual([ (d["config"]["drink"], d["score"]) for d in rainy_morning ], [
+            ("cappuccino", 23),
+            ("cocoa", 22),
+            ("latte", 21),
+            ("mocha", 21),
+            ("americano", 19),
+            ("espresso", 18),
+        ])
+
+    def test_recommendation_period_mode_manual_vs_controlled_clock(self):
+        """Purpose: verify deterministic clock periods versus manual technician override. Inputs: injected clock hours. Returns: None."""
+        clock_cases = (
+            (5, "morning"),
+            (11, "morning"),
+            (12, "afternoon"),
+            (16, "afternoon"),
+            (17, "evening"),
+            (21, "evening"),
+            (22, "night"),
+            (3, "night"),
+        )
+        for hour, expected_period in clock_cases:
+            self.store.clock = lambda h=hour: datetime(2026, 10, 21, h, 15)
+            self.store.admin(self.tech, "context", {"network": True, "weather": "mild", "condition": "unknown", "period_mode": "auto", "period": "morning", "email_ok": True})
+            auto_result = self.store.recommendations()
+            self.assertEqual(auto_result["effective_period"], expected_period)
+            self.assertEqual(auto_result["period_source"], "local_clock")
+            self.assertIn("(local clock)", auto_result["context"])
+
+        self.store.clock = lambda: datetime(2026, 10, 21, 23, 45)
+        self.store.admin(self.tech, "context", {"network": True, "weather": "mild", "condition": "unknown", "period_mode": "manual", "period": "morning", "email_ok": True})
+        manual_result = self.store.recommendations()
+        self.assertEqual(manual_result["effective_period"], "morning")
+        self.assertEqual(manual_result["period_source"], "technician_override")
+        self.assertIn("(technician override)", manual_result["context"])
+
+    def test_recommendation_personalization_ownership_caps_and_pending_exclusion(self):
+        """Purpose: verify two-customer isolation, saved recipes, 3-order cap and pending/declined exclusion. Inputs: two customer sessions. Returns: None."""
+        _, first = self.store.auth("register", {"name": "First", "email": "first-rec@example.test", "password": "FirstPass123!"})
+        _, second = self.store.auth("register", {"name": "Second", "email": "second-rec@example.test", "password": "SecondPass123!"})
+        self.store.auth("profile", {"milk": "none", "strength": "strong", "temperature": 85}, first)
+        self.store.admin(self.tech, "context", {"network": True, "weather": "cold", "condition": "snowy", "period": "night", "email_ok": True})
+
+        guest_ranked = self.store.recommendations()["recommendations"]
+        self.assertEqual(guest_ranked[0]["config"]["drink"], "cocoa")
+        self.assertEqual(guest_ranked[0]["score"], 33)
+        self.assertEqual(guest_ranked[0]["config"]["milk"], "dairy")
+
+        self.store.recipes(first, "save", {"name": "Pure Espresso", "config": {"drink": "espresso", "milk": "none", "strength": "strong", "temperature": 85}})
+        after_save = {d["config"]["drink"]: d for d in self.store.recommendations(first)["recommendations"]}
+        self.assertEqual(after_save["espresso"]["score"], 35)
+        self.assertIn("In your saved recipes", after_save["espresso"]["reasons"])
+        self.assertIn("Matches your no-milk preference", after_save["espresso"]["reasons"])
+        self.assertIn("Matches your strong strength preference", after_save["espresso"]["reasons"])
+
+        for idx, expected_score in enumerate((47, 59, 71, 71), start=1):
+            self.store.checkout(first, {"config": {"drink": "espresso", "milk": "none", "strength": "strong", "temperature": 85}, "method": "contactless", "points": 0, "key": f"esp-cap-00{idx}"})
+            ranked_first = self.store.recommendations(first)["recommendations"]
+            self.assertEqual(ranked_first[0]["config"]["drink"], "espresso")
+            self.assertEqual(ranked_first[0]["score"], expected_score)
+            self.assertIn("A frequent choice", ranked_first[0]["reasons"])
+
+        second_ranked = {d["config"]["drink"]: d for d in self.store.recommendations(second)["recommendations"]}
+        self.assertNotIn("In your saved recipes", second_ranked["espresso"]["reasons"])
+        self.assertNotIn("A frequent choice", second_ranked["espresso"]["reasons"])
+        self.assertEqual(second_ranked["espresso"]["score"], 10)
+
+        self.store.admin(self.tech, "simulation", {"payment_mode": "decline"})
+        with self.assertRaises(RuleError):
+            self.store.checkout(second, {"config": {"drink": "mocha"}, "method": "contactless", "points": 0, "key": "declined-mocha-001"})
+        self.store.admin(self.tech, "simulation", {"payment_mode": "normal"})
+        self.store.admin(self.tech, "context", {"network": False, "weather": "cold", "condition": "snowy", "period": "night", "email_ok": False})
+        pending = self.store.checkout(second, {"config": {"drink": "mocha"}, "method": "apple_pay", "points": 0, "key": "pending-mocha-001"})
+        self.assertEqual(pending["status"], "pending")
+        second_after = {d["config"]["drink"]: d for d in self.store.recommendations(second)["recommendations"]}
+        self.assertNotIn("A frequent choice", second_after["mocha"]["reasons"])
 
     def test_recommendations_use_the_customers_actual_preferences(self):
         """Purpose: rank purchasable personalized variants. Inputs: oat preference and depleted dairy. Returns: None."""

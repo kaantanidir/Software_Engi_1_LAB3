@@ -22,6 +22,36 @@ INGREDIENTS = [("beans", "Coffee beans", "g", 1000, 20), ("water", "Water", "ml"
                ("dairy", "Dairy milk", "ml", 2000, 100), ("oat", "Oat milk", "ml", 2000, 100),
                ("cocoa", "Cocoa", "g", 500, 25), ("syrup", "Vanilla syrup", "ml", 500, 20), ("cups", "Cups", "pcs", 50, 2)]
 METHODS = ("emv_chip", "contactless", "apple_pay", "google_pay", "prepaid")
+PERIODS = ("morning", "afternoon", "evening", "night")
+PERIOD_MODES = ("manual", "auto")
+WEATHERS = ("cold", "mild", "warm", "hot")
+CONDITIONS = ("unknown", "sunny", "cloudy", "rainy", "snowy")
+BLACK_DRINKS = frozenset({"espresso", "americano"})
+MILK_DRINKS = frozenset({"latte", "cappuccino", "mocha", "cocoa"})
+STRENGTH_AFFINITY = {
+    "strong": frozenset({"espresso", "americano"}),
+    "regular": frozenset({"americano", "cappuccino", "mocha"}),
+    "mild": frozenset({"latte", "cocoa"}),
+}
+PERIOD_SCORES = {
+    "morning": ({"espresso": 8, "americano": 7, "cappuccino": 6, "latte": 4}, "Morning pick-me-up"),
+    "afternoon": ({"latte": 6, "cappuccino": 5, "mocha": 4, "americano": 3}, "Smooth afternoon balance"),
+    "evening": ({"cocoa": 8, "mocha": 6, "latte": 5, "cappuccino": 2}, "Gentle evening unwind"),
+    "night": ({"cocoa": 10, "latte": 4, "mocha": 3}, "Late-hour comfort pick"),
+}
+WEATHER_SCORES = {
+    "cold": ({"cocoa": 8, "mocha": 7, "latte": 5, "cappuccino": 4, "americano": 2}, "Rich warmth for cold weather"),
+    "mild": ({"cappuccino": 5, "latte": 4, "americano": 3, "espresso": 2}, "Balanced for mild weather"),
+    "warm": ({"americano": 6, "latte": 5, "espresso": 4, "cappuccino": 2}, "Lighter profile for warm weather"),
+    "hot": ({"americano": 7, "espresso": 6, "latte": 3}, "Clean, lighter profile for hot weather"),
+}
+CONDITION_SCORES = {
+    "unknown": ({}, ""),
+    "sunny": ({"americano": 3, "espresso": 2, "latte": 2, "cappuccino": 1}, "Crisp pick for sunny skies"),
+    "cloudy": ({"cappuccino": 3, "latte": 3, "americano": 2, "mocha": 2}, "Smooth comfort for cloudy skies"),
+    "rainy": ({"mocha": 4, "cocoa": 4, "cappuccino": 3, "latte": 2}, "Cozy choice for a rainy day"),
+    "snowy": ({"cocoa": 5, "mocha": 4, "latte": 3, "cappuccino": 2}, "Extra-cozy for snowy weather"),
+}
 
 
 class RuleError(Exception):
@@ -53,9 +83,10 @@ def integer(value, name, minimum, maximum):
 class Store:
     """Persistence, access control, recipes and atomic checkout operations."""
 
-    def __init__(self, path):
-        """Purpose: initialize a database. Inputs: database path. Returns: None."""
+    def __init__(self, path, clock=None):
+        """Purpose: initialize a database. Inputs: database path and optional clock callable. Returns: None."""
         self.path = str(path)
+        self.clock = clock or datetime.now
         Path(path).parent.mkdir(parents=True, exist_ok=True)
         self.initialize()
 
@@ -100,6 +131,10 @@ class Store:
             settings_columns = {row["name"] for row in db.execute("PRAGMA table_info(settings)")}
             if "payment_mode" not in settings_columns:
                 db.execute("ALTER TABLE settings ADD COLUMN payment_mode TEXT NOT NULL DEFAULT 'normal'")
+            if "condition" not in settings_columns:
+                db.execute("ALTER TABLE settings ADD COLUMN condition TEXT NOT NULL DEFAULT 'unknown'")
+            if "period_mode" not in settings_columns:
+                db.execute("ALTER TABLE settings ADD COLUMN period_mode TEXT NOT NULL DEFAULT 'manual'")
             for key, name, unit, capacity, threshold in INGREDIENTS:
                 db.execute("INSERT OR IGNORE INTO ingredients VALUES(?,?,?,?,?,?)", (key, name, unit, capacity, capacity, threshold))
             for key in ("liquid", "grounds"):
@@ -271,13 +306,43 @@ class Store:
                 db.execute("UPDATE recipes SET name=?,config=? WHERE id=?", (name, config, recipe_id))
             return {"id": recipe_id, "ok": True}
 
+    @staticmethod
+    def period_for_hour(hour):
+        """Purpose: map a 24-hour clock hour to a period name. Inputs: integer hour 0-23. Returns: period string."""
+        integer(hour, "Hour", 0, 23)
+        if 5 <= hour <= 11:
+            return "morning"
+        if 12 <= hour <= 16:
+            return "afternoon"
+        if 17 <= hour <= 21:
+            return "evening"
+        return "night"
+
+    def effective_period(self, settings):
+        """Purpose: resolve the active time period and its source. Inputs: settings dictionary. Returns: (period, source) tuple."""
+        if settings.get("period_mode", "manual") == "auto":
+            return self.period_for_hour(self.clock().hour), "local_clock"
+        return settings["period"], "technician_override"
+
     def recommendations(self, token=""):
         """Purpose: score available menu using local context/history. Inputs: session. Returns: ranked drinks with reasons."""
         state = self.state(token)
-        user = state["user"]
+        user = state["user"] if state["user"] and state["user"].get("role") == "customer" else None
         prefs = user["preferences"] if user else {}
         history = [o["recipe"]["config"]["drink"] for o in state.get("orders", [])]
+        saved_drinks = {r["config"]["drink"] for r in state.get("recipes", [])}
         settings = state["settings"]
+        effective_period, period_source = self.effective_period(settings)
+        source_label = "local clock" if period_source == "local_clock" else "technician override"
+        condition = settings.get("condition", "unknown")
+        if settings["network"]:
+            weather_label = f"{settings['weather']}, {condition} weather" if condition != "unknown" else f"{settings['weather']} weather"
+            context_summary = f"Context: {effective_period} ({source_label}) · {weather_label} (simulator)"
+        else:
+            context_summary = f"Context: {effective_period} ({source_label}) · local history/preferences; weather unavailable"
+        period_points, period_reason = PERIOD_SCORES[effective_period]
+        weather_points, weather_reason = WEATHER_SCORES[settings["weather"]] if settings["network"] else ({}, "")
+        condition_points, condition_reason = CONDITION_SCORES[condition] if settings["network"] else ({}, "")
         results = []
         with self.connection() as db:
             candidates = [self.quote(db, {**entry["config"], **prefs}) for entry in state["menu"]]
@@ -287,23 +352,44 @@ class Store:
             drink = entry["config"]["drink"]
             score = 10
             reasons = []
-            if drink in history:
-                score += min(30, history.count(drink) * 10)
-                reasons.append("A recent favorite")
-            if settings["period"] == "morning" and drink in ("espresso", "americano", "cappuccino"):
+            order_count = history.count(drink)
+            if order_count:
+                score += min(36, order_count * 12)
+                reasons.append("A frequent choice")
+            if drink in saved_drinks:
                 score += 15
-                reasons.append("A morning coffee")
-            if settings["network"] and settings["weather"] == "cold" and drink in ("cocoa", "mocha", "latte"):
-                score += 12
-                reasons.append("For a cool day")
-            if prefs.get("milk") == "oat" and drink in ("latte", "cappuccino"):
-                score += 9
-                reasons.append("Pairs with your oat preference")
+                reasons.append("In your saved recipes")
+            if user:
+                milk_pref = prefs.get("milk")
+                if milk_pref in ("dairy", "oat") and drink in MILK_DRINKS:
+                    score += 6
+                    reasons.append(f"Prepared with your preferred {milk_pref} milk")
+                elif milk_pref == "none" and drink in BLACK_DRINKS:
+                    score += 6
+                    reasons.append("Matches your no-milk preference")
+                strength_pref = prefs.get("strength")
+                if drink in STRENGTH_AFFINITY.get(strength_pref, ()):
+                    score += 4
+                    reasons.append(f"Matches your {strength_pref} strength preference")
+            if drink in period_points:
+                score += period_points[drink]
+                reasons.append(period_reason)
+            if drink in weather_points:
+                score += weather_points[drink]
+                reasons.append(weather_reason)
+            if drink in condition_points:
+                score += condition_points[drink]
+                reasons.append(condition_reason)
             if not settings["network"]:
                 reasons.append("Local context; weather offline")
-            results.append({**entry, "score": score, "reasons": reasons or ["Available today"]})
+            results.append({**entry, "score": score, "reasons": reasons or ["Balanced house recommendation"]})
         results.sort(key=self.recommendation_key)
-        return {"recommendations": results}
+        return {
+            "recommendations": results,
+            "effective_period": effective_period,
+            "period_source": period_source,
+            "context": context_summary,
+        }
 
     @staticmethod
     def recommendation_key(entry):
@@ -431,9 +517,16 @@ class Store:
                 email_ok = data.get("email_ok", True)
                 weather = data.get("weather", "cold")
                 period = data.get("period", "morning")
-                if not isinstance(network, bool) or not isinstance(email_ok, bool) or weather not in ("cold", "warm") or period not in ("morning", "afternoon"):
+                condition = data.get("condition", "unknown")
+                period_mode = data.get("period_mode", "manual")
+                if (not isinstance(network, bool) or not isinstance(email_ok, bool)
+                        or weather not in WEATHERS or period not in PERIODS
+                        or condition not in CONDITIONS or period_mode not in PERIOD_MODES):
                     raise RuleError("Unsupported simulator context.")
-                db.execute("UPDATE settings SET network=?,weather=?,period=?,email_ok=? WHERE id=1", (int(network), weather, period, int(email_ok)))
+                db.execute(
+                    "UPDATE settings SET network=?,weather=?,period=?,email_ok=?,condition=?,period_mode=? WHERE id=1",
+                    (int(network), weather, period, int(email_ok), condition, period_mode),
+                )
                 self.event(db, "info", "CONTEXT", "Technician changed network/weather/time simulator.")
             elif action == "simulation":
                 mode = data.get("payment_mode")

@@ -15,25 +15,25 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, Tabl
 from coursework_data import LAB3, GROUPS2, STORIES2, STORIES3, USECASES, SOURCES, COMPARISON, REJECTIONS
 
 ROOT = Path(__file__).resolve().parents[1]
-MODEL = "GPT-6.1 Sol (model-selector label supplied by the student on 2026-10-20); exact backend build not exposed."
+MODEL = "Codex with student-confirmed selector label GPT-6.1 Sol (2026-10-20/21, initial Lab 3 Tasks A-C and web-chat handoff integration; exact backend build not exposed) and Gemini 4 Argon Medium through Google Antigravity (2026-10-21, local repository inspection, F11 multi-turn assistant evaluation/correction and F06 deterministic recommendation expansion and verification)."
 FEATURES = [
     ("F01", "Accounts, login and preferences", "FR-01/02/03, NFR-02", "Create account; password/NFC login; save default milk/strength/temperature; log out/in."),
     ("F02", "Menu, categories and nutrition", "FR-04", "Browse six drinks; filter Coffee/Chocolate; inspect estimated nutrition and allergens."),
     ("F03", "Validated custom drink quote", "FR-05", "Change milk, strength, temperature, syrup and shots; observe server-calculated quote."),
     ("F04", "Named personal recipes", "FR-06", "Save Morning Oat; rename; load and edit settings; save update; delete."),
     ("F05", "Ingredient/quantity checks", "FR-07, NFR-03", "Set oat level below threshold as technician; verify oat recipe cannot be purchased; refill."),
-    ("F06", "Context/history recommendations", "FR-08/19", "Toggle Recommended first; change simulated weather/time; buy a drink and verify ranking reasons."),
+    ("F06", "Context/history recommendations", "FR-08/19", "Toggle Recommended first; switch local-clock or manual period (morning/afternoon/evening/night), temperature (cold/mild/warm/hot) and condition (unknown/sunny/cloudy/rainy/snowy); verify history, saved-recipe and preference reasons and offline fallback."),
     ("F07", "Checkout and immutable history", "FR-11/12/20, NFR-03", "Use five payment methods; set external decline in technician Test scenarios; inspect history/retries and offline reconciliation."),
     ("F08", "Earn and redeem loyalty", "FR-13", "Apply 100 points; verify SEK 10 discount and success-only deduction/earning."),
     ("F09", "QR receipt and email adapter", "FR-14", "Open receipt QR/text; send to local simulator outbox; fail email and retain QR fallback."),
     ("F10", "Protected maintenance/diagnostics", "FR-15/16/17/18", "PIN/master-NFC login; full refill; waste halt/empty; fault logging; authorized diagnostic export."),
 ]
-OPTIONAL_FEATURE = [("F11", "Local drink assistant", "FR-10/19", "Ask for a strong oat latte; review the real local-model proposal; apply settings, then separately confirm checkout. Test a clarification and unavailable model.")]
+OPTIONAL_FEATURE = [("F11", "Local drink assistant", "FR-10/19", "Ask for a strong oat latte or taste-based change; review the real local-model proposal across multi-turn follow-ups, clarifications and unsupported-option refusals; apply settings, then separately confirm checkout.")]
 
 OVERVIEW = "SmartBrew AI is a local coffee-machine prototype for customers and maintenance technicians. It implements ten selected feature groups: accounts, menu, customization, personal recipes, availability, recommendations, checkout/history, loyalty, receipts and maintenance. An additional optional local language model interprets drink requests into customer-confirmed recipes. The complete elicitation retains camera/privacy requirements even though camera inference is outside this implementation."
 POLICY = "Previously generated Lab 2 correction: AI-GENERATED REVIEW REFERENCE ONLY - NOT FOR LAB 1 OR LAB 2 SUBMISSION. The general course rules supplied after this reference was generated prohibit submitting generated text/models for those labs. Original submissions are unchanged. Lab 3 explicitly permits generation; disclosure does not override the Lab 1-2 restriction."
 CROSS_LAB = "Lab 1 received a positive grade, with Partial feedback on component scope and UI dependency on the AIEngine. Its nine domain concepts map to roles, preferences, recipes, purchase records and stock/waste state, not necessarily one code class each. The optional local-LLM responsibility is now implemented through a separate adapter; camera/mood inference remains deferred. Loyalty first appears in the supplied Lab 2, not the Lab 1 diagrams. See docs/CROSS_LAB_REVIEW.md for the detailed source mapping."
-EXPERIMENT = "The instructor strongly recommends additional experimentation, but does not state a fourth mandatory task. No optional exercise has been selected or claimed as completed. Mutation tests could use a disposable copy without removing any submitted functionality. Any personal reflection for a later exercise must be written by the student; none is generated here."
+EXPERIMENT = "The instructor strongly recommends additional experimentation, but does not state a fourth mandatory task. During Lab 3 verification, the project conducted an empirical before/after evaluation of multi-turn local-model behavior and deterministic recommendation ranking against isolated temporary databases: the 8-turn held-out assistant baseline (evidence/assistant-heldout-baseline.json, 5/8 turns passed) exposed a leaked synthetic context turn, base-drink rigidity, silent substitution of unsupported iced/caramel requests and unrequested extra espresso shots; replacing the synthetic assistant turn with a trailing system context snapshot and ordering config before message improved results to 7/8 on the first post-change run (evidence/assistant-heldout-postchange-first-run.json) and 8/8 on the final regression run (evidence/assistant-heldout-postchange.json), alongside 12/12 in the conversation suite (evidence/assistant-conversations.json), 9/9 recipe turns in the long-chat suite (evidence/assistant-long-chat.json) and 58/58 browser checks (evidence/browser-results.json, with first-run browser regressions preserved in evidence/browser-failure.json and evidence/browser-f06-first-run-failure.json). Only the factual test protocol and observed outcomes are reported here; no first-person student reflection is generated by the assistants."
 PROVENANCE = "The comparison uses the actual submitted Lab 2 files, preserved with hashes in docs/baseline. That submission was already AI-assisted in this conversation, so it is not an independently human-elicited baseline. This limitation is disclosed for instructor review. Later reference corrections are not substituted for the submitted version."
 PROMPT_STRATEGY = "Use the actual system description, feedback and course slides as grounding; constrain all requirements to the six-column lecture template; retain the submitted baseline; check each source capability against stories/requirements/backlog; separate source mandates from proposed design assumptions; select ten coherent demonstrable feature groups; implement and test approval, rejection, ownership, retry, safety and offline paths. This was one evolving chat request with student clarifications, not an invented sequence of separate prompting experiments."
 ASSUMPTIONS = [
@@ -41,9 +41,9 @@ ASSUMPTIONS = [
     "Loyalty: earn one point per whole SEK actually paid; one point redeems SEK 0.10, bounded by balance and price. Demo Alex begins with 250 points and SEK 200 prepaid credit; new accounts begin with zero.",
     "Customer orders may be placed as guest; profile/recipe/history and prepaid/loyalty features require customer login. Guest receipts use an unguessable capability token.",
     "Mood opt-in and the proposed 2-second response target are design refinements; the original brief does not prescribe consent UI, a numerical latency target or point-conversion rules.",
-    "Weather/time, NFC/key signals, machine sensors, payment approval and email are simulated locally. Manual ordering and stored-value prepaid payments work while the simulated network is offline.",
+    "Weather/time, NFC/key signals, machine sensors, payment approval and email are simulated locally. Recommendation scoring uses separate deterministic affinity tables (preserving generic recipe defaults), period mode (manual technician override or injectable local clock across morning/afternoon/evening/night), online temperature (cold/mild/warm/hot), online weather condition (unknown/sunny/cloudy/rainy/snowy), and customer-owned preferences, saved recipes (+15) and completed-order count (+12 per order up to +36 as 'A frequent choice'). Manual ordering and stored-value prepaid payments work while the simulated network is offline.",
     "Online-only payment requests can be persisted as pending without dispensing. Reconnect and customer Retry performs authorization/revalidation once; the prototype never assumes that a wallet can approve offline.",
-    "Camera mood inference remains deferred. F11 adds actual optional local Qwen3 4B inference through Ollama 0.40.6, beyond the ten selected groups; it proposes supported recipes but cannot purchase or modify accounts.",
+    "Camera mood inference remains deferred. F11 adds actual optional local Qwen3 4B inference through Ollama 0.40.6, beyond the ten selected groups; it proposes supported recipes across multi-turn follow-ups and clarifications using a trailing system context snapshot without purchasing or modifying accounts.",
     "No physical brew command or real card authorization occurs. Admin diagnostics can be exported locally; there is no deployed remote diagnostic service or physical key reader.",
     "Technician-only Test scenarios controls the persistent external payment mode (Normal/Decline). Customer checkout cannot submit an outcome override. Existing accounts/orders are retained; historical purchases are not reassigned after the authentication fix.",
     "The model may need a cold load; server inference has a 90-second bound and manual ordering stays independent. The proposed menu/quote latency target excludes optional inference. Model proposals require customer review and fresh server validation.",
@@ -93,6 +93,20 @@ def backlog_sort(record):
     return (-record["importance"], record["id"])
 
 
+def appendix_preface():
+    """Purpose: assemble the Markdown text for the Lab 3 AI appendix. Inputs: MAIN_PROMPT.md and AI_CONVERSATION.md. Returns: combined appendix string."""
+    conversation = (ROOT / "docs" / "AI_CONVERSATION.md").read_text(encoding="utf-8")
+    main_prompt = (ROOT / "docs" / "MAIN_PROMPT.md").read_text(encoding="utf-8")
+    return "\n\n".join([
+        "# SmartBrew AI - Group 28 - Lab 3 AI appendix",
+        "Updated 2026-10-21. This appendix records development assistance, the main supplied prompt and key interactions. The following record identifies the development and runtime models separately.",
+        "## Record scope and prompt strategy",
+        "This appendix includes the main supplied request, key responses and clarifications. Markdown whitespace is normalized. The later Lab 1/course-policy context is explicitly summarized rather than represented as a full verbatim export. Generated source files in the Git repository are the code responses. This record contains no private model reasoning, invented prompts or student-written personal reflection.",
+        main_prompt.strip(),
+        conversation.strip(),
+    ])
+
+
 def write_markdown(include_reference=False):
     """Purpose: export current artifacts and optional historical references. Inputs: module records/reference flag. Returns: None."""
     docs = ROOT / "docs"
@@ -110,10 +124,10 @@ def write_markdown(include_reference=False):
     reference = docs / "reference" / "lab2"
     if include_reference:
         reference.mkdir(parents=True, exist_ok=True)
-        (reference / "REVIEW.md").write_text("\n\n".join(lab2) + "\n", encoding="utf-8")
+        (reference / "REVIEW.md").write_text("\n\n".join(lab2) + "\n", encoding="utf-8", newline="\n")
     text3 = ["# SmartBrew AI - Group 28 - Lab 3", "Updated: 2026-10-21", "## Task A - Elicitation", OVERVIEW,
              "### Cross-lab continuity", CROSS_LAB,
-             "### Models and provenance", MODEL, "This is the development assistant for Tasks A-C. The runtime drink model is separately identified as local Qwen3 4B through Ollama 0.40.6. Earlier Lab 2 model/version was not recorded.", PROVENANCE,
+             "### Models and provenance", MODEL, "These are the development assistants for Lab 3 Tasks A-C and the subsequent F11/F06 updates. The runtime drink model inside the application is separately identified as local Qwen3 4B (qwen3:4b) through Ollama 0.40.6. Earlier Lab 1-2 tutoring and an intermediate web-chat Gemini draft before local IDE access did not expose confirmed model version labels.", PROVENANCE,
              "### Prompt strategy", PROMPT_STRATEGY, "Main prompts and selected responses are recorded in AI_CONVERSATION.md and the separate PDF appendix; generated code and revisions are retained in Git.",
              "### Source inventory", table_md(["Source", "System capability"], SOURCES),
              "### User stories", table_md(["ID", "Name", "Story", "Requirement links"], STORIES3),
@@ -127,13 +141,14 @@ def write_markdown(include_reference=False):
              "### Optional addition", table_md(["Feature", "Functionality", "Requirements", "Demonstration"], OPTIONAL_FEATURE),
              "### Scope and assumptions", "\n".join("- " + item for item in ASSUMPTIONS),
              "### Architecture", "The HTTP adapter and service layer enforce identity, ownership and purchase rules. SQLite holds persistent local state; checkout uses one write transaction and a unique request key. Customer ordering and technician maintenance/testing share one app but separate protected actions. The optional model adapter is loopback-only and has no ordering side effects. See ARCHITECTURE.md for responsibilities and trust boundaries.",
-             "### Validation and revisions", "QA_RESULTS.md and evidence/ contain actual runs. The student exposed a browser authentication defect: hidden demo NFC data overrode entered passwords. A failing regression reproduced it; explicit methods and two-customer browser tests now verify identity, ownership and restart persistence. Earlier passing tests were insufficient because they only used Alex for browser customer login. Other fixes preserve pending loyalty selections, independent manual ordering during recommendation failure and complete order snapshots. Real local-model tests are separate from adapter fixtures; an invented usual-drink response and cold-start timeout were retained as observed failures before refinement. Simulator tests do not validate real hardware or financial/email processors.",
+             "### Validation and revisions", "QA_RESULTS.md and evidence/ contain actual runs (33 unit tests in evidence/unit-tests.txt and 58 browser checks in evidence/browser-results.json). The student exposed a browser authentication defect: hidden demo NFC data overrode entered passwords. A failing regression reproduced it; explicit methods and two-customer browser tests now verify identity, ownership and restart persistence. Earlier passing tests were insufficient because they only used Alex for browser customer login. Subsequent evaluation and implementation in Google Antigravity (Gemini 4 Argon Medium) resolved multi-turn F11 assistant context/constraint issues (replacing a leaked synthetic assistant turn with a trailing system context snapshot, ordering config before message in RESPONSE_SCHEMA, and refusing unsupported iced/caramel requests without silent substitution or unrequested extra espresso; 8/8 in evidence/assistant-heldout-postchange.json, 12/12 in evidence/assistant-conversations.json, and 9/9 recipe turns in evidence/assistant-long-chat.json) and expanded F06 recommendations across manual vs local-clock periods (morning/afternoon/evening/night), temperatures (cold/mild/warm/hot), weather conditions (unknown/sunny/cloudy/rainy/snowy), and customer-isolated preferences, saved recipes (+15) and completed-order frequency (+12 per order up to +36 as 'A frequent choice'). Simulator tests do not validate real hardware or financial/email processors.",
              "### Recommended extra experimentation", EXPERIMENT,
              "## Task C - Repository and documentation", "Repository: https://github.com/kaantanidir/Software_Engi_1_LAB3 . README.md contains environment, installation, execution, tests and all ten feature demos. Each authored Python/JavaScript/Java function documents purpose, inputs and outputs. Vendored Lucide is third-party library code with its license retained. Runtime data, local packages and temporary files are excluded from Git.",
              "### Review before submission", "Review point conversion, pending-payment policy, estimates and model limitations, then run the walkthrough. Detailed prompts/model use are in the appendix. The submitted Lab 2 provenance needs instructor clarification if a strictly independent human baseline is required. Historical generated Lab 2 review aids are not submission materials under the supplied policy.",
-             "### AI appendix", "The required simple PDF is output/pdf/G28Lab3_AI_Appendix.pdf. It contains the student-confirmed model label, prompt strategy, main prompt and key responses, subsequent clarifications and generated-code references. The historical record is normalized/selected, not a full verbatim export or a student-written personal reflection.",
+             "### AI appendix", "The required simple PDF is output/pdf/G28Lab3_AI_Appendix.pdf. It contains the student-confirmed model labels, prompt strategy, main prompt and key responses, subsequent clarifications and generated-code references. The historical record is normalized/selected, not a full verbatim export or a student-written personal reflection.",
              "### References", "Instructor feedback page 1; Lecture-02-2026 slides 20-23, 30-31, 38, 43 and 47-48; Lecture-03-2026 slides 17, 22, 28, 38-40; system description and assignment guidelines supplied in the chat. Henrik Kniberg, Scrum and XP from the Trenches: https://www.infoq.com/minibooks/download/scrum-xp-from-the-trenches/ (recommended course reading; student completion is not asserted)."]
-    (docs / "LAB3_REPORT.md").write_text("\n\n".join(text3) + "\n", encoding="utf-8")
+    (docs / "LAB3_REPORT.md").write_text("\n\n".join(text3) + "\n", encoding="utf-8", newline="\n")
+    (docs / "LAB3_AI_APPENDIX.md").write_text(appendix_preface() + "\n", encoding="utf-8", newline="\n")
     uc = ["# Use-case review reference descriptions", POLICY, "Template: Lecture 2 slides 30-31. The AI-generated Astah reference contains the same descriptions; neither is for Lab 2 submission."]
     tsv = []
     for name, values in USECASES.items():
@@ -142,9 +157,9 @@ def write_markdown(include_reference=False):
             uc.append("**" + key + "**\n\n" + value)
         tsv.append(name + "\t" + "\t".join(base64.b64encode(value.encode()).decode() for value in values))
     if include_reference:
-        (reference / "USE_CASE_DESCRIPTIONS.md").write_text("\n\n".join(uc), encoding="utf-8")
+        (reference / "USE_CASE_DESCRIPTIONS.md").write_text("\n\n".join(uc), encoding="utf-8", newline="\n")
         (ROOT / "tmp").mkdir(exist_ok=True)
-        (ROOT / "tmp" / "descriptions.tsv").write_text("\n".join(tsv), encoding="utf-8")
+        (ROOT / "tmp" / "descriptions.tsv").write_text("\n".join(tsv), encoding="utf-8", newline="\n")
 
 
 STYLES = getSampleStyleSheet()
@@ -205,8 +220,8 @@ def build_pdf(lab):
         records = lab2_records()
     else:
         flow.append(paragraph("Task A - Requirements elicitation, critical comparison and prompt record"))
-        flow.append(paragraph("Development model: " + MODEL)); flow.append(paragraph("Runtime drink model: local Qwen3 4B through Ollama 0.40.6. The two model roles are distinct.")); flow.append(paragraph(PROVENANCE)); flow.append(paragraph(PROMPT_STRATEGY))
-        flow.append(paragraph("Main student prompt and selected key responses: output/pdf/G28Lab3_AI_Appendix.pdf and docs/AI_CONVERSATION.md. This is a normalized interaction record, not a full historical export. Tasks A, B and C use the recorded model; the earlier Lab 2 version is unknown."))
+        flow.append(paragraph("Development models: " + MODEL)); flow.append(paragraph("Runtime drink model: local Qwen3 4B (qwen3:4b) through Ollama 0.40.6. The development and runtime model roles are distinct.")); flow.append(paragraph(PROVENANCE)); flow.append(paragraph(PROMPT_STRATEGY))
+        flow.append(paragraph("Main student prompt and selected key responses: output/pdf/G28Lab3_AI_Appendix.pdf and docs/AI_CONVERSATION.md. This is a normalized interaction record, not a full historical export. Tasks A, B and C and subsequent F11/F06 updates use the recorded models; earlier Lab 1-2 tutoring and an intermediate web-chat Gemini draft before local IDE access did not expose confirmed model version labels."))
         heading(flow,"User stories",True)
         flow.append(table(["ID","Name","Story","Requirements"], STORIES3,[18,42,157,48]))
         records = LAB3
@@ -242,7 +257,7 @@ def build_pdf(lab):
         flow.append(paragraph("These are options considered during this generation, not fabricated earlier model responses."))
         flow.append(table(["Option","Justification"],REJECTIONS,[90,175]))
         flow.append(Spacer(1,6*mm))
-        flow.append(paragraph("Initial name-only model checks missed requirement fields and wrong/empty use-case descriptions. Later, the student found a browser login defect that passing tests had missed: a hidden NFC value selected Alex instead of checking the entered password. The new regressions verify separate identities and ownership. Real-model testing also found an invented usual-drink recipe; the failed output was retained and clarification rules were refined. These observations distinguish observed evidence from an unsupported claim of completeness."))
+        flow.append(paragraph("Initial name-only model checks missed requirement fields and wrong/empty use-case descriptions. Later, the student found a browser login defect that passing tests had missed: a hidden NFC value selected Alex instead of checking the entered password. The new regressions verify separate identities and ownership. Real-model testing also found an invented usual-drink recipe; the failed output was retained and clarification rules were refined. Subsequent Google Antigravity (Gemini 4 Argon Medium) evaluation and implementation resolved multi-turn F11 context/constraint defects (8/8 in evidence/assistant-heldout-postchange.json) and expanded F06 recommendation scoring and verification (33 unit tests in evidence/unit-tests.txt and 58 browser checks in evidence/browser-results.json). These observations distinguish observed evidence from an unsupported claim of completeness."))
         heading(flow,"Cross-lab continuity and revisions",True)
         flow.append(paragraph(CROSS_LAB))
         flow.append(paragraph("Read-only Lab 1 inspection preserved the original model and hashes. The visible User {Abstract} label is not backed by Astah's native abstract flag, although the grader accepted the class criteria. No original model is silently rewritten. Conceptual model mappings and implementation scope differences are documented in the cross-lab review."))
@@ -274,17 +289,8 @@ def build_pdf(lab):
 
 def build_ai_appendix():
     """Purpose: export required model/prompt PDF. Inputs: preserved prompt/interaction files. Returns: output PDF path."""
-    conversation = (ROOT / "docs" / "AI_CONVERSATION.md").read_text(encoding="utf-8")
-    main_prompt = (ROOT / "docs" / "MAIN_PROMPT.md").read_text(encoding="utf-8")
-    preface = "\n\n".join([
-        "# SmartBrew AI - Group 28 - Lab 3 AI appendix",
-        "Updated 2026-10-21. This appendix records development assistance, the main supplied prompt and key interactions. The following record identifies the development and runtime models separately.",
-        "## Record scope and prompt strategy",
-        "This appendix includes the main supplied request, key responses and clarifications. Markdown whitespace is normalized. The later Lab 1/course-policy context is explicitly summarized rather than represented as a full verbatim export. Generated source files in the Git repository are the code responses. This record contains no private model reasoning, invented prompts or student-written personal reflection.",
-        main_prompt.strip(),
-        conversation.strip(),
-    ])
-    (ROOT / "docs" / "LAB3_AI_APPENDIX.md").write_text(preface + "\n", encoding="utf-8")
+    preface = appendix_preface()
+    (ROOT / "docs" / "LAB3_AI_APPENDIX.md").write_text(preface + "\n", encoding="utf-8", newline="\n")
     path = ROOT / "output" / "pdf" / "G28Lab3_AI_Appendix.pdf"
     doc = SimpleDocTemplate(str(path), pagesize=A4, rightMargin=16*mm, leftMargin=16*mm,
                             topMargin=16*mm, bottomMargin=18*mm, title="SmartBrew AI - Lab 3 model and prompt appendix",

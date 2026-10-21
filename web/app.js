@@ -1,5 +1,5 @@
 /* SmartBrew browser adapter. All prices are integer ore until presentation. */
-let state = {}, selected = 'latte', quote = null, category = 'All', recommendations = [];
+let state = {}, selected = 'latte', quote = null, category = 'All', recommendations = [], recommendationContext = '';
 let authMode = 'login', editingRecipe = null, activeOrder = null, paymentKey = null, quoteRevision = 0, toastTimer;
 let recommendationStatus = 'loading', refreshRevision = 0;
 let adminTab = 'maintenance', maintenanceBusy = false;
@@ -65,7 +65,7 @@ async function refresh() {
   const result = await api('/api/state');
   if (revision !== refreshRevision) return;
   const identityChanged = (state.user?.id ?? null) !== (result.user?.id ?? null);
-  state = result; recommendationStatus = 'loading'; recommendations = [];
+  state = result; recommendationStatus = 'loading'; recommendations = []; recommendationContext = '';
   if (identityChanged) { clearPrivateState(); if (state.user?.role === 'customer') applyConfig(state.user.preferences); }
   $('#maintenance-nav').hidden = state.user?.role !== 'technician';
   $('#account-name').textContent = state.user?.name || 'Sign in';
@@ -77,7 +77,7 @@ async function refresh() {
   try {
     const ranking = await api('/api/recommendations', undefined, 1200);
     if (revision !== refreshRevision) return;
-    recommendations = ranking.recommendations; recommendationStatus = 'ready';
+    recommendations = ranking.recommendations; recommendationContext = ranking.context || ''; recommendationStatus = 'ready';
   } catch (error) {
     if (revision !== refreshRevision) return;
     recommendationStatus = 'unavailable';
@@ -103,7 +103,10 @@ function renderMenu() {
     html += `<button class="drink-card ${id === selected ? 'selected' : ''} ${drink.available ? '' : 'unavailable'}" data-drink="${esc(id)}" aria-pressed="${id === selected}"><img class="drink-photo" src="/images/${image}.jpg" alt="${esc(drink.name)} serving illustration"><div class="drink-info"><strong>${esc(drink.name)}</strong><p class="drink-meta">${esc(drink.category)} · ${drink.kcal} kcal<br>${drink.allergens.length ? 'Contains ' + esc(drink.allergens.join(', ')) : 'No listed allergens'}</p><span class="recommend-label ${drink.available ? '' : 'blocked'}">${esc(reason)}</span><div class="drink-price"><span>${esc(money(drink.price))}</span><i data-lucide="${id === selected ? 'circle-check' : 'plus'}"></i></div></div></button>`;
   }
   $('#drink-grid').innerHTML = html || '<p class="empty">No available drinks in this selection.</p>';
-  $('#recommend-context').textContent = useRecommendations ? (ranked ? `Context: ${state.settings.period} · ${state.settings.network ? state.settings.weather + ' weather (simulator)' : 'local history/preferences; weather unavailable'}` : recommendationStatus === 'loading' ? 'Loading recommendations; standard menu shown.' : 'Recommendations unavailable; standard menu shown.') : 'Nutrition values are illustrative estimates. Final ingredients and availability follow your customization.';
+  const fallbackSource = state.settings?.period_mode === 'auto' ? 'local clock' : 'technician override';
+  const fallbackWeather = state.settings?.network ? `${state.settings.weather}${state.settings.condition && state.settings.condition !== 'unknown' ? ', ' + state.settings.condition : ''} weather (simulator)` : 'local history/preferences; weather unavailable';
+  const fallbackContext = `Context: ${state.settings?.period} (${fallbackSource}) · ${fallbackWeather}`;
+  $('#recommend-context').textContent = useRecommendations ? (ranked ? (recommendationContext || fallbackContext) : recommendationStatus === 'loading' ? 'Loading recommendations; standard menu shown.' : 'Recommendations unavailable; standard menu shown.') : 'Nutrition values are illustrative estimates. Final ingredients and availability follow your customization.';
   icons();
 }
 /** Purpose: update quote without allowing stale responses to overwrite newer choices. Inputs: control values. Returns: Promise<void>. */
@@ -171,7 +174,7 @@ function renderMaintenance() {
       <section class="admin-band"><h2>External payment processor <span class="pill ${settings.payment_mode === 'decline' ? 'error' : ''}">${settings.payment_mode === 'decline' ? 'Decline active' : 'Normal'}</span></h2>
         <form id="simulation-form" class="simulation-controls"><label>Payment simulation<select name="payment_mode"><option value="normal" ${settings.payment_mode === 'normal' ? 'selected' : ''}>Normal</option><option value="decline" ${settings.payment_mode === 'decline' ? 'selected' : ''}>Decline</option></select></label><button type="submit"><i data-lucide="check"></i>Apply</button></form>
       </section>
-      <section class="admin-band"><h2>Service context</h2><form id="context-form" class="admin-context"><label>Network<select name="network"><option value="true" ${settings.network ? 'selected' : ''}>Online</option><option value="false" ${!settings.network ? 'selected' : ''}>Offline</option></select></label><label>Weather<select name="weather"><option value="cold" ${settings.weather === 'cold' ? 'selected' : ''}>Cold</option><option value="warm" ${settings.weather === 'warm' ? 'selected' : ''}>Warm</option></select></label><label>Time of day<select name="period"><option value="morning" ${settings.period === 'morning' ? 'selected' : ''}>Morning</option><option value="afternoon" ${settings.period === 'afternoon' ? 'selected' : ''}>Afternoon</option></select></label><label>Email service<select name="email_ok"><option value="true" ${settings.email_ok ? 'selected' : ''}>Available</option><option value="false" ${!settings.email_ok ? 'selected' : ''}>Unavailable</option></select></label><button type="submit" class="primary">Apply</button></form></section>
+      <section class="admin-band"><h2>Service context</h2><form id="context-form" class="admin-context"><label>Network<select name="network"><option value="true" ${settings.network ? 'selected' : ''}>Online</option><option value="false" ${!settings.network ? 'selected' : ''}>Offline</option></select></label><label>Weather<select name="weather"><option value="cold" ${settings.weather === 'cold' ? 'selected' : ''}>Cold</option><option value="mild" ${settings.weather === 'mild' ? 'selected' : ''}>Mild</option><option value="warm" ${settings.weather === 'warm' ? 'selected' : ''}>Warm</option><option value="hot" ${settings.weather === 'hot' ? 'selected' : ''}>Hot</option></select></label><label>Condition<select name="condition"><option value="unknown" ${(settings.condition || 'unknown') === 'unknown' ? 'selected' : ''}>Unknown</option><option value="sunny" ${settings.condition === 'sunny' ? 'selected' : ''}>Sunny</option><option value="cloudy" ${settings.condition === 'cloudy' ? 'selected' : ''}>Cloudy</option><option value="rainy" ${settings.condition === 'rainy' ? 'selected' : ''}>Rainy</option><option value="snowy" ${settings.condition === 'snowy' ? 'selected' : ''}>Snowy</option></select></label><label>Period mode<select name="period_mode"><option value="manual" ${(settings.period_mode || 'manual') === 'manual' ? 'selected' : ''}>Technician override</option><option value="auto" ${settings.period_mode === 'auto' ? 'selected' : ''}>Local clock (auto)</option></select></label><label>Time of day<select name="period"><option value="morning" ${settings.period === 'morning' ? 'selected' : ''}>Morning</option><option value="afternoon" ${settings.period === 'afternoon' ? 'selected' : ''}>Afternoon</option><option value="evening" ${settings.period === 'evening' ? 'selected' : ''}>Evening</option><option value="night" ${settings.period === 'night' ? 'selected' : ''}>Night</option></select></label><label>Email service<select name="email_ok"><option value="true" ${settings.email_ok ? 'selected' : ''}>Available</option><option value="false" ${!settings.email_ok ? 'selected' : ''}>Unavailable</option></select></label><button type="submit" class="primary">Apply</button></form></section>
       <section class="admin-band"><h2>Ingredient sensors</h2><div class="table-wrap"><table><thead><tr><th>Ingredient</th><th>Simulated level</th><th>Apply</th></tr></thead><tbody>${sensors}</tbody></table></div></section>
       <section class="admin-band"><h2>Waste sensors</h2>${wasteSensors}</section>
       <section class="admin-band"><h2>Machine fault <span class="pill ${settings.fault ? 'error' : ''}">${esc(settings.fault || 'No active fault')}</span></h2><div class="fault-controls"><button data-fault="GRINDER_JAM">Simulate grinder jam</button><button data-fault="HEATER_FAULT">Simulate heater fault</button><button data-fault=""><i data-lucide="check"></i>Clear fault</button></div></section>
@@ -310,7 +313,7 @@ async function handleSubmit(event) {
       const result = await api('/api/checkout', { config: config(), key: paymentKey, method: data.method, points: Number(data.points || 0) });
       $('#checkout-dialog').close(); await refresh();
       if (result.status === 'completed') showReceipt(result.order); else { showView('history'); toast(result.message); }
-    } else if (form.id === 'context-form') await maintain('context', { network: data.network === 'true', weather: data.weather, period: data.period, email_ok: data.email_ok === 'true' });
+    } else if (form.id === 'context-form') await maintain('context', { network: data.network === 'true', weather: data.weather, condition: data.condition || 'unknown', period_mode: data.period_mode || 'manual', period: data.period, email_ok: data.email_ok === 'true' });
     else if (form.id === 'simulation-form') await maintain('simulation', { payment_mode: data.payment_mode });
     else if (form.id === 'assistant-form') await askAssistant(data.request);
   } catch (error) {

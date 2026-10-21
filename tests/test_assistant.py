@@ -83,6 +83,35 @@ class AssistantTests(unittest.TestCase):
         with self.store.connection() as db:
             self.assertTrue(self.store.quote(db, {"drink": "latte"})["available"])
 
+    def test_rejects_malformed_context_before_inference(self):
+        """Purpose: reject untrusted context without inference. Inputs: invalid schemas/types/options. Returns: None."""
+        invalid = [[], "latte", {}, {"drink": "latte"}, {**self.config, "price": 0},
+                   {**self.config, "temperature": 53}, {**self.config, "temperature": True},
+                   {**self.config, "extra": -1}, {**self.config, "syrup": True},
+                   {**self.config, "drink": "invented"}]
+        with patch.object(self.client, "request") as request:
+            for config in invalid:
+                with self.subTest(config=config), self.assertRaises(RuleError) as failure:
+                    self.client.suggest("", {"message": "make it oat", "context_config": config})
+                self.assertEqual(failure.exception.status, 400)
+            request.assert_not_called()
+
+    def test_followup_context_reaches_model_without_side_effects(self):
+        """Purpose: forward exact validated context without synthetic assistant history. Inputs: browser-shaped history/config and fixture. Returns: None."""
+        history = [{"role": "user", "content": "A latte"},
+                   {"role": "assistant", "content": "A warm drink."}]
+        before = self.store.state()
+        with patch.object(self.client, "request", return_value=self.response()) as request:
+            self.client.suggest("", {"message": "make it oat", "history": history, "context_config": self.config})
+        messages = request.call_args.args[1]["messages"]
+        context = json.loads(messages[0]["content"].split("Current context: ", 1)[1])
+        self.assertEqual(context["current_proposal"], self.config)
+        self.assertEqual(messages[1:1 + len(history)], history)
+        self.assertEqual(len(messages), len(history) + 3)
+        self.assertEqual(messages[-2]["role"], "system")
+        self.assertEqual(json.loads(messages[-2]["content"].split("current_proposal=", 1)[1].splitlines()[0]), self.config)
+        self.assertEqual(self.store.state(), before)
+
     def test_remote_endpoints_and_cloud_tags_are_rejected(self):
         """Purpose: keep configured inference local. Inputs: remote URLs/cloud tags. Returns: None."""
         for url in ("https://example.com", "http://127.0.0.1:11434/redirect", "http://user@localhost:11434"):

@@ -34,7 +34,7 @@ With simulated network offline, prepaid can complete locally. Permitted online-o
 
 ## Technician Workspace
 
-Maintenance contains operational tasks: record a refill, record a bin emptied, inspect events and export diagnostics. Test scenarios contains artificial conditions: sensor levels, full-bin readings, faults, network/weather/time/email availability and external payment response. These are protected endpoints even if a customer manually constructs a request.
+Maintenance contains operational tasks: record a refill, record a bin emptied, inspect events and export diagnostics. Test scenarios contains artificial conditions: sensor levels, full-bin readings, faults, network, outdoor temperature (`cold`, `mild`, `warm`, `hot`), weather condition (`unknown`, `sunny`, `cloudy`, `rainy`, `snowy`), period mode (`manual` technician override or `auto` local clock), time of day (`morning`, `afternoon`, `evening`, `night`), email availability and external payment response. Non-destructive schema checks add `condition` (default `unknown`) and `period_mode` (default `manual`) to `settings`. These are protected endpoints even if a customer manually constructs a request.
 
 Demo credentials and NFC identifiers are public fixtures. This local demonstration is not a production access-control deployment or a real physical-key/NFC reader.
 
@@ -46,10 +46,10 @@ The adapter accepts only a loopback HTTP endpoint, bypasses system proxies and r
 
 The customer must select Use recipe, review the customizer and separately confirm payment. Suggestions have no purchase side effects. Only one inference runs at a time; concurrent requests return a busy response. The server wait is bounded at 90 seconds to allow cold loading, with a slightly longer browser deadline. Manual ordering is independent of that wait.
 
-The contextual recommendation ranking remains a small documented heuristic using history, preferences and simulated time/weather. It is distinct from the actual local LLM that interprets free-form drink requests. Neither is camera mood analysis.
+The contextual recommendation ranking (`Store.recommendations`) is a deterministic, additive heuristic separate from the generic recipe defaults in `Store.config()`. Available candidates are quoted with the authenticated customer's preferences, unavailable drinks are excluded before ranking, and scores combine base points (`10`), time period (`morning`, `afternoon`, `evening`, `night` from either technician override or an injectable local clock), online-only outdoor temperature (`cold`, `mild`, `warm`, `hot`), online-only weather condition (`sunny`, `cloudy`, `rainy`, `snowy`; `unknown` adds `0` points and no reason), and customer-owned signals (milk/strength drink-category affinity, saved recipes at `+15`, and completed-order frequency at `+12` per order up to `+36` with reason `"A frequent choice"`). Offline mode zeroes out both temperature and weather-condition bonuses while retaining local period and customer signals. It is distinct from the actual local LLM that interprets free-form drink requests. Neither is camera mood analysis.
 
 ## Scope and Evidence
 
 The ten selected feature groups are F01-F10. F11 is an optional implemented local drink assistant linked to FR-10; it does not replace one of the ten required groups. Camera inference remains deferred, so the application never captures facial images.
 
-Unit adapter fixtures test validation and failure handling; they are not evidence of real model intelligence. `tools/check_local_ai.py` separately records actual inference, including a failed clarification found during development. Selected examples passing do not guarantee correct interpretation of every request. See QA_RESULTS.md for recorded runs and limits.
+Unit adapter fixtures test validation and failure handling; they are not evidence of real model intelligence. `tools/check_local_ai.py`, `tools/check_assistant_conversations.py`, `tools/check_assistant_long_chat.py` and `tools/check_assistant_heldout_baseline.py` separately record actual inference, including failed baselines and clarifications found during development. Selected examples passing do not guarantee correct interpretation of every request. See QA_RESULTS.md for recorded runs and limits.

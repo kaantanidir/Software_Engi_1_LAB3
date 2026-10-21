@@ -12,9 +12,9 @@ Lab 1 received a positive grade, with Partial feedback on component scope and UI
 
 ### Models and provenance
 
-GPT-6.1 Sol (model-selector label supplied by the student on 2026-10-20); exact backend build not exposed.
+Codex with student-confirmed selector label GPT-6.1 Sol (2026-10-20/21, initial Lab 3 Tasks A-C and web-chat handoff integration; exact backend build not exposed) and Gemini 4 Argon Medium through Google Antigravity (2026-10-21, local repository inspection, F11 multi-turn assistant evaluation/correction and F06 deterministic recommendation expansion and verification).
 
-This is the development assistant for Tasks A-C. The runtime drink model is separately identified as local Qwen3 4B through Ollama 0.40.6. Earlier Lab 2 model/version was not recorded.
+These are the development assistants for Lab 3 Tasks A-C and the subsequent F11/F06 updates. The runtime drink model inside the application is separately identified as local Qwen3 4B (qwen3:4b) through Ollama 0.40.6. Earlier Lab 1-2 tutoring and an intermediate web-chat Gemini draft before local IDE access did not expose confirmed model version labels.
 
 The comparison uses the actual submitted Lab 2 files, preserved with hashes in docs/baseline. That submission was already AI-assisted in this conversation, so it is not an independently human-elicited baseline. This limitation is disclosed for instructor review. Later reference corrections are not substituted for the submitted version.
 
@@ -136,12 +136,12 @@ Lecture format with Description and trace links retained. Importance 0-100, high
 | PB-FR-20 | Handle offline payment honestly | 85 | 8 | The system shall use an approved offline-capable method or securely queue permitted pending payments and reconcile once on reconnect; it shall never present an unapproved online-only wallet payment as successful. | Offline prepaid succeeds; wallet stays pending without stock/points changes; reconnect reconciles once. | FR-20; S17; F07 |
 | PB-FR-06 | Manage named recipes | 80 | 5 | The system shall save, rename, modify and delete personal recipes and restore their settings for one-touch ordering, subject to current stock checks. | Save Morning Oat, rename/edit it and order it again; another user cannot edit it. | FR-06; S03; F04 |
 | PB-FR-18 | Diagnose errors | 80 | 5 | The system shall show real-time faults on the admin dashboard and persist diagnostic events for authorized remote diagnostics when connectivity is available. | Inject a grinder jam; verify time/severity/local log and authorized JSON export. | FR-18; S15; F10 |
-| PB-FR-08 | Rank recommendations | 75 | 8 | The system shall score available drinks using preferences, purchase history, time and weather, then reorder and highlight the best recommendations. | Switch cold/hot and morning/afternoon context; buy a drink and verify history affects ranking. | FR-08; S04/S06/S17; F06 |
+| PB-FR-08 | Rank recommendations | 75 | 8 | The system shall score available drinks using preferences, purchase history, time and weather, then reorder and highlight the best recommendations. | Switch period mode (local clock or manual morning/afternoon/evening/night), temperature (cold/mild/warm/hot) and weather condition (unknown/sunny/cloudy/rainy/snowy); buy a drink and verify ranking and reasons. | FR-08; S04/S06/S17; F06 |
 | PB-FR-13 | Earn and redeem loyalty | 70 | 5 | The system shall let logged-in customers redeem earned points at checkout and award points after a completed paid purchase, with no changes on decline. | Redeem 100 points, inspect discount/new balance; repeat with declined payment and verify no deduction. | FR-13; G01; F08 |
 | PB-FR-14 | Deliver receipts | 70 | 5 | After a completed purchase, the system shall offer a QR receipt or email delivery and offer QR as fallback on email failure. | Open a real QR; request email in local outbox; fail email and verify QR fallback. | FR-14; S10; F09 |
 | PB-FR-09 | Analyze mood | 45 | 8 | The system shall use the embedded camera to infer a mood and optionally add it to the recommendation context; unavailable inference shall not prevent manual ordering. | With real module enabled, infer tired mood; deny consent and verify manual ordering still works. | FR-09; S05/S16; Deferred |
 | PB-NFR-04 | Respond promptly | 45 | 3 | Proposed acceptance target: local menu and quote responses shall complete within 2 seconds in at least 95 of 100 sequential requests on the documented demo machine, excluding external services. | Measure 100 requests; report p95 and environment without claiming production SLA. | NFR-04; Design assumption; not in brief; F02/F03 |
-| PB-FR-10 | Interpret natural-language requests | 30 | 13 | When the optional local LLM is enabled, the system shall translate a free-form request into supported recipe parameters and ask for confirmation or clarification. | Request a strong oat latte; inspect the real local-model proposal; test clarification and unsupported ingredients. | FR-10; S11; F11 (optional) |
+| PB-FR-10 | Interpret natural-language requests | 30 | 13 | When the optional local LLM is enabled, the system shall translate a free-form request into supported recipe parameters and ask for confirmation or clarification. | Request a strong oat latte or taste-based drink; inspect the real local-model proposal, multi-turn refinement, clarification and unsupported-ingredient refusal. | FR-10; S11; F11 (optional) |
 
 ### Comparison with the submitted Lab 2
 
@@ -190,7 +190,7 @@ The earlier assistant checked names in a serialized Astah ZIP and PDF and overcl
 | F03 | Validated custom drink quote | FR-05 | Change milk, strength, temperature, syrup and shots; observe server-calculated quote. |
 | F04 | Named personal recipes | FR-06 | Save Morning Oat; rename; load and edit settings; save update; delete. |
 | F05 | Ingredient/quantity checks | FR-07, NFR-03 | Set oat level below threshold as technician; verify oat recipe cannot be purchased; refill. |
-| F06 | Context/history recommendations | FR-08/19 | Toggle Recommended first; change simulated weather/time; buy a drink and verify ranking reasons. |
+| F06 | Context/history recommendations | FR-08/19 | Toggle Recommended first; switch local-clock or manual period (morning/afternoon/evening/night), temperature (cold/mild/warm/hot) and condition (unknown/sunny/cloudy/rainy/snowy); verify history, saved-recipe and preference reasons and offline fallback. |
 | F07 | Checkout and immutable history | FR-11/12/20, NFR-03 | Use five payment methods; set external decline in technician Test scenarios; inspect history/retries and offline reconciliation. |
 | F08 | Earn and redeem loyalty | FR-13 | Apply 100 points; verify SEK 10 discount and success-only deduction/earning. |
 | F09 | QR receipt and email adapter | FR-14 | Open receipt QR/text; send to local simulator outbox; fail email and retain QR fallback. |
@@ -200,7 +200,7 @@ The earlier assistant checked names in a serialized Astah ZIP and PDF and overcl
 
 | Feature | Functionality | Requirements | Demonstration |
 | --- | --- | --- | --- |
-| F11 | Local drink assistant | FR-10/19 | Ask for a strong oat latte; review the real local-model proposal; apply settings, then separately confirm checkout. Test a clarification and unavailable model. |
+| F11 | Local drink assistant | FR-10/19 | Ask for a strong oat latte or taste-based change; review the real local-model proposal across multi-turn follow-ups, clarifications and unsupported-option refusals; apply settings, then separately confirm checkout. |
 
 ### Scope and assumptions
 
@@ -208,9 +208,9 @@ The earlier assistant checked names in a serialized Astah ZIP and PDF and overcl
 - Loyalty: earn one point per whole SEK actually paid; one point redeems SEK 0.10, bounded by balance and price. Demo Alex begins with 250 points and SEK 200 prepaid credit; new accounts begin with zero.
 - Customer orders may be placed as guest; profile/recipe/history and prepaid/loyalty features require customer login. Guest receipts use an unguessable capability token.
 - Mood opt-in and the proposed 2-second response target are design refinements; the original brief does not prescribe consent UI, a numerical latency target or point-conversion rules.
-- Weather/time, NFC/key signals, machine sensors, payment approval and email are simulated locally. Manual ordering and stored-value prepaid payments work while the simulated network is offline.
+- Weather/time, NFC/key signals, machine sensors, payment approval and email are simulated locally. Recommendation scoring uses separate deterministic affinity tables (preserving generic recipe defaults), period mode (manual technician override or injectable local clock across morning/afternoon/evening/night), online temperature (cold/mild/warm/hot), online weather condition (unknown/sunny/cloudy/rainy/snowy), and customer-owned preferences, saved recipes (+15) and completed-order count (+12 per order up to +36 as 'A frequent choice'). Manual ordering and stored-value prepaid payments work while the simulated network is offline.
 - Online-only payment requests can be persisted as pending without dispensing. Reconnect and customer Retry performs authorization/revalidation once; the prototype never assumes that a wallet can approve offline.
-- Camera mood inference remains deferred. F11 adds actual optional local Qwen3 4B inference through Ollama 0.40.6, beyond the ten selected groups; it proposes supported recipes but cannot purchase or modify accounts.
+- Camera mood inference remains deferred. F11 adds actual optional local Qwen3 4B inference through Ollama 0.40.6, beyond the ten selected groups; it proposes supported recipes across multi-turn follow-ups and clarifications using a trailing system context snapshot without purchasing or modifying accounts.
 - No physical brew command or real card authorization occurs. Admin diagnostics can be exported locally; there is no deployed remote diagnostic service or physical key reader.
 - Technician-only Test scenarios controls the persistent external payment mode (Normal/Decline). Customer checkout cannot submit an outcome override. Existing accounts/orders are retained; historical purchases are not reassigned after the authentication fix.
 - The model may need a cold load; server inference has a 90-second bound and manual ordering stays independent. The proposed menu/quote latency target excludes optional inference. Model proposals require customer review and fresh server validation.
@@ -221,11 +221,11 @@ The HTTP adapter and service layer enforce identity, ownership and purchase rule
 
 ### Validation and revisions
 
-QA_RESULTS.md and evidence/ contain actual runs. The student exposed a browser authentication defect: hidden demo NFC data overrode entered passwords. A failing regression reproduced it; explicit methods and two-customer browser tests now verify identity, ownership and restart persistence. Earlier passing tests were insufficient because they only used Alex for browser customer login. Other fixes preserve pending loyalty selections, independent manual ordering during recommendation failure and complete order snapshots. Real local-model tests are separate from adapter fixtures; an invented usual-drink response and cold-start timeout were retained as observed failures before refinement. Simulator tests do not validate real hardware or financial/email processors.
+QA_RESULTS.md and evidence/ contain actual runs (33 unit tests in evidence/unit-tests.txt and 58 browser checks in evidence/browser-results.json). The student exposed a browser authentication defect: hidden demo NFC data overrode entered passwords. A failing regression reproduced it; explicit methods and two-customer browser tests now verify identity, ownership and restart persistence. Earlier passing tests were insufficient because they only used Alex for browser customer login. Subsequent evaluation and implementation in Google Antigravity (Gemini 4 Argon Medium) resolved multi-turn F11 assistant context/constraint issues (replacing a leaked synthetic assistant turn with a trailing system context snapshot, ordering config before message in RESPONSE_SCHEMA, and refusing unsupported iced/caramel requests without silent substitution or unrequested extra espresso; 8/8 in evidence/assistant-heldout-postchange.json, 12/12 in evidence/assistant-conversations.json, and 9/9 recipe turns in evidence/assistant-long-chat.json) and expanded F06 recommendations across manual vs local-clock periods (morning/afternoon/evening/night), temperatures (cold/mild/warm/hot), weather conditions (unknown/sunny/cloudy/rainy/snowy), and customer-isolated preferences, saved recipes (+15) and completed-order frequency (+12 per order up to +36 as 'A frequent choice'). Simulator tests do not validate real hardware or financial/email processors.
 
 ### Recommended extra experimentation
 
-The instructor strongly recommends additional experimentation, but does not state a fourth mandatory task. No optional exercise has been selected or claimed as completed. Mutation tests could use a disposable copy without removing any submitted functionality. Any personal reflection for a later exercise must be written by the student; none is generated here.
+The instructor strongly recommends additional experimentation, but does not state a fourth mandatory task. During Lab 3 verification, the project conducted an empirical before/after evaluation of multi-turn local-model behavior and deterministic recommendation ranking against isolated temporary databases: the 8-turn held-out assistant baseline (evidence/assistant-heldout-baseline.json, 5/8 turns passed) exposed a leaked synthetic context turn, base-drink rigidity, silent substitution of unsupported iced/caramel requests and unrequested extra espresso shots; replacing the synthetic assistant turn with a trailing system context snapshot and ordering config before message improved results to 7/8 on the first post-change run (evidence/assistant-heldout-postchange-first-run.json) and 8/8 on the final regression run (evidence/assistant-heldout-postchange.json), alongside 12/12 in the conversation suite (evidence/assistant-conversations.json), 9/9 recipe turns in the long-chat suite (evidence/assistant-long-chat.json) and 58/58 browser checks (evidence/browser-results.json, with first-run browser regressions preserved in evidence/browser-failure.json and evidence/browser-f06-first-run-failure.json). Only the factual test protocol and observed outcomes are reported here; no first-person student reflection is generated by the assistants.
 
 ## Task C - Repository and documentation
 
@@ -237,7 +237,7 @@ Review point conversion, pending-payment policy, estimates and model limitations
 
 ### AI appendix
 
-The required simple PDF is output/pdf/G28Lab3_AI_Appendix.pdf. It contains the student-confirmed model label, prompt strategy, main prompt and key responses, subsequent clarifications and generated-code references. The historical record is normalized/selected, not a full verbatim export or a student-written personal reflection.
+The required simple PDF is output/pdf/G28Lab3_AI_Appendix.pdf. It contains the student-confirmed model labels, prompt strategy, main prompt and key responses, subsequent clarifications and generated-code references. The historical record is normalized/selected, not a full verbatim export or a student-written personal reflection.
 
 ### References
 

@@ -1,5 +1,5 @@
 {
-  "recordedAt": "2026-10-20T23:54:01.590Z",
+  "recordedAt": "2026-10-21T19:34:21.589Z",
   "checks": [
     "F02: six menu drinks load",
     "F02: category filter",
@@ -28,6 +28,14 @@
     "F05: depleted customized ingredient blocks checkout",
     "F10: full bin halts checkout",
     "F10: diagnostic fault logged",
+    "F06: technician selects unknown, sunny, cloudy, rainy and snowy conditions",
+    "F06: technician selects cold, mild, warm and hot temperatures",
+    "F06: technician selects all four manual periods",
+    "F06: technician switches between manual override and local-clock automatic mode",
+    "F06: recommendation context visibly identifies local clock versus technician override",
+    "F06: changing context deterministically updates top recommendation across three scenarios",
+    "F06: offline mode reports weather unavailable and ignores temperature and condition bonuses",
+    "F06: manual ordering remains usable when weather context is unavailable",
     "F06: offline recommendations use local context",
     "F07: prepaid completes offline",
     "F07: unsupported offline wallet is pending",
@@ -38,6 +46,10 @@
     "F11: real local model returns a supported oat-latte proposal",
     "F11: inference does not apply settings or purchase automatically",
     "F11: explicit confirmation applies the validated settings",
+    "F11: new conversational request selects cappuccino",
+    "F11: clarification retains full recipe context",
+    "F11: follow-up changes only requested fields after clarification",
+    "F11: multi-turn proposals have no persistent side effects",
     "F11: account change clears conversation and proposal",
     "F11: model failure leaves manual checkout available",
     "Mobile root has no horizontal overflow",
@@ -51,11 +63,11 @@
   "errors": [],
   "responseSample": {
     "count": 100,
-    "p95ms": 13.069400000000314
+    "p95ms": 9.784900000000562
   },
   "quoteSample": {
     "count": 100,
-    "p95ms": 16.47400000000016
+    "p95ms": 8.29149999999936
   },
   "mobile": {
     "width": 390,
@@ -72,7 +84,7 @@
     "mockedModel": false,
     "response": {
       "kind": "recipe",
-      "message": "A strong oat latte at 75 degrees with one syrup shot and no extra espresso",
+      "message": "A strong oat latte at 75 degrees with one vanilla syrup shot and no extra espresso.",
       "quote": {
         "config": {
           "drink": "latte",
@@ -103,9 +115,182 @@
       },
       "model": "qwen3:4b",
       "local": true
-    }
+    },
+    "conversation": [
+      {
+        "request": {
+          "message": "A regular cappuccino at 75 degrees with two syrup shots and one extra espresso.",
+          "history": [
+            {
+              "role": "user",
+              "content": "A strong oat latte at 75 degrees with one syrup shot and no extra espresso."
+            },
+            {
+              "role": "assistant",
+              "content": "A strong oat latte at 75 degrees with one vanilla syrup shot and no extra espresso."
+            }
+          ],
+          "context_config": {
+            "drink": "latte",
+            "milk": "oat",
+            "strength": "strong",
+            "temperature": 75,
+            "syrup": 1,
+            "extra": 0
+          }
+        },
+        "response": {
+          "kind": "recipe",
+          "message": "A regular oat cappuccino at 75 degrees with two vanilla syrup shots and one extra espresso shot.",
+          "quote": {
+            "config": {
+              "drink": "cappuccino",
+              "milk": "oat",
+              "strength": "regular",
+              "temperature": 75,
+              "syrup": 2,
+              "extra": 1
+            },
+            "name": "Cappuccino",
+            "price": 4900,
+            "kcal": 139,
+            "allergens": [
+              "oats"
+            ],
+            "ingredients": {
+              "beans": 19,
+              "water": 70,
+              "cups": 1,
+              "oat": 120,
+              "syrup": 20
+            },
+            "available": true,
+            "reasons": [],
+            "category": "Coffee",
+            "image": "cappuccino.svg",
+            "nutrition_note": "Illustrative recipe estimates"
+          },
+          "model": "qwen3:4b",
+          "local": true
+        },
+        "milliseconds": 1880.9923999999992
+      },
+      {
+        "request": {
+          "message": "Can I add something?",
+          "history": [
+            {
+              "role": "user",
+              "content": "A strong oat latte at 75 degrees with one syrup shot and no extra espresso."
+            },
+            {
+              "role": "assistant",
+              "content": "A strong oat latte at 75 degrees with one vanilla syrup shot and no extra espresso."
+            },
+            {
+              "role": "user",
+              "content": "A regular cappuccino at 75 degrees with two syrup shots and one extra espresso."
+            },
+            {
+              "role": "assistant",
+              "content": "A regular oat cappuccino at 75 degrees with two vanilla syrup shots and one extra espresso shot."
+            }
+          ],
+          "context_config": {
+            "drink": "cappuccino",
+            "milk": "oat",
+            "strength": "regular",
+            "temperature": 75,
+            "syrup": 2,
+            "extra": 1
+          }
+        },
+        "response": {
+          "kind": "clarify",
+          "message": "Would you like vanilla syrup or an extra espresso shot?",
+          "quote": null,
+          "model": "qwen3:4b",
+          "local": true
+        },
+        "milliseconds": 898.1175000000003
+      },
+      {
+        "request": {
+          "message": "Make it oat and stronger.",
+          "history": [
+            {
+              "role": "user",
+              "content": "A strong oat latte at 75 degrees with one syrup shot and no extra espresso."
+            },
+            {
+              "role": "assistant",
+              "content": "A strong oat latte at 75 degrees with one vanilla syrup shot and no extra espresso."
+            },
+            {
+              "role": "user",
+              "content": "A regular cappuccino at 75 degrees with two syrup shots and one extra espresso."
+            },
+            {
+              "role": "assistant",
+              "content": "A regular oat cappuccino at 75 degrees with two vanilla syrup shots and one extra espresso shot."
+            },
+            {
+              "role": "user",
+              "content": "Can I add something?"
+            },
+            {
+              "role": "assistant",
+              "content": "Would you like vanilla syrup or an extra espresso shot?"
+            }
+          ],
+          "context_config": {
+            "drink": "cappuccino",
+            "milk": "oat",
+            "strength": "regular",
+            "temperature": 75,
+            "syrup": 2,
+            "extra": 1
+          }
+        },
+        "response": {
+          "kind": "recipe",
+          "message": "A strong oat cappuccino at 75 degrees with two vanilla syrup shots and one extra espresso shot.",
+          "quote": {
+            "config": {
+              "drink": "cappuccino",
+              "milk": "oat",
+              "strength": "strong",
+              "temperature": 75,
+              "syrup": 2,
+              "extra": 1
+            },
+            "name": "Cappuccino",
+            "price": 4900,
+            "kcal": 139,
+            "allergens": [
+              "oats"
+            ],
+            "ingredients": {
+              "beans": 22,
+              "water": 70,
+              "cups": 1,
+              "oat": 120,
+              "syrup": 20
+            },
+            "available": true,
+            "reasons": [],
+            "category": "Coffee",
+            "image": "cappuccino.svg",
+            "nutrition_note": "Illustrative recipe estimates"
+          },
+          "model": "qwen3:4b",
+          "local": true
+        },
+        "milliseconds": 1777.4049000000014
+      }
+    ]
   },
   "browser": "155.0.8059.41",
-  "node": "v24.19.0",
+  "node": "v24.21.0",
   "simulatedIntegrations": true
 }

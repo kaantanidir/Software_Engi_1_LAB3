@@ -9,6 +9,7 @@ const { once } = require('node:events');
 const root = path.resolve(__dirname, '..');
 const errors = [];
 const checks = [];
+const assistantTurns = [];
 let page, browser, child;
 
 /** Purpose: record a browser exception. Inputs: Error. Returns: void. */
@@ -31,6 +32,8 @@ async function signIn(technician = false, email = null, password = null, name = 
 async function signOut() { await page.locator('#account-button').click(); await page.locator('#logout').click(); await textEquals('#account-name', 'Sign in'); }
 /** Purpose: submit the current recipe without controlling authorization. Inputs: method/points. Returns: Promise<void>. */
 async function purchase(method = 'contactless', points = 0) {
+  await page.locator('#recipe-dialog').waitFor({ state: 'hidden' });
+  await page.locator('#checkout-button:not([disabled])').waitFor();
   await page.locator('#checkout-button').click();
   await page.locator('#payment-form [name=method]').selectOption(method);
   if (points) await page.locator('#payment-form [name=points]').fill(String(points));
@@ -44,6 +47,89 @@ async function network(online) {
   await page.locator('#context-form [name=network]').selectOption(String(online));
   await page.locator('#context-form button[type=submit]').click();
   await textEquals('#connection', online ? 'Machine online' : 'Offline');
+}
+/** Purpose: apply service context controls through the technician UI. Inputs: partial context object. Returns: Promise<void>. */
+async function setContext(fields) {
+  await page.locator('[data-view=maintenance]').click();
+  await page.getByRole('tab', { name: 'Test scenarios' }).click();
+  for (const [name, value] of Object.entries(fields)) {
+    await page.locator(`#context-form [name=${name}]`).selectOption(String(value));
+  }
+  await page.locator('#context-form button[type=submit]').click();
+  await page.locator('#context-form button[type=submit]:not([disabled])').waitFor();
+  await page.waitForLoadState('networkidle');
+}
+/** Purpose: verify F06 context selectors, clock/manual modes, offline rules and deterministic ranking. Inputs: technician session. Returns: Promise<void>. */
+async function auditRecommendations() {
+  const seenConditions = [];
+  for (const condition of ['unknown', 'sunny', 'cloudy', 'rainy', 'snowy']) {
+    await setContext({ condition });
+    const current = await (await page.request.get('/api/state')).json();
+    if (current.settings.condition === condition) seenConditions.push(condition);
+  }
+  check('F06: technician selects unknown, sunny, cloudy, rainy and snowy conditions', seenConditions.length === 5);
+
+  const seenWeathers = [];
+  for (const weather of ['cold', 'mild', 'warm', 'hot']) {
+    await setContext({ weather });
+    const current = await (await page.request.get('/api/state')).json();
+    if (current.settings.weather === weather) seenWeathers.push(weather);
+  }
+  check('F06: technician selects cold, mild, warm and hot temperatures', seenWeathers.length === 4);
+
+  const seenPeriods = [];
+  for (const period of ['morning', 'afternoon', 'evening', 'night']) {
+    await setContext({ period_mode: 'manual', period });
+    const current = await (await page.request.get('/api/state')).json();
+    if (current.settings.period === period && current.settings.period_mode === 'manual') seenPeriods.push(period);
+  }
+  check('F06: technician selects all four manual periods', seenPeriods.length === 4);
+
+  await setContext({ network: true, weather: 'mild', condition: 'unknown', period_mode: 'auto', period: 'morning' });
+  const autoState = await (await page.request.get('/api/state')).json();
+  await page.locator('[data-view=menu]').click();
+  await page.locator('#recommend-toggle').check();
+  const autoContextText = await page.locator('#recommend-context').textContent();
+  await setContext({ network: true, weather: 'mild', condition: 'unknown', period_mode: 'manual', period: 'morning' });
+  const manualState = await (await page.request.get('/api/state')).json();
+  await page.locator('[data-view=menu]').click();
+  const manualContextText = await page.locator('#recommend-context').textContent();
+  check('F06: technician switches between manual override and local-clock automatic mode', autoState.settings.period_mode === 'auto' && manualState.settings.period_mode === 'manual');
+  check('F06: recommendation context visibly identifies local clock versus technician override', autoContextText.includes('(local clock)') && manualContextText.includes('(technician override)'));
+
+  await setContext({ network: true, weather: 'cold', condition: 'rainy', period_mode: 'manual', period: 'morning' });
+  await page.locator('[data-view=menu]').click();
+  const topRainyMorning = await page.locator('#drink-grid .drink-card').first().getAttribute('data-drink');
+
+  await setContext({ network: true, weather: 'warm', condition: 'sunny', period_mode: 'manual', period: 'afternoon' });
+  await page.locator('[data-view=menu]').click();
+  const topSunnyAfternoon = await page.locator('#drink-grid .drink-card').first().getAttribute('data-drink');
+
+  await setContext({ network: true, weather: 'cold', condition: 'snowy', period_mode: 'manual', period: 'night' });
+  await page.locator('[data-view=menu]').click();
+  const topSnowyNight = await page.locator('#drink-grid .drink-card').first().getAttribute('data-drink');
+  const nightReason = await page.locator('#drink-grid .drink-card').first().locator('.recommend-label').textContent();
+  check('F06: changing context deterministically updates top recommendation across three scenarios', topRainyMorning === 'cappuccino' && topSunnyAfternoon === 'latte' && topSnowyNight === 'cocoa' && nightReason === 'Late-hour comfort pick');
+
+  await setContext({ network: false, weather: 'cold', condition: 'snowy', period_mode: 'manual', period: 'morning' });
+  await page.locator('[data-view=menu]').click();
+  const offlineContextText = await page.locator('#recommend-context').textContent();
+  const topOfflineMorning = await page.locator('#drink-grid .drink-card').first().getAttribute('data-drink');
+  check('F06: offline mode reports weather unavailable and ignores temperature and condition bonuses', offlineContextText.includes('weather unavailable') && topOfflineMorning === 'espresso');
+
+  await signOut();
+  await page.waitForLoadState('networkidle');
+  await page.locator('#checkout-button:not([disabled])').waitFor();
+  await page.locator('[data-view=menu]').click();
+  await page.locator('#recommend-toggle').check();
+  await page.locator('[data-drink=americano]').click();
+  await textEquals('#selected-name', 'Americano');
+  await page.locator('#customize-form [name=syrup]').fill('1');
+  await page.locator('#checkout-button:not([disabled])').waitFor();
+  check('F06: manual ordering remains usable when weather context is unavailable', !(await page.locator('#checkout-button').isDisabled()) && (await page.locator('#selected-name').textContent()) === 'Americano');
+  await page.locator('#recommend-toggle').uncheck();
+  await signIn(true);
+  await setContext({ network: true, weather: 'cold', condition: 'unknown', period_mode: 'manual', period: 'morning', email_ok: true });
 }
 /** Purpose: inspect layout/assets in browser context. Inputs: DOM. Returns: dimension/asset checks. */
 function inspectLayout() {
@@ -60,6 +146,39 @@ async function failRecommendations(route) { await route.fulfill({ status: 503, c
 async function failAssistant(route) { await route.fulfill({ status: 503, contentType: 'application/json', body: '{"error":"Local model unavailable. Manual ordering is still available."}' }); }
 /** Purpose: identify a model response without replacing it. Inputs: Playwright response. Returns: boolean. */
 function isAssistantResponse(response) { return response.url().endsWith('/api/assistant') && response.request().method() === 'POST'; }
+/** Purpose: await real response and completed UI processing. Inputs: request text. Returns: response/payload/timing record. */
+async function assistantTurn(message) {
+  await page.locator('#assistant-request').fill(message);
+  const started = performance.now();
+  const reply = page.waitForResponse(isAssistantResponse, { timeout: 100000 });
+  await page.locator('#assistant-submit').click();
+  const response = await reply;
+  const result = await response.json();
+  await page.locator('#assistant-result[aria-busy="false"]').waitFor({ timeout: 100000 });
+  assert.ok(response.ok(), JSON.stringify(result));
+  const record = { request: response.request().postDataJSON(), response: result, milliseconds: performance.now() - started };
+  assistantTurns.push(record);
+  return record;
+}
+/** Purpose: prove exact context survives clarification in browser. Inputs: isolated signed-in page. Returns: actual turn records. */
+async function auditAssistantConversation() {
+  const before = await (await page.request.get('/api/state')).json();
+  const base = await assistantTurn('A regular cappuccino at 75 degrees with two syrup shots and one extra espresso.');
+  check('F11: new conversational request selects cappuccino', base.response.kind === 'recipe' && base.response.quote.config.drink === 'cappuccino');
+  const config = base.response.quote.config;
+  assert.equal(config.strength, 'regular'); assert.equal(config.extra, 1);
+  const clarify = await assistantTurn('Can I add something?');
+  assert.deepEqual(clarify.request.context_config, config);
+  check('F11: clarification retains full recipe context', clarify.response.kind === 'clarify' && clarify.response.quote === null);
+  const follow = await assistantTurn('Make it oat and stronger.');
+  assert.deepEqual(follow.request.context_config, config);
+  assert.deepEqual(follow.response.quote.config, { ...config, milk: 'oat', strength: 'strong' });
+  check('F11: follow-up changes only requested fields after clarification', follow.response.kind === 'recipe');
+  const after = await (await page.request.get('/api/state')).json();
+  assert.deepEqual(after, before);
+  check('F11: multi-turn proposals have no persistent side effects', true);
+  return [base, clarify, follow];
+}
 /** Purpose: inspect visible button targets and input focus. Inputs: browser DOM. Returns: size/focus observations. */
 function inspectAccessibility() {
   let smallButtons = 0;
@@ -117,10 +236,24 @@ async function auditAccounts(restart) {
   await page.locator('#fill-demo').click(); await page.locator('#auth-submit').click(); await textEquals('#account-name', 'Alex');
   check('F01: explicit NFC sign-in remains available', true); await signOut();
 }
-/** Purpose: execute the full QA flow with cleanup. Inputs: environment PYTHON/CHROME_PATH. Returns: Promise<void>. */
+/** Purpose: safely remove only the current browser run's temporary directory under tmp/. Inputs: tempDir/tmpRoot paths. Returns: void. */
+function removeTempDir(tempDir, tmpRoot) {
+  if (!tempDir) return;
+  const resolvedTmpRoot = path.resolve(tmpRoot);
+  const resolvedTemp = path.resolve(tempDir);
+  assert.ok(resolvedTemp !== resolvedTmpRoot, 'Refusing to delete tmp root directory');
+  assert.equal(path.dirname(resolvedTemp), resolvedTmpRoot, 'Temporary directory must be a direct child of tmp/');
+  assert.ok(path.basename(resolvedTemp).startsWith('browser-'), 'Temporary directory must match browser-* prefix');
+  if (fs.existsSync(resolvedTemp)) {
+    fs.rmSync(resolvedTemp, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
+  }
+}
+/** Purpose: execute the full QA flow with isolated temporary database cleanup. Inputs: environment PYTHON/CHROME_PATH. Returns: Promise<void>. */
 async function main() {
-  fs.mkdirSync(path.join(root, 'tmp'), { recursive: true }); fs.mkdirSync(path.join(root, 'evidence'), { recursive: true });
-  const temp = fs.mkdtempSync(path.join(root, 'tmp', 'browser-'));
+  const tmpRoot = path.join(root, 'tmp');
+  fs.mkdirSync(tmpRoot, { recursive: true }); fs.mkdirSync(path.join(root, 'evidence'), { recursive: true });
+  const temp = fs.mkdtempSync(path.join(tmpRoot, 'browser-'));
+  console.log('TEMP_DIR_CREATED', temp);
   child = spawn(process.env.PYTHON || 'python', ['app.py', '--port', '8766', '--database', path.join(temp, 'qa.db')], { cwd: root, windowsHide: true, stdio: 'pipe' });
   let serverOutput = ''; child.stdout.on('data', captureOutput); child.stderr.on('data', captureOutput);
   /** Purpose: retain server diagnostics. Inputs: output buffer. Returns: void. */
@@ -206,6 +339,7 @@ async function main() {
     check('F10: diagnostic fault logged', (await page.locator('#maintenance-content').textContent()).includes('GRINDER_JAM'));
     await page.screenshot({ path: path.join(root, 'evidence', 'test-scenarios.png'), fullPage: true });
     await page.locator('[data-fault=""]').click(); await textEquals('#maintenance-content', 'No active fault');
+    await auditRecommendations();
     await network(false); await signOut(); await signIn(); await page.locator('[data-view=menu]').click();
     await page.locator('#recommend-toggle').check();
     check('F06: offline recommendations use local context', (await page.locator('#recommend-context').textContent()).includes('weather unavailable'));
@@ -241,6 +375,7 @@ async function main() {
       await page.locator('#assistant-apply').click(); await textEquals('#quote-price', '42');
       check('F11: explicit confirmation applies the validated settings', await page.locator('#customize-form [name=milk]').inputValue() === 'oat' && await page.locator('#customize-form [name=syrup]').inputValue() === '1');
       liveAI = { realInference: true, mockedModel: false, response: actual };
+      liveAI.conversation = await auditAssistantConversation();
       await signOut();
       check('F11: account change clears conversation and proposal', (await page.locator('#assistant-result').textContent()) === '' && await page.locator('#assistant-request').inputValue() === '');
       await signIn();
@@ -267,9 +402,19 @@ async function main() {
     check('No uncaught browser errors', errors.length === 0);
     fs.writeFileSync(path.join(root, 'evidence', 'browser-results.json'), JSON.stringify({ recordedAt: new Date().toISOString(), checks, errors, responseSample: { count: 100, p95ms: p95 }, quoteSample: { count: 100, p95ms: quoteP95 }, mobile, accessibility, liveAI, browser: browser.version(), node: process.version, simulatedIntegrations: true }, null, 2));
   } catch (error) {
+    fs.writeFileSync(path.join(root, 'tmp', 'browser-failure.json'), JSON.stringify({ recordedAt: new Date().toISOString(), passed: false, checks, errors, assistantTurns, error: error.stack }, null, 2));
     if (page) await page.screenshot({ path: path.join(root, 'tmp', 'browser-failure.png'), fullPage: true });
     throw error;
-  } finally { if (browser) await browser.close(); if (child && child.exitCode === null) child.kill(); }
+  } finally {
+    if (browser) await browser.close();
+    if (child && child.exitCode === null) {
+      const stopped = once(child, 'exit');
+      child.kill();
+      await Promise.race([stopped, delay(3000)]);
+    }
+    removeTempDir(temp, tmpRoot);
+    console.log('TEMP_DIR_REMOVED', temp, !fs.existsSync(temp));
+  }
 }
 /** Purpose: surface failed QA without orphaning the browser/server. Inputs: Error. Returns: void. */
 function failed(error) { console.error(error); process.exitCode = 1; }

@@ -1,0 +1,643 @@
+{
+  "recordedAt": "2026-10-21T19:29:10.215776+00:00",
+  "results": [
+    {
+      "request": {
+        "message": "Something strong, slightly sweet, and without dairy.",
+        "history": [],
+        "context_config": null
+      },
+      "expectedKind": "recipe",
+      "passed": true,
+      "response": {
+        "kind": "recipe",
+        "message": "A strong espresso with one vanilla syrup shot and no dairy.",
+        "quote": {
+          "config": {
+            "drink": "espresso",
+            "milk": "none",
+            "strength": "strong",
+            "temperature": 70,
+            "syrup": 1,
+            "extra": 0
+          },
+          "name": "Espresso",
+          "price": 2700,
+          "kcal": 29,
+          "allergens": [],
+          "ingredients": {
+            "beans": 12,
+            "water": 40,
+            "cups": 1,
+            "syrup": 10
+          },
+          "available": true,
+          "reasons": [],
+          "category": "Coffee",
+          "image": "espresso.svg",
+          "nutrition_note": "Illustrative recipe estimates"
+        },
+        "model": "qwen3:4b",
+        "local": true
+      },
+      "seconds": 1.507,
+      "noOrderingSideEffects": true,
+      "namesProposedDrink": true
+    },
+    {
+      "request": {
+        "message": "I want something sweet but also bitter.",
+        "history": [
+          {
+            "role": "user",
+            "content": "Something strong, slightly sweet, and without dairy."
+          },
+          {
+            "role": "assistant",
+            "content": "A strong espresso with one vanilla syrup shot and no dairy."
+          }
+        ],
+        "context_config": {
+          "drink": "espresso",
+          "milk": "none",
+          "strength": "strong",
+          "temperature": 70,
+          "syrup": 1,
+          "extra": 0
+        }
+      },
+      "expectedKind": "recipe",
+      "passed": true,
+      "response": {
+        "kind": "recipe",
+        "message": "A strong espresso with one vanilla syrup shot and no dairy.",
+        "quote": {
+          "config": {
+            "drink": "espresso",
+            "milk": "none",
+            "strength": "strong",
+            "temperature": 70,
+            "syrup": 1,
+            "extra": 0
+          },
+          "name": "Espresso",
+          "price": 2700,
+          "kcal": 29,
+          "allergens": [],
+          "ingredients": {
+            "beans": 12,
+            "water": 40,
+            "cups": 1,
+            "syrup": 10
+          },
+          "available": true,
+          "reasons": [],
+          "category": "Coffee",
+          "image": "espresso.svg",
+          "nutrition_note": "Illustrative recipe estimates"
+        },
+        "model": "qwen3:4b",
+        "local": true
+      },
+      "seconds": 1.622,
+      "noOrderingSideEffects": true,
+      "namesProposedDrink": true
+    },
+    {
+      "request": {
+        "message": "Make it an oat latte instead.",
+        "history": [
+          {
+            "role": "user",
+            "content": "Something strong, slightly sweet, and without dairy."
+          },
+          {
+            "role": "assistant",
+            "content": "A strong espresso with one vanilla syrup shot and no dairy."
+          },
+          {
+            "role": "user",
+            "content": "I want something sweet but also bitter."
+          },
+          {
+            "role": "assistant",
+            "content": "A strong espresso with one vanilla syrup shot and no dairy."
+          }
+        ],
+        "context_config": {
+          "drink": "espresso",
+          "milk": "none",
+          "strength": "strong",
+          "temperature": 70,
+          "syrup": 1,
+          "extra": 0
+        }
+      },
+      "expectedKind": "recipe",
+      "passed": true,
+      "response": {
+        "kind": "recipe",
+        "message": "A strong oat latte with one vanilla syrup shot and no dairy.",
+        "quote": {
+          "config": {
+            "drink": "latte",
+            "milk": "oat",
+            "strength": "strong",
+            "temperature": 70,
+            "syrup": 1,
+            "extra": 0
+          },
+          "name": "Caffe Latte",
+          "price": 4200,
+          "kcal": 135,
+          "allergens": [
+            "oats"
+          ],
+          "ingredients": {
+            "beans": 13,
+            "water": 40,
+            "cups": 1,
+            "oat": 180,
+            "syrup": 10
+          },
+          "available": true,
+          "reasons": [],
+          "category": "Coffee",
+          "image": "latte.svg",
+          "nutrition_note": "Illustrative recipe estimates"
+        },
+        "model": "qwen3:4b",
+        "local": true
+      },
+      "seconds": 1.487,
+      "noOrderingSideEffects": true,
+      "namesProposedDrink": true
+    },
+    {
+      "request": {
+        "message": "Actually, hot chocolate with oat milk, no syrup, no extra espresso.",
+        "history": [
+          {
+            "role": "user",
+            "content": "Something strong, slightly sweet, and without dairy."
+          },
+          {
+            "role": "assistant",
+            "content": "A strong espresso with one vanilla syrup shot and no dairy."
+          },
+          {
+            "role": "user",
+            "content": "I want something sweet but also bitter."
+          },
+          {
+            "role": "assistant",
+            "content": "A strong espresso with one vanilla syrup shot and no dairy."
+          },
+          {
+            "role": "user",
+            "content": "Make it an oat latte instead."
+          },
+          {
+            "role": "assistant",
+            "content": "A strong oat latte with one vanilla syrup shot and no dairy."
+          }
+        ],
+        "context_config": {
+          "drink": "latte",
+          "milk": "oat",
+          "strength": "strong",
+          "temperature": 70,
+          "syrup": 1,
+          "extra": 0
+        }
+      },
+      "expectedKind": "recipe",
+      "passed": true,
+      "response": {
+        "kind": "recipe",
+        "message": "A regular oat hot chocolate with no syrup or extra espresso.",
+        "quote": {
+          "config": {
+            "drink": "cocoa",
+            "milk": "oat",
+            "strength": "regular",
+            "temperature": 70,
+            "syrup": 0,
+            "extra": 0
+          },
+          "name": "Hot Chocolate",
+          "price": 3500,
+          "kcal": 180,
+          "allergens": [
+            "oats"
+          ],
+          "ingredients": {
+            "beans": 0,
+            "water": 20,
+            "cups": 1,
+            "oat": 200,
+            "cocoa": 20
+          },
+          "available": true,
+          "reasons": [],
+          "category": "Chocolate",
+          "image": "cocoa.svg",
+          "nutrition_note": "Illustrative recipe estimates"
+        },
+        "model": "qwen3:4b",
+        "local": true
+      },
+      "seconds": 1.566,
+      "noOrderingSideEffects": true,
+      "namesProposedDrink": true
+    },
+    {
+      "request": {
+        "message": "No, I want a cappuccino with dairy milk and two syrup shots.",
+        "history": [
+          {
+            "role": "user",
+            "content": "I want something sweet but also bitter."
+          },
+          {
+            "role": "assistant",
+            "content": "A strong espresso with one vanilla syrup shot and no dairy."
+          },
+          {
+            "role": "user",
+            "content": "Make it an oat latte instead."
+          },
+          {
+            "role": "assistant",
+            "content": "A strong oat latte with one vanilla syrup shot and no dairy."
+          },
+          {
+            "role": "user",
+            "content": "Actually, hot chocolate with oat milk, no syrup, no extra espresso."
+          },
+          {
+            "role": "assistant",
+            "content": "A regular oat hot chocolate with no syrup or extra espresso."
+          }
+        ],
+        "context_config": {
+          "drink": "cocoa",
+          "milk": "oat",
+          "strength": "regular",
+          "temperature": 70,
+          "syrup": 0,
+          "extra": 0
+        }
+      },
+      "expectedKind": "recipe",
+      "passed": true,
+      "response": {
+        "kind": "recipe",
+        "message": "A regular cappuccino with dairy milk and two vanilla syrup shots at 70 degrees.",
+        "quote": {
+          "config": {
+            "drink": "cappuccino",
+            "milk": "dairy",
+            "strength": "regular",
+            "temperature": 70,
+            "syrup": 2,
+            "extra": 0
+          },
+          "name": "Cappuccino",
+          "price": 4000,
+          "kcal": 135,
+          "allergens": [
+            "milk"
+          ],
+          "ingredients": {
+            "beans": 10,
+            "water": 40,
+            "cups": 1,
+            "dairy": 120,
+            "syrup": 20
+          },
+          "available": true,
+          "reasons": [],
+          "category": "Coffee",
+          "image": "cappuccino.svg",
+          "nutrition_note": "Illustrative recipe estimates"
+        },
+        "model": "qwen3:4b",
+        "local": true
+      },
+      "seconds": 1.779,
+      "noOrderingSideEffects": true,
+      "namesProposedDrink": true
+    },
+    {
+      "request": {
+        "message": "Make that mild.",
+        "history": [
+          {
+            "role": "user",
+            "content": "Make it an oat latte instead."
+          },
+          {
+            "role": "assistant",
+            "content": "A strong oat latte with one vanilla syrup shot and no dairy."
+          },
+          {
+            "role": "user",
+            "content": "Actually, hot chocolate with oat milk, no syrup, no extra espresso."
+          },
+          {
+            "role": "assistant",
+            "content": "A regular oat hot chocolate with no syrup or extra espresso."
+          },
+          {
+            "role": "user",
+            "content": "No, I want a cappuccino with dairy milk and two syrup shots."
+          },
+          {
+            "role": "assistant",
+            "content": "A regular cappuccino with dairy milk and two vanilla syrup shots at 70 degrees."
+          }
+        ],
+        "context_config": {
+          "drink": "cappuccino",
+          "milk": "dairy",
+          "strength": "regular",
+          "temperature": 70,
+          "syrup": 2,
+          "extra": 0
+        }
+      },
+      "expectedKind": "recipe",
+      "passed": true,
+      "response": {
+        "kind": "recipe",
+        "message": "A mild cappuccino with dairy milk and two vanilla syrup shots at 70 degrees.",
+        "quote": {
+          "config": {
+            "drink": "cappuccino",
+            "milk": "dairy",
+            "strength": "mild",
+            "temperature": 70,
+            "syrup": 2,
+            "extra": 0
+          },
+          "name": "Cappuccino",
+          "price": 4000,
+          "kcal": 135,
+          "allergens": [
+            "milk"
+          ],
+          "ingredients": {
+            "beans": 8,
+            "water": 40,
+            "cups": 1,
+            "dairy": 120,
+            "syrup": 20
+          },
+          "available": true,
+          "reasons": [],
+          "category": "Coffee",
+          "image": "cappuccino.svg",
+          "nutrition_note": "Illustrative recipe estimates"
+        },
+        "model": "qwen3:4b",
+        "local": true
+      },
+      "seconds": 1.893,
+      "noOrderingSideEffects": true,
+      "namesProposedDrink": true
+    },
+    {
+      "request": {
+        "message": "Now forget that drink. An espresso without milk or syrup, regular strength, and no extras.",
+        "history": [
+          {
+            "role": "user",
+            "content": "Actually, hot chocolate with oat milk, no syrup, no extra espresso."
+          },
+          {
+            "role": "assistant",
+            "content": "A regular oat hot chocolate with no syrup or extra espresso."
+          },
+          {
+            "role": "user",
+            "content": "No, I want a cappuccino with dairy milk and two syrup shots."
+          },
+          {
+            "role": "assistant",
+            "content": "A regular cappuccino with dairy milk and two vanilla syrup shots at 70 degrees."
+          },
+          {
+            "role": "user",
+            "content": "Make that mild."
+          },
+          {
+            "role": "assistant",
+            "content": "A mild cappuccino with dairy milk and two vanilla syrup shots at 70 degrees."
+          }
+        ],
+        "context_config": {
+          "drink": "cappuccino",
+          "milk": "dairy",
+          "strength": "mild",
+          "temperature": 70,
+          "syrup": 2,
+          "extra": 0
+        }
+      },
+      "expectedKind": "recipe",
+      "passed": true,
+      "response": {
+        "kind": "recipe",
+        "message": "An espresso with no milk, no syrup, regular strength, and no extra espresso shots at 70 degrees.",
+        "quote": {
+          "config": {
+            "drink": "espresso",
+            "milk": "none",
+            "strength": "regular",
+            "temperature": 70,
+            "syrup": 0,
+            "extra": 0
+          },
+          "name": "Espresso",
+          "price": 2400,
+          "kcal": 4,
+          "allergens": [],
+          "ingredients": {
+            "beans": 9,
+            "water": 40,
+            "cups": 1
+          },
+          "available": true,
+          "reasons": [],
+          "category": "Coffee",
+          "image": "espresso.svg",
+          "nutrition_note": "Illustrative recipe estimates"
+        },
+        "model": "qwen3:4b",
+        "local": true
+      },
+      "seconds": 1.859,
+      "noOrderingSideEffects": true,
+      "namesProposedDrink": true
+    },
+    {
+      "request": {
+        "message": "Give me a different drink instead, still without milk.",
+        "history": [
+          {
+            "role": "user",
+            "content": "No, I want a cappuccino with dairy milk and two syrup shots."
+          },
+          {
+            "role": "assistant",
+            "content": "A regular cappuccino with dairy milk and two vanilla syrup shots at 70 degrees."
+          },
+          {
+            "role": "user",
+            "content": "Make that mild."
+          },
+          {
+            "role": "assistant",
+            "content": "A mild cappuccino with dairy milk and two vanilla syrup shots at 70 degrees."
+          },
+          {
+            "role": "user",
+            "content": "Now forget that drink. An espresso without milk or syrup, regular strength, and no extras."
+          },
+          {
+            "role": "assistant",
+            "content": "An espresso with no milk, no syrup, regular strength, and no extra espresso shots at 70 degrees."
+          }
+        ],
+        "context_config": {
+          "drink": "espresso",
+          "milk": "none",
+          "strength": "regular",
+          "temperature": 70,
+          "syrup": 0,
+          "extra": 0
+        }
+      },
+      "expectedKind": "recipe",
+      "passed": true,
+      "response": {
+        "kind": "recipe",
+        "message": "An americano with no milk, regular strength, no syrup, and no extra espresso shots at 70 degrees.",
+        "quote": {
+          "config": {
+            "drink": "americano",
+            "milk": "none",
+            "strength": "regular",
+            "temperature": 70,
+            "syrup": 0,
+            "extra": 0
+          },
+          "name": "Americano",
+          "price": 2900,
+          "kcal": 6,
+          "allergens": [],
+          "ingredients": {
+            "beans": 12,
+            "water": 180,
+            "cups": 1
+          },
+          "available": true,
+          "reasons": [],
+          "category": "Coffee",
+          "image": "americano.svg",
+          "nutrition_note": "Illustrative recipe estimates"
+        },
+        "model": "qwen3:4b",
+        "local": true
+      },
+      "seconds": 1.799,
+      "noOrderingSideEffects": true,
+      "namesProposedDrink": true
+    },
+    {
+      "request": {
+        "message": "Go back to an oat latte at 80 degrees.",
+        "history": [
+          {
+            "role": "user",
+            "content": "Make that mild."
+          },
+          {
+            "role": "assistant",
+            "content": "A mild cappuccino with dairy milk and two vanilla syrup shots at 70 degrees."
+          },
+          {
+            "role": "user",
+            "content": "Now forget that drink. An espresso without milk or syrup, regular strength, and no extras."
+          },
+          {
+            "role": "assistant",
+            "content": "An espresso with no milk, no syrup, regular strength, and no extra espresso shots at 70 degrees."
+          },
+          {
+            "role": "user",
+            "content": "Give me a different drink instead, still without milk."
+          },
+          {
+            "role": "assistant",
+            "content": "An americano with no milk, regular strength, no syrup, and no extra espresso shots at 70 degrees."
+          }
+        ],
+        "context_config": {
+          "drink": "americano",
+          "milk": "none",
+          "strength": "regular",
+          "temperature": 70,
+          "syrup": 0,
+          "extra": 0
+        }
+      },
+      "expectedKind": "recipe",
+      "passed": true,
+      "response": {
+        "kind": "recipe",
+        "message": "An oat latte at 80 degrees with no syrup or extra espresso shots.",
+        "quote": {
+          "config": {
+            "drink": "latte",
+            "milk": "oat",
+            "strength": "regular",
+            "temperature": 80,
+            "syrup": 0,
+            "extra": 0
+          },
+          "name": "Caffe Latte",
+          "price": 3900,
+          "kcal": 110,
+          "allergens": [
+            "oats"
+          ],
+          "ingredients": {
+            "beans": 10,
+            "water": 40,
+            "cups": 1,
+            "oat": 180
+          },
+          "available": true,
+          "reasons": [],
+          "category": "Coffee",
+          "image": "latte.svg",
+          "nutrition_note": "Illustrative recipe estimates"
+        },
+        "model": "qwen3:4b",
+        "local": true
+      },
+      "seconds": 1.727,
+      "noOrderingSideEffects": true,
+      "namesProposedDrink": true
+    }
+  ],
+  "liveInference": true,
+  "simulatedModelResponses": false,
+  "passed": true,
+  "runtime": {
+    "version": "0.40.6"
+  },
+  "wordingChecksPassed": true
+}
