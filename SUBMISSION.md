@@ -6,9 +6,9 @@ The repository was verified public on 26 October 2026. The instructor can access
 
 ## Canvas upload
 
-Upload **`output/G28Lab3_Project.zip`**. It contains the Task A report/artifacts, comparisons, prompt logs, Task B source code and execution instructions, and the Task C documentation. The application and report files retain their repository paths inside the archive. Extract the entire ZIP before running the project.
+Upload **`output/SmartBrew_Lab3_Canvas.zip`**. This compact archive contains seven files: the report, AI appendix, main prompt, interaction record, original development transcript, transcript manifest and a README with the GitHub reference for Task B. Source code and execution instructions are available in the public repository.
 
-Paste the GitHub repository URL above into the Canvas submission text as well. Preparing this archive does not submit it to Canvas.
+Paste the GitHub repository URL above into the Canvas submission text and complete the Submit step. The larger `output/G28Lab3_Project.zip` is an optional full source bundle.
 
 ## Where to find the assessed work
 

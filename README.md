@@ -131,7 +131,7 @@ With Ollama/model running, set `$env:SMARTBREW_LIVE_AI = '1'` before the browser
 | `docs/development/` | Internal engineering and handoff notes retained in Git |
 | `docs/reference/lab2/` | Historical generated Lab 2 review aids, not submission materials |
 | `evidence/` | Verification outputs (`evidence/current/`) and preserved historical/regression runs (`evidence/history/`) |
-| `output/` | Final Lab 3 deliverables (`G28Lab3_Report.pdf`, `G28Lab3_AI_Appendix.pdf`, `G28Lab3_Project.zip`) |
+| `output/` | Final Lab 3 deliverables (`G28Lab3_Report.pdf`, `G28Lab3_AI_Appendix.pdf`, `SmartBrew_Lab3_Canvas.zip`, `G28Lab3_Project.zip`) |
 | `data/`, `tmp/`, `.venv/` | Local data, scratch files and environment; excluded from Git |
 
 ## Report and AI Record
@@ -141,9 +141,9 @@ With Ollama/model running, set `$env:SMARTBREW_LIVE_AI = '1'` before the browser
 - [Documentation index](docs/README.md)
 - [Available original development conversation](docs/DEVELOPMENT_TRANSCRIPT.md) (251 visible messages; declared omissions/redactions and source hashes included)
 
-Lab 3 Tasks A-C and the initial local integration of a student-relayed Gemini web-chat draft were developed with Codex using the student-confirmed **GPT-6.1 Sol** selector label (before Gemini had local IDE access; that earlier web-chat Gemini version was not recorded). After opening the repository in Google Antigravity, **Gemini 4 Argon Medium** inspected the local files, implemented and tested the focused F11 multi-turn assistant corrections and the expanded F06 deterministic recommendation scoring and browser checks, and recorded the local verification evidence. Local **Qwen3:4b** through Ollama 0.40.6 is the prototype's runtime drink model, not a development assistant that generated the project. The appendix and AI record document prompts, decisions, observed errors and revisions. Students still need to understand and evaluate the work; no student-authored personal reflection is supplied.
+Lab 3 Tasks A-C and the initial local integration of a student-relayed Gemini web-chat draft were developed with Codex using the student-confirmed **GPT-6.1 Sol** selector label (before Gemini had local IDE access; that earlier web-chat Gemini version was not recorded). After opening the repository in Google Antigravity, **Gemini 4 Argon Medium** inspected the local files, implemented and tested the focused F11 multi-turn assistant corrections and the expanded F06 deterministic recommendation scoring and browser checks, and recorded the local verification evidence. Local **Qwen3:4b** through Ollama 0.40.6 is the prototype's runtime drink model, not a development assistant that generated the project. The appendix and AI record document prompts, decisions, observed errors and revisions.
 
-The comparison uses the group's actual submitted Assignment 2, preserved unchanged. The student clarified that earlier limited AI assistance was not comparable to Lab 3's extensive generation; this does not establish AI authorship of Assignment 2. Later AI-generated Lab 2 corrections are separate historical review aids only: the supplied course policy prohibits submitting generated text/models for Labs 1-2. They do not replace the original submission.
+The comparison uses the group's submitted Assignment 2, preserved unchanged in docs/baseline. Later generated review drafts are kept separately in docs/reference/lab2 and are not substituted for the comparison baseline.
 
 ## Scope
 

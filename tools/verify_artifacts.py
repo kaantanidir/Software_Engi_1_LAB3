@@ -7,6 +7,7 @@ from pathlib import Path
 import platform
 import re
 import sys
+import subprocess
 from zipfile import ZipFile, ZIP_DEFLATED
 
 from coursework_data import LAB3, SOURCES, STORIES3, STORY_COMPARISON, ADDED_STORIES
@@ -200,6 +201,53 @@ def build_project_zip(destination=None):
     return target
 
 
+def build_canvas_zip():
+    """Purpose: assemble the compact assessment archive with a Task B repository reference. Inputs: current PDFs, prompt records and Git HEAD. Returns: verified ZIP Path."""
+    repository = "https://github.com/kaantanidir/Software_Engi_1_LAB3"
+    commit = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
+    readme = f"""# Group 28 - Lab Assignment 3
+
+GitHub repository: {repository}
+Implementation and documents: {repository}/tree/{commit}
+
+## Task A
+
+- [Report](G28Lab3_Report.pdf): requirements, user stories, product backlog, comparison and justified decisions.
+- [AI appendix](G28Lab3_AI_Appendix.pdf): models, prompting strategy, selected interactions and evaluation.
+- [Main prompt](docs/MAIN_PROMPT.md) and [interaction record](docs/AI_CONVERSATION.md).
+- [Development conversation](docs/DEVELOPMENT_TRANSCRIPT.md) and [integrity manifest](docs/DEVELOPMENT_TRANSCRIPT_MANIFEST.json).
+
+## Task B - GitHub repository reference
+
+The public repository contains the executable prototype, source code, pinned dependencies and tests.
+Use its [README]({repository}/blob/{commit}/README.md) for setup, execution and the ten-feature walkthrough.
+The optional local drink assistant and simulator scope are documented there.
+
+## Task C
+
+Repository documentation includes code comments, architecture, environment requirements and execution instructions.
+"""
+    files = {
+        "G28Lab3_Report.pdf": "output/G28Lab3_Report.pdf",
+        "G28Lab3_AI_Appendix.pdf": "output/G28Lab3_AI_Appendix.pdf",
+        "docs/MAIN_PROMPT.md": "docs/MAIN_PROMPT.md",
+        "docs/AI_CONVERSATION.md": "docs/AI_CONVERSATION.md",
+        "docs/DEVELOPMENT_TRANSCRIPT.md": "docs/DEVELOPMENT_TRANSCRIPT.md",
+        "docs/DEVELOPMENT_TRANSCRIPT_MANIFEST.json": "docs/DEVELOPMENT_TRANSCRIPT_MANIFEST.json",
+    }
+    target = ROOT / "output" / "SmartBrew_Lab3_Canvas.zip"
+    with ZipFile(target, "w", ZIP_DEFLATED) as bundle:
+        bundle.writestr("README.md", readme)
+        for name, source in files.items():
+            bundle.write(ROOT / source, name)
+    with ZipFile(target) as bundle:
+        assert bundle.testzip() is None and len(bundle.namelist()) == 7
+        assert bundle.read("README.md").decode("utf-8") == readme
+        for name, source in files.items():
+            assert bundle.read(name) == (ROOT / source).read_bytes()
+    return target
+
+
 def check_document_links():
     """Purpose: validate navigation after documentation moves. Inputs: README and documentation index files. Returns: checked local-link count."""
     count = 0
@@ -347,7 +395,7 @@ def main():
                 assert record["id"] in text
             for value in ("F11", "Qwen3", "Ollama"):
                 assert value in text
-            for phrase in ("User-story comparison: original to revised", "Seven additional stories", "Assignment 2 authorship clarification", "DEVELOPMENT_TRANSCRIPT.md"):
+            for phrase in ("User-story comparison: original to revised", "Seven additional stories", "Comparison baseline", "DEVELOPMENT_TRANSCRIPT.md"):
                 assert phrase in text, "Missing report revision: " + phrase
             for original, wording, revised, reason in STORY_COMPARISON:
                 assert original in " ".join(text.split()), "Missing original-story comparison in PDF: " + original
@@ -369,7 +417,7 @@ def main():
             sheet.save(ROOT / "tmp" / f"contact-{label}-{start//6+1}.png")
     appendix = PdfReader(ROOT / "output" / "G28Lab3_AI_Appendix.pdf")
     appendix_text = "\n".join(page.extract_text() for page in appendix.pages)
-    for phrase in ("GPT-6.1 Sol", "Task A", "Task B", "Task C", "do we need to", "personal reflection", "DEVELOPMENT_TRANSCRIPT.md", "251 recorded messages"):
+    for phrase in ("GPT-6.1 Sol", "Gemini 4 Argon Medium", "Task A", "Task B", "Task C", "Prompting strategy", "Selected prompts", "Critical evaluation", "DEVELOPMENT_TRANSCRIPT.md", "251 recorded messages"):
         assert phrase in appendix_text, "Missing appendix content: " + phrase
     counts["aiAppendix"] = len(appendix.pages)
     if "--include-reference" in sys.argv:
@@ -381,6 +429,8 @@ def main():
     (ROOT / "evidence" / "current" / "artifact-checks.json").write_text(json.dumps(evidence, indent=2) + "\n", encoding="utf-8", newline="\n")
     if "--build-project-zip" in sys.argv:
         build_project_zip()
+    if "--build-canvas-zip" in sys.argv:
+        build_canvas_zip()
     print(json.dumps(evidence, indent=2))
 
 

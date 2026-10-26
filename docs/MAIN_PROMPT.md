@@ -1,6 +1,6 @@
 # Main Lab 2 Correction / Lab 3 Prompt
 
-Student message from 20 October 2026. The assignment text below is the input supplied by the student, rather than a claim that the assistant authored it. Source attachments: feedback `G28Lab2 (1).pdf`, submitted `Lab2_G28.zip`, and the supplied Lecture 2 and Lecture 3 PDFs.
+Original request: 20 October 2026. Source attachments: Lab 2 feedback, the submitted Lab2_G28.zip, and the supplied Lecture 2 and Lecture 3 PDFs.
 
 ---
 

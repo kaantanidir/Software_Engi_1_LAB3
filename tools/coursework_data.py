@@ -184,5 +184,5 @@ REJECTIONS = [
     ("Mark offline Apple Pay/Google Pay as approved without processor support", "Reject: the prototype cannot assume external financial approval. Show pending and do not dispense."),
     ("Call a keyword parser a local LLM or call a mood dropdown computer vision", "Reject: would misrepresent implementation. F11 uses actual local-model inference; camera/mood inference remains deferred."),
     ("Subscriptions, social sharing and multiple-drink baskets", "Reject from scope: not requested; no need to enlarge the minimum usable prototype."),
-    ("Conflate submitted Assignment 2 with later AI-generated review corrections", "Reject: compare the preserved group submission. The student clarified that earlier limited AI assistance was not equivalent to Lab 3 generation; later generated review aids must not replace the baseline."),
+    ("Conflate submitted Assignment 2 with later AI-generated review corrections", "Reject: use the preserved group submission for a consistent before-and-after comparison. Substituting later review corrections would obscure the original differences."),
 ]

@@ -1,18 +1,104 @@
 # SmartBrew AI - Group 28 - Lab 3 AI appendix
 
-Updated 2026-10-26. This appendix records development assistance, the main supplied prompt and key interactions. The following record identifies the development and runtime models separately.
+Updated 2026-10-26. Requirements elicitation, prototype development and evaluation.
 
-## Record scope and prompt strategy
+SmartBrew AI - Group 28 | Lab Assignment 3 | 20-26 October 2026
 
-This appendix includes the main supplied request, key responses and clarifications. Markdown whitespace is normalized. The later Lab 1/course-policy context is explicitly summarized rather than represented as a full verbatim export. Generated source files in the Git repository are the code responses. This record contains no private model reasoning, invented prompts or student-written personal reflection.
+This appendix describes how LLM assistance was used for requirements elicitation, implementation and documentation. It records the prompting approach, selected interactions, design decisions and verification results.
 
-## Original development conversation attachment
+## 1. Models and responsibilities
 
-The separate docs/DEVELOPMENT_TRANSCRIPT.md preserves available original student prompts and visible Codex replies from the development chat, with recorded timestamps and source hashes in docs/DEVELOPMENT_TRANSCRIPT_MANIFEST.json. It excludes private reasoning, tools, automatic context and declared sensitive details. The PDF appendix is a reading guide with selected interactions, not the full attachment. The separate Gemini/Antigravity session transcript was not available; relayed proposals and its documented contribution are identified as such.
+| Model / tool | Role | Contribution |
+| --- | --- | --- |
+| GPT-6.1 Sol through Codex | Development assistant | Task A requirements, stories, backlog and comparison; Task B prototype generation and revisions; Task C documentation and repository preparation. |
+| Gemini 4 Argon Medium through Google Antigravity | Development assistant | Local code review, multi-turn drink-assistant improvements, recommendation scoring and regression verification. |
+| Qwen3:4b through Ollama 0.40.6 | Application runtime | Interprets customer drink requests and proposes recipes while the application is running. |
 
-# Main Lab 2 Correction / Lab 3 Prompt
+GPT-6.1 Sol is the recorded model label for the initial Codex development session. A separate earlier Gemini web chat supplied design proposals; its version was not recorded. The subsequent documentation session used Codex without a separately recorded model label.
 
-Student message from 20 October 2026. The assignment text below is the input supplied by the student, rather than a claim that the assistant authored it. Source attachments: feedback `G28Lab2 (1).pdf`, submitted `Lab2_G28.zip`, and the supplied Lecture 2 and Lecture 3 PDFs.
+## 2. Prompting strategy
+
+The process used an iterative conversation supported by the system description, the submitted Assignment 2, instructor feedback, lecture templates and the Lab 3 instructions. The complete initial request is included in [MAIN_PROMPT.md](MAIN_PROMPT.md).
+
+1. **Ground the requirements in the supplied material.** Use the lecture format for descriptions, inputs, outputs, preconditions and postconditions. Separate functional requirements, non-functional requirements, user stories and backlog entries.
+2. **Compare against the submitted baseline.** Use the group's original Assignment 2 and explain additions, omissions and revised wording. Keep later review drafts separate from the comparison baseline.
+3. **Select a demonstrable implementation scope.** Organize ten substantial feature groups around the customer and technician workflows. State which hardware and external-service interactions use local simulators.
+4. **Refine through concrete examples.** Review generated behavior in the application, report defects and request focused corrections. For the local assistant, use exact recipe requests and follow-up changes to check context retention.
+5. **Verify the resulting behavior.** Run business-rule tests, browser workflows and real local-model requests. Use observed failures to guide revisions and repeat the affected checks.
+
+## 3. Selected prompts, responses and decisions
+
+The following entries combine original prompt excerpts with labelled summaries of longer interactions. The [development transcript](DEVELOPMENT_TRANSCRIPT.md) contains the available original messages.
+
+### 3.1 Requirements and comparison - Task A
+
+**Prompt excerpt:** "Conduct a requirements elicitation process for the System Description used across all Labs using your chosen LLM."
+
+**Response summary:** The elicitation produced 20 functional requirements, five non-functional requirements, 24 user stories and a prioritized product backlog. The requirements follow the supplied lecture fields and trace back to the system capabilities.
+
+**Review decision:** The comparison uses the group's submitted Assignment 2. Its 13 original stories are mapped to 17 revised or split stories, with seven additional stories explained separately. The report identifies improvements, retained requirements, deferred functionality and rejected suggestions with a justification for each rejection.
+
+### 3.2 Prototype generation - Task B
+
+**Prompt excerpt:** "Select a core set of 10 features/functionalities (not trivial) from the requirements elicited in Task A."
+
+**Response summary:** The implementation groups are accounts/preferences, menu/nutrition, customization, saved recipes, ingredient availability, recommendations, checkout/history, loyalty, receipts and maintenance/diagnostics. The generated prototype uses Python, SQLite and a browser interface.
+
+**Review decision:** Payment, NFC, weather/sensor inputs and email are represented by local simulators. Camera mood inference remains outside the implemented scope. A local drink assistant was subsequently added as F11.
+
+### 3.3 Authentication and account ownership
+
+**Reported issue (summary):** A newly registered customer could later appear as the demo customer and see the wrong account's records.
+
+**Response summary:** Inspection identified a hidden demo NFC value being submitted with ordinary password login. The login paths were separated, mixed authentication methods were rejected and demo credentials became an explicit user action.
+
+**Verification:** Browser workflows now create two customers, check private recipes and purchases, reject access to another customer's records and confirm ownership after a server restart.
+
+### 3.4 Local assistant and recommendation refinement
+
+**Review request (summary):** Keep the active recipe across follow-up requests, handle unsupported ingredients clearly and make recommendation rules consistent with the available data.
+
+**Response summary:** The assistant context was updated to include the selected recipe, structured responses were validated by the server and unsupported options were handled without silent substitution. Recommendation scoring was refined around time, weather, preferences, saved recipes and completed-order frequency. Caffeine and sleep claims were removed because the prototype has no supporting data.
+
+**Verification:** The eight-turn assistant evaluation improved from 5/8 before the context changes to 8/8 in the final regression run. The 12-turn conversation suite and nine-turn recipe-following suite also passed in their recorded runs. Their dates and responses are retained with the test evidence.
+
+### 3.5 Three recipe choices
+
+**Request (summary, translated from Turkish):** Offer three drink recipes and keep technical score details in the project documentation rather than the customer interface.
+
+**Response summary:** The model returns one primary recipe and up to two alternatives. The server checks supported settings, ingredients, duplicate options and prices. Cards show names, short descriptions, settings and prices. Selecting a recipe makes it the context for subsequent changes.
+
+**Review decision:** Exact requests or limited availability can produce fewer than three distinct options. Applying a suggestion updates the customizer; purchasing requires a separate checkout confirmation.
+
+**Verification:** An initial run showed that "Make it mild" could change a selected cappuccino into a latte. A focused strength-only guard now preserves the selected drink and its other settings. Browser checks cover three choices, second-option selection, follow-up changes and mobile layout.
+
+### 3.6 Startup and presentation improvements
+
+**Prompt excerpt:** "is there a wayto start it with starting the app as well"
+
+**Response summary:** The Windows launcher starts or reuses Ollama before starting SmartBrew. Model installation is a one-time setup; normal startup uses the installed weights. Manual ordering remains available when the optional model is unavailable.
+
+**Further refinement:** Three example prompts fill the input for a quick demonstration. A loading indicator shows that inference is in progress and respects reduced-motion settings. The README documents installation, startup, tests and all ten feature demonstrations.
+
+## 4. Critical evaluation
+
+LLM assistance accelerated the first implementation and helped maintain traceability between requirements, features and documentation. Review and execution were essential: an early check based on diagram names missed incomplete requirement fields, the initial browser flow did not expose the two-customer login defect, and real-model requests revealed recipe-context errors that fixture-based tests alone had not found.
+
+The development process therefore combined source review, customer feedback, deterministic tests and live-model checks. Suggestions such as additional infrastructure and password recovery were left outside the selected prototype scope. Unsupported caffeine claims were removed. These decisions kept the implementation aligned with the available data and the ten-feature demonstration.
+
+The final application check passed 38 unit tests and 65 browser checks, including real local inference. A separate ZIP-extracted copy passed all 38 unit tests in a fresh Python 3.12.14 environment with the pinned dependencies. A browser smoke check on that clean installation verified example prompts, model loading feedback and mobile layout. Hardware and external-service behavior remain subject to the simulator scope described in the report.
+
+## 5. Supporting records
+
+- [Main supplied prompt](MAIN_PROMPT.md): initial request and assignment instructions.
+- [Development conversation](DEVELOPMENT_TRANSCRIPT.md): 251 recorded messages, comprising 85 student messages and 166 Codex replies. Personal details are redacted.
+- [Transcript manifest](DEVELOPMENT_TRANSCRIPT_MANIFEST.json): source hashes and transcript integrity information.
+- Repository verification records: QA_RESULTS.md and evidence/current/ contain test results, screenshots and model responses. The separate Gemini/Antigravity contribution is summarized above; its session transcript was not available for inclusion.
+- Source code, environment setup and execution guide: https://github.com/kaantanidir/Software_Engi_1_LAB3
+
+## Appendix - Original main prompt
+
+Original request: 20 October 2026. Source attachments: Lab 2 feedback, the submitted Lab2_G28.zip, and the supplied Lecture 2 and Lecture 3 PDFs.
 
 ---
 
@@ -103,190 +189,3 @@ You are free to use **any LLM or AI assistant of your choice** (e.g., ChatGPT/GP
 ### General Information & Constraints
 
 - You may use any programming language, framework, or IDE. However, remember that the evaluation takes place on an independent machine. Your project **must include clear environment setup instructions** or configuration files (e.g., `requirements.txt`, `package.json`, `pom.xml`, or Dockerfile) so it can be built and run without version mismatch issues.
-
-# AI Use and Interaction Record
-
-Session: 20-21 October 2026, Europe/Berlin. This is a selected, normalized interaction record with main prompts, key responses and observed revisions. It is not a full archival export. Administrative quotations are preserved in MAIN_PROMPT.md; later discussions are summarized where indicated. Private credentials are not reproduced.
-
-## Assignment 2 authorship clarification - 26 October 2026
-
-The student clarified: "öncekinde ai yardımı bunun gibi yoktu, sakın gidip ai yaptı deme assignment 2 ye, false document istemiyorum". Earlier limited assistance was not comparable to Lab 3 generation. The assistant's inference that Assignment 2 was AI-authored or unsuitable as the human-elicited baseline was unsupported and is withdrawn. Compare the group's preserved submission; later generated review corrections are separate. Historical transcript assertions remain recorded, superseded by this correction. This does not claim that no assistance occurred.
-
-## Original conversation attachment
-
-Added 26 October 2026: [available development conversation](DEVELOPMENT_TRANSCRIPT.md) and its [source/hash manifest](DEVELOPMENT_TRANSCRIPT_MANIFEST.json). The attachment contains **251 recorded messages: 85 student messages and 166 visible Codex replies**, recovered from three primary project-chat segments covering the initial Lab 3 request through the repository reorganization report (20-22 October, Europe/Berlin). It preserves wording and UTC source timestamps with declared omissions and redactions. It includes the generation request, scope decisions, observed defects, authorization to implement, revision discussions and relayed Gemini proposals.
-
-Private reasoning, system/developer instructions, tool payloads, approval-review sessions, automatic UI context, image bytes and separate pasted-file contents are excluded. A non-public account password, personal emails and home-directory prefixes are redacted. Generated code remains in the repository and Git history. The original separate Gemini/Antigravity transcript is not available in these local Codex logs; its contribution remains summarized below and supported by source/test evidence. This attachment strengthens the Task B conversation evidence without claiming to recover unavailable material.
-
-## Models and Roles
-
-**Development assistant (initial Lab 3 Tasks A-C and assistant handoff integration):** Codex desktop application, student-confirmed selector label **GPT-6.1 Sol**, used for Lab 3 Tasks A, B and C: elicitation/comparison, complete code generation and revision, tests, documentation and repository work. A separate backend build identifier was not exposed. The exact model used in earlier Lab 1-2 tutoring was not recorded.
-
-**Development assistant (subsequent local F11 evaluation/refinement and F06 recommendation update):** **Gemini 4 Argon Medium** through **Google Antigravity**, used after opening the local repository in the IDE to inspect the uncommitted handoff state, build and run the multi-turn assistant evaluation (`tools/check_assistant_heldout_baseline.py`), refine `smartbrew/assistant.py` context handling and schema field order, specify and implement the expanded deterministic F06 recommendation scoring (`smartbrew/service.py`, `web/app.js`, `web/styles.css`), and expand the unit and browser verification suites to **33 unit tests** and **58 browser checks**. (An earlier Gemini web chat used by the student to draft initial assistant ideas had no direct repository or test access, and its model version was not recorded.)
-
-**Runtime drink assistant:** local Ollama 0.40.6 with Qwen3 4B (`qwen3:4b`), added after the student approved the scope. This model interprets customer drink requests; it did not generate the coursework. The tested digest, outputs and timings are recorded separately in `evidence/current/local-ai-results.json`, `evidence/current/assistant-conversations.json`, `evidence/current/assistant-long-chat.json` and `evidence/current/assistant-heldout-postchange.json`.
-
-## Main Request
-
-The supplied Lab 2 feedback, actual submission ZIP, Lecture 2/3 PDFs, system description and Lab 3 instructions form the main prompt in [MAIN_PROMPT.md](MAIN_PROMPT.md). The student asked to review Lab 2 against feedback and then complete Lab 3's elicitation, comparison, ten-function prototype and repository documentation.
-
-Prompt strategy: ground the artifacts in supplied sources, use the lecture's requirement/backlog fields, preserve the submitted baseline, separate source mandates from proposed design choices, implement bounded workflows, and verify failures and ownership as well as successful demonstrations. This was an evolving conversation, not a fabricated sequence of separate experiments.
-
-## Assistant Responses and Student Clarifications
-
-Selected excerpts below retain the original wording; execution observations are labelled separately.
-
-Assistant:
-
-> I'll read the feedback, submitted files, and lecture templates first. Then I'll use them to correct Lab 2 and build Lab 3's requirements, comparison, prototype, and documentation.
-
-Assistant after reviewing feedback:
-
-> The feedback gives Lab 2 a positive grade, but asks for fuller requirement descriptions, actor placement changes, and customization as the customer's starting point. The submitted PDF is missing the required preconditions and postconditions, so my earlier reassurance was too broad.
-
-Student supplied the GitHub repository and confirmed the model label:
-
-> GPT-6.1 Sol
-
-The repository URL was https://github.com/kaantanidir/Software_Engi_1_LAB3.git .
-
-Assistant implementation scope:
-
-> For Lab 3, I'll build a local browser app around ten demonstrable features: accounts, menu browsing, customization, saved recipes, availability, recommendations, checkout/history, loyalty, receipts, and maintenance. Hardware inputs and external payments/email will be clearly labeled simulators; camera inference and a real local LLM will remain deferred.
-
-The last clause describes the initial scope. The student later approved a real optional local drink assistant; camera inference remains deferred.
-
-## Lab 1 and Course-Policy Review
-
-Student supplied the Lab 1 submission/feedback and general course AI restrictions. Prompt excerpt:
-
-> I have provided all lab 1,2,3 instructions, feedback of 1 and 2, submission of 1 and 2.
-
-Source-context summary: Labs 1-2 limit AI to explanations/grammar and prohibit generated submission text/models; Lab 3 permits end-to-end generation. The instructor recommends an additional experiment and asks for a personally written reflection if performed.
-
-Assistant:
-
-> The general instructions add an important distinction: Labs 1-2 prohibit submitting AI-generated text or models, while Lab 3 explicitly allows generation. I'll keep the generated Lab 2 correction labeled as a review aid and check that the repository makes that clear.
-
-Student:
-
-> do we need to, wouldnt disabling or mutating would decrease functionallityt of the project
-
-Assistant:
-
-> The message presents the extra experiment as recommended, rather than a required fourth task.
->
-> A mutation would run only in a disposable test copy: deliberately break one rule, check whether a test catches it, then discard the copy. Your main project keeps all ten features.
-
-No optional student experiment has been selected or claimed in this part of the record. The source baselines are preserved unchanged. The comparison uses the group's actual submitted Assignment 2. The student later clarified that earlier limited assistance was not comparable to Lab 3 generation; it does not justify attributing the submission to AI or disqualifying it as the comparison baseline.
-
-## Customer Review and Approved Revision
-
-Discussion summary: the student reported that a newly created account returned to Alex on later login and showed Alex's records. They questioned whether the prototype worked beyond its prepared demonstration. The assistant inspected the code without making changes while the student requested discussion first.
-
-Assistant:
-
-> I found a concrete bug that explains this: the ordinary sign-in form also sends the hidden demo NFC value. The server prioritizes that value, so it signs you in as Alex instead of checking the email and password you entered.
->
-> My browser tests missed it because they signed in as Alex, which looked successful either way.
-
-Discussion summary: the student preferred a helpful local drink assistant over camera mood detection. Password change/recovery, local versus real email, Celery/Redis and Docker were discussed; password recovery and the infrastructure additions were left outside scope. The agreed plan also separated technician test controls from customer checkout, introduced an explicit demo-login action, completed order review/receipts and broadened browser tests.
-
-Student approval:
-
-> just try to make documantation a little bit better with ai part, also maybe check the general file organization as well. other than that, ok
-
-Assistant:
-
-> I'll proceed with the agreed plan, including a file-organization review. I'll make the documentation more readable and less repetitive while keeping the AI-use record accurate.
-
-The documentation was reorganized around setup, architecture, testing and coursework records, with detailed provenance kept here and historical Lab 2 review aids separated from current Lab 3 documents. AI involvement was not relabeled as human authorship.
-
-## Generated Outputs and Observed Corrections
-
-The application was generated end to end, not only reviewed. Its code responses are retained as source files and Git history:
-
-- app.py and smartbrew/service.py: HTTP adapter, identity/ownership, saved recipes, ranking, purchases, receipts and maintenance.
-- smartbrew/assistant.py and web/assistant.js: optional real local-model interpretation and confirmed recipe application.
-- web/: responsive customer, technician and receipt views.
-- tests/ and tools/: business-rule, model-validation, browser and live-inference checks; source audits and document generation.
-
-Observed execution history, not invented prompts or student-written reflections:
-
-1. Source review found missing requirement fields and wrong/empty Astah use-case descriptions that earlier name-only checks had missed.
-2. Pending-wallet retry originally lost selected loyalty points; persistence and a retry regression were added.
-3. Recommendation failure originally left the menu blank. A failing browser regression led to independent essential rendering and a bounded optional-ranking wait.
-4. The student found the password/NFC mix-up. A new failing regression reproduced it; authentication now rejects mixed methods, normal fields start empty, and two-customer browser workflows verify actual identity and ownership.
-5. Payment outcomes were moved from customer-submitted data to a protected, persistent technician setting. Requests attempting to override outcomes are rejected.
-6. Personalized ranking was adjusted to quote the customer's real preference settings; selecting a recommendation applies those settings.
-7. Real Qwen3 testing exposed an invented recipe for an unknown "usual" drink. Clarification rules/examples were refined and the failed response was retained. A cold start also exceeded the original timeout; the bounded wait and setup documentation were adjusted.
-8. Final measurements, screenshots, model replies and remaining limitations are recorded in QA_RESULTS.md and evidence/. Passing selected tests is not proof that every possible model output or hardware integration is correct.
-
-## Student Review
-
-### Subsequent Gemini Proposal Integration
-
-Follow-up user observation: generic repeated coffee descriptions for similar bitter/sweet requests.
-Codex added a nine-turn live reproduction and explicitly separated recipe-following checks from
-prose-quality observations. Explicit changes worked in this scenario; generic wording was still
-observed. No frozen-conversation fix is claimed. See the implementation update and long-chat evidence.
-
-The student used a separate Gemini chat to draft assistant context-retention/prompt/test changes and relayed its outputs here. The exact Gemini model label for that earlier web chat is unconfirmed. After the student asked Codex to continue and then "so?", Codex integrated the proposal locally, corrected test integration and ran real inference/browser checks. The successive failures, corrections, current status and attribution are recorded in `docs/development/ASSISTANT_IMPLEMENTATION_UPDATE.md`; the new live evidence is `evidence/current/assistant-conversations.json`. This contribution is not relabeled as student-authored work, and neither assistant's assurances substitute for execution evidence. Saved Gemini instructions are not proof of source-file access or test execution.
-
-### Subsequent Google Antigravity Session (Gemini 4 Argon Medium)
-
-In a follow-up Google Antigravity IDE session using **Gemini 4 Argon Medium** with direct access to the local repository, the assistant first inspected the codebase and uncommitted changes read-only, then created a multi-turn evaluation script (`tools/check_assistant_heldout_baseline.py`) using isolated temporary databases.
-
-1. **F11 Local Drink Assistant Evaluation and Fix:**
-   - The pre-change baseline (`evidence/history/assistant-heldout-baseline.json`, preserved unchanged) passed 5/8 turns and exposed four concrete issues: a leaked synthetic assistant placeholder message on open-ended follow-up (`A3`), failure to switch base drink from `latte` to `mocha`/`cocoa` when asked to make a drink chocolatey (`B2`), silent substitution of a hot vanilla latte for an unsupported iced caramel latte (`C1`), and unrequested extra espresso (`extra: 1`) when asked for sweetness beyond the 4-shot syrup cap (`C2`).
-   - Removing the synthetic assistant turn and replacing it with a structured trailing `system` context block (`current_proposal`), ordering `config` before `message` in `RESPONSE_SCHEMA`, and adding explicit rules against silent substitution and unrequested extra espresso resolved `B2`, `C1`, and `C2` on the first post-change run (`evidence/history/assistant-heldout-postchange-first-run.json`, 7/8 passed, preserved unchanged) and all 8/8 turns after clarifying that alternative requests (`"what else"`) should return `kind="recipe"` (`evidence/current/assistant-heldout-postchange.json`, 8/8 passed). Both existing conversation scripts (`tools/check_assistant_conversations.py`, 12/12 turns, and `tools/check_assistant_long_chat.py`, 9/9 recipe turns) also passed.
-
-2. **F06 Recommendation Specification Review and Implementation:**
-   - An initial F06 scoring draft contained arithmetic/sorting mismatches in its worked example and described per-drink recipe defaults not present in `Store.config()`. Before any code was written, the student required a corrected specification separating generic recipe defaults from drink-affinity lookup tables, removing caffeine/sleep claims (`"Late-hour comfort pick"`), renaming the count-based order reason from `"A recent favorite"` to `"A frequent choice"` (`+12` per completed order, capped at `+36`), defaulting omitted weather conditions to `"unknown"` (`0` points, no invented condition), adding `period_mode` (`"manual"` technician override vs. `"auto"` injectable local clock across `morning`, `afternoon`, `evening`, `night`) alongside `weather` (`cold`, `mild`, `warm`, `hot`) and `condition` (`unknown`, `sunny`, `cloudy`, `rainy`, `snowy`), and verifying customer ownership isolation.
-   - After design approval, `smartbrew/service.py`, `web/app.js`, `web/styles.css`, `tests/test_service.py`, and `tools/browser_check.cjs` were updated and verified against isolated temporary databases without touching `data/smartbrew.sqlite3`. All **33 unit tests** (`evidence/current/unit-tests.txt`) and **58 browser checks** (`evidence/current/browser-results.json`, with the initial post-logout quote-wait failure preserved separately in `evidence/history/browser-f06-first-run-failure.json`) passed.
-
-### Scope of Technical Record
-
-This technical interaction record documents the design assumptions, baseline provenance, observed failures, automated test evidence and model limitations across the development and runtime models. It does not claim completion of the assigned reading or include a generated first-person student reflection.
-
-## Submission documentation revision - 26 October 2026
-
-Student request in this audit: after reviewing the Lab 3 criteria, story comparison and conversation evidence, the student instructed: "do it".
-
-Codex added a comparison using the exact 13 original story texts from the preserved submitted baseline, mapped them to 17 revised stories and justified seven additional stories, producing complete coverage of the 24 Lab 3 stories. It also recovered the available visible development messages, documented redactions/omissions and added the transcript and manifest to the source bundle. The report/appendix and archive were rebuilt and verified. These are documentation/export changes; no application feature or historical baseline was rewritten. The current session's exact model selector label was not separately recorded and is not inferred from the earlier session's label.
-
-The comparison retains the actual group submission. An assistant-raised authorship concern was subsequently corrected as described below. No instructor message was sent and no personal student reflection was generated.
-
-## Combined application/model startup - 26 October 2026
-
-Student request: "start the server, do we needf to include that ollama should be started manually as well when using the site? or is there a wayto start it with starting the app as well". A brief low-battery interruption was followed by the student asking to continue after connecting power.
-
-Codex started the existing SmartBrew application and added `tools/start_smartbrew.ps1` for Windows. This launcher starts/reuses optional Ollama with installed weights, then starts the Python application. It supports a separate port/database and `-SkipAI` to omit preparation; that switch does not disable an already running model server. The existing preparation script now checks installed models before pulling and supports `-NoDownload` and `-SkipWarmup`. Normal combined startup uses both switches. Missing AI produces a warning and preserves manual ordering. The README distinguishes one-time installation/download from normal startup, direct Python launches and process-only execution-policy bypass.
-
-Observed verification: both PowerShell files passed syntax parsing. The preparation script started the actual local Ollama process and the application reported `qwen3:4b` available. Combined and skip-preparation launcher checks used isolated temporary databases: both served six menu drinks and reported the actual model available. The combined launcher reused the same Ollama PID, triggered no model download and left the existing demo server available. These are startup/readiness checks, not new inference-quality results; previously recorded live-model evidence retains its original dates. The PDF instructions and submission ZIP were refreshed after verification.
-
-## Three recipe choices and customer-facing explanations - 26 October 2026
-
-Student request: "ayrıca drink assistantın top 3 önerilerle gelmesi daha iyi olur, böylece skorlardan neler olduğunu da öğrenebiliriz gibi hisediyorum".
-
-After Codex asked whether each card should show the existing recommendation score and breakdown, the student clarified: "assistant üç tarif sunsun, puan dökümüne gerek var mı? yani userın görmesi kötü olur ama backlogda olması da hoş olabilir".
-
-Agreed behavior: show up to three suitable recipes with names, short descriptions, settings and server-calculated prices. Do not show technical score breakdowns or invented confidence percentages in customer cards. Keep the separate F06 heuristic scoring rationale in the technical documentation/backlog. Do not force three options when an exact request, available stock or duplicate settings leave fewer valid choices.
-
-Codex extended the actual local-model response schema to one primary recipe plus at most two alternatives in one inference request, using an 8192-token context and output bound of 900 tokens. Every candidate is validated; duplicate/unavailable alternatives and inconsistent settings are filtered. Choosing a card updates the customizer and the active configuration sent with subsequent messages. No proposal or application creates a purchase.
-
-Observed failure and correction: the first real-model browser run displayed three valid oat recipes and applied option two correctly, but "Make it mild" changed the selected cappuccino to a latte despite correct outgoing context. The original failure is preserved in `evidence/history/assistant-options-first-run.json`. A narrowly matched strength-only command now changes only strength on the validated active recipe; its wording is generated from that exact configuration. Other interpretation still uses the real LLM. A fixture-based regression checks the reproduced wrong-latte response; the successful real-model browser rerun checks the actual selected-option flow. This is not a general guarantee of model correctness.
-
-The existing eight-turn model regression also found that an explicit "What else" request repeated espresso as the primary response while proposing valid Americano/Mocha alternatives. The intermediate run is preserved in `evidence/history/assistant-options-alternative-regression.json`. For narrowly recognized explicit-alternative requests, the server now promotes a different available model-generated option rather than returning the active drink again. It explains when no different valid option exists; it does not invent a fallback recipe. A further unit regression covers both cases.
-
-Verification: 38 unit tests and 65 browser checks passed, including three real-model choices, no technical scores in cards, mobile layout, option-two application, selected-recipe follow-up and no purchase effects. The existing 12-turn live conversation suite passed after the schema change, and the final eight-turn live regression passed after the explicit-alternative correction. The nine-turn long-chat evidence retains its earlier date and was not rerun for this change. Desktop/mobile choice screenshots, current test records and preserved failed runs accompany the submission. The live app was restarted with the updated code and its existing database. Model provenance for this session remains as previously disclosed; no unrecorded model label or student reflection is invented.
-
-## Submission readiness - 26 October 2026
-
-Student request: "peki, dediklerine var?m daha sonras?nda da submissiona oynayal?m." The student also supplied the submission rules: share the GitHub link, invite riccardoRubei if private, upload Task A report/artifacts with comparison and prompt logs plus Task B or its repository reference, and use the stated 26 October deadline.
-
-Codex generated three supported example buttons (strong oat options, sweet oat chocolate and classic cappuccino). They populate and focus the text field; Ask remains the explicit inference action. A CSS loading indicator follows the existing busy state and disables animation for reduced motion. No caffeine claims were added. The existing full browser suite now selects the three-option example through its visible button. The .vs directory was added to .gitignore. SUBMISSION.md maps each assessed task to the PDFs, editable artifacts, original prompt records, conversation attachment, source and execution guide; the existing source ZIP is the single Canvas upload.
-
-Observed verification: 65 live-model browser checks passed. A separate ZIP-extracted copy and fresh Python 3.12.14 environment installed the pinned runtime packages, passed pip check and passed all 38 unit tests in 20.058 seconds. An actual browser on that clean installation confirmed that all three examples fill/focus without sending, Ask makes one real-model request, three recipes return, the loading indicator clears and reduced motion suppresses its animation. A 390-pixel mobile layout had no horizontal overflow. The isolated app/test processes were stopped afterward; personal data was not copied or changed. Evidence is in clean-install.txt, ux-polish.json and assistant-loading.png under evidence/current.
-
-GitHub's API confirmed the repository is public, so no instructor invitation is required by the supplied rule. This record documents implementation and observed verification; it does not claim a Canvas upload, a student-written reflection or an unrecorded model version. The original historical development attachment remains unchanged apart from its declared current authorship clarification.

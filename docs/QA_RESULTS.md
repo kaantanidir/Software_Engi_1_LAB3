@@ -8,7 +8,7 @@ The submission source ZIP was extracted into a separate directory. A new Python 
 
 A separate app process then served the extracted source with the fresh environment and a new database. Actual Chrome interaction verified that all three example prompts fill and focus the input without making an inference request; Ask made one request to the actual local `qwen3:4b` model and returned three recipes. The loading indicator animated normally, stopped animating with reduced motion enabled, and cleared when inference finished. The example controls fit a 390-pixel mobile viewport. Observations are recorded in `evidence/current/ux-polish.json` and the actual loading screenshot `evidence/current/assistant-loading.png`. The full existing live-model browser suite was also rerun on the final application code: 65 checks passed without browser exceptions. The 8-, 12- and 9-turn standalone model records retain their earlier dates.
 
-GitHub's public repository API confirmed that `kaantanidir/Software_Engi_1_LAB3` is public on 26 October 2026. `SUBMISSION.md` maps the assessed artifacts and identifies `output/G28Lab3_Project.zip` as the Canvas upload. No Canvas submission is claimed by these checks.
+GitHub's public repository API confirmed that `kaantanidir/Software_Engi_1_LAB3` is public on 26 October 2026. `SUBMISSION.md` maps the assessed artifacts and identifies `output/SmartBrew_Lab3_Canvas.zip` as the compact Canvas upload, using the repository reference for Task B.
 
 ## Documentation and Submission Audit - 26 October 2026
 
@@ -16,7 +16,7 @@ The documentation revision adds an explicit comparison of the 13 original submit
 
 The available original development conversation is attached as `docs/DEVELOPMENT_TRANSCRIPT.md`: 251 visible messages (85 student, 166 Codex), with declared omissions and redactions, source-file hashes and a transcript integrity hash in `docs/DEVELOPMENT_TRANSCRIPT_MANIFEST.json`. The original separate Gemini/Antigravity transcript remains unavailable. The checker verifies message counts, integrity and declared redactions.
 
-The report and appendix were rebuilt, rendered with Poppler and visually checked. Artifact verification now covers 130 documented Python functions, 18 source capabilities, unchanged baseline hashes and 87 whitelisted archive entries, including the Windows launcher and three-choice assistant screenshots/regression. The final ZIP is checked against current file bytes. The original baseline files and 251-message transcript remain unchanged; subsequent application changes are recorded separately below.
+The report and appendix were rebuilt, rendered with Poppler and visually checked. Artifact verification now covers 132 documented Python functions, 18 source capabilities, unchanged baseline hashes and 91 whitelisted source-archive entries, including the Windows launcher and three-choice assistant screenshots/regression. The final ZIP is checked against current file bytes. The original baseline files and 251-message transcript remain unchanged; subsequent application changes are recorded separately below.
 
 ## Three-Choice Assistant - 26 October 2026
 

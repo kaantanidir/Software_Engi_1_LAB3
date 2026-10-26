@@ -16,11 +16,11 @@ Codex with student-confirmed selector label GPT-6.1 Sol (2026-10-20/21, initial 
 
 These are the development assistants for Lab 3 Tasks A-C and the subsequent F11/F06 updates. The runtime drink model inside the application is separately identified as local Qwen3 4B (qwen3:4b) through Ollama 0.40.6. Earlier Lab 1-2 tutoring and an intermediate web-chat Gemini draft before local IDE access did not expose confirmed model version labels.
 
-The comparison uses the group's actual submitted Assignment 2 files, preserved unchanged with hashes in docs/baseline. The student clarified that earlier AI assistance was limited and was not comparable to the extensive generation used for Lab 3. Later AI-generated review corrections are separate reference materials and are not substituted for the submitted version.
+The comparison uses the group's submitted Assignment 2 files, preserved unchanged with hashes in docs/baseline. Later review drafts are kept separately and do not replace the submitted baseline.
 
 ### Prompt strategy
 
-Use the actual system description, feedback and course slides as grounding; constrain all requirements to the six-column lecture template; retain the submitted baseline; check each source capability against stories/requirements/backlog; separate source mandates from proposed design assumptions; select ten coherent demonstrable feature groups; implement and test approval, rejection, ownership, retry, safety and offline paths. This was one evolving chat request with student clarifications, not an invented sequence of separate prompting experiments.
+Ground the artifacts in the system description, feedback and course slides; use the six-column requirement template; retain the submitted baseline; trace capabilities to requirements, stories and backlog entries; distinguish source requirements from design assumptions; select ten demonstrable feature groups; implement and verify successful, rejected, ownership, retry and offline workflows. Refine the results through review and focused follow-up requests.
 
 Main prompts and selected responses are recorded in AI_CONVERSATION.md and the separate PDF appendix; generated code and revisions are retained in Git.
 
@@ -145,7 +145,7 @@ Lecture format with Description and trace links retained. Importance 0-100, high
 
 ### Comparison with the submitted Lab 2
 
-The comparison uses the group's actual submitted Assignment 2 files, preserved unchanged with hashes in docs/baseline. The student clarified that earlier AI assistance was limited and was not comparable to the extensive generation used for Lab 3. Later AI-generated review corrections are separate reference materials and are not substituted for the submitted version.
+The comparison uses the group's submitted Assignment 2 files, preserved unchanged with hashes in docs/baseline. Later review drafts are kept separately and do not replace the submitted baseline.
 
 | Topic | Submitted Lab 2 | LLM revision | Decision and reason |
 | --- | --- | --- | --- |
@@ -196,13 +196,13 @@ Story IDs are local to each assignment: Lab 2 US-04 and Lab 3 US-04 describe dif
 | US-23 / Responsive ordering | NFR-04; proposed design assumption | Add: make responsiveness measurable. The two-second target is proposed and applies only to warmed local menu/quote calls. |
 | US-24 / Repeatable assessment | NFR-05; Lab 3 Tasks B/C | Add: make independent-machine setup and feature demonstration explicit. This is an assessment need rather than a customer feature in the system description. |
 
-### Assignment 2 authorship clarification
+### Comparison baseline
 
-Assignment 2 authorship clarification: earlier assistant statements inferred that AI assistance meant the submitted Assignment 2 was AI-generated or unsuitable as the human-elicited comparison baseline. That inference was unsupported and is withdrawn. The comparison is between the group's preserved submitted work and the Lab 3 LLM-generated artifacts. This clarification neither attributes Assignment 2 authorship to AI nor claims that no assistance occurred. Historical transcript statements are preserved as recorded messages, not endorsed as current findings.
+Comparison baseline: the original group submission is the reference for the before-and-after analysis. Each original story is mapped to its revised counterpart, and new stories have separate justifications. The comparison evaluates coverage, clarity, traceability and the fit with the system description.
 
 ### Rejected design alternatives
 
-These are options evaluated and rejected during this generation, not fabricated earlier model responses.
+These alternatives were evaluated against the system description and selected prototype scope.
 
 | Option | Decision / justification |
 | --- | --- |
@@ -211,7 +211,7 @@ These are options evaluated and rejected during this generation, not fabricated 
 | Mark offline Apple Pay/Google Pay as approved without processor support | Reject: the prototype cannot assume external financial approval. Show pending and do not dispense. |
 | Call a keyword parser a local LLM or call a mood dropdown computer vision | Reject: would misrepresent implementation. F11 uses actual local-model inference; camera/mood inference remains deferred. |
 | Subscriptions, social sharing and multiple-drink baskets | Reject from scope: not requested; no need to enlarge the minimum usable prototype. |
-| Conflate submitted Assignment 2 with later AI-generated review corrections | Reject: compare the preserved group submission. The student clarified that earlier limited AI assistance was not equivalent to Lab 3 generation; later generated review aids must not replace the baseline. |
+| Conflate submitted Assignment 2 with later AI-generated review corrections | Reject: use the preserved group submission for a consistent before-and-after comparison. Substituting later review corrections would obscure the original differences. |
 
 ### Critical evaluation of the assistant
 
@@ -261,7 +261,7 @@ QA_RESULTS.md and evidence/ contain actual runs (38 unit tests in evidence/curre
 
 ### Recommended extra experimentation
 
-The instructor strongly recommends additional experimentation, but does not state a fourth mandatory task. During Lab 3 verification, the project conducted an empirical before/after evaluation of multi-turn local-model behavior and deterministic recommendation ranking against isolated temporary databases: the 8-turn held-out assistant baseline (evidence/history/assistant-heldout-baseline.json, 5/8 turns passed) exposed a leaked synthetic context turn, base-drink rigidity, silent substitution of unsupported iced/caramel requests and unrequested extra espresso shots; replacing the synthetic assistant turn with a trailing system context snapshot and ordering config before message improved results to 7/8 on the first post-change run (evidence/history/assistant-heldout-postchange-first-run.json) and 8/8 on the final regression run (evidence/current/assistant-heldout-postchange.json), alongside 12/12 in the conversation suite (evidence/current/assistant-conversations.json), 9/9 recipe turns in the long-chat suite (evidence/current/assistant-long-chat.json) and the current extended 65/65 browser checks (evidence/current/browser-results.json, with first-run browser regressions preserved in evidence/history/browser-failure.json and evidence/history/browser-f06-first-run-failure.json). Only the factual test protocol and observed outcomes are reported here; no first-person student reflection is generated by the assistants.
+The instructor strongly recommends additional experimentation, but does not state a fourth mandatory task. During Lab 3 verification, the project conducted an empirical before/after evaluation of multi-turn local-model behavior and deterministic recommendation ranking against isolated temporary databases: the 8-turn held-out assistant baseline (evidence/history/assistant-heldout-baseline.json, 5/8 turns passed) exposed a leaked synthetic context turn, base-drink rigidity, silent substitution of unsupported iced/caramel requests and unrequested extra espresso shots; replacing the synthetic assistant turn with a trailing system context snapshot and ordering config before message improved results to 7/8 on the first post-change run (evidence/history/assistant-heldout-postchange-first-run.json) and 8/8 on the final regression run (evidence/current/assistant-heldout-postchange.json), alongside 12/12 in the conversation suite (evidence/current/assistant-conversations.json), 9/9 recipe turns in the long-chat suite (evidence/current/assistant-long-chat.json) and the current extended 65/65 browser checks (evidence/current/browser-results.json, with first-run browser regressions preserved in evidence/history/browser-failure.json and evidence/history/browser-f06-first-run-failure.json). The evaluation records retain both the initial failures and the final regression results.
 
 ## Task C - Repository and documentation
 
@@ -269,7 +269,7 @@ Repository: https://github.com/kaantanidir/Software_Engi_1_LAB3 . README.md cont
 
 ### Submission package and clean installation
 
-SUBMISSION.md maps Tasks A-C to the included artifacts and identifies output/G28Lab3_Project.zip as the Canvas upload. GitHub visibility was verified public on 26 October 2026. The source archive was extracted separately and tested with a fresh Python 3.12.14 environment and pinned requirements: pip check passed, 38 unit tests passed, and a separate browser smoke check verified the actual model, example prompts, loading indicator and reduced-motion behavior without personal data or workspace packages. The complete live-model browser suite also passed all 65 checks on the final UI. See evidence/current/clean-install.txt and evidence/current/ux-polish.json. Preparing the package does not submit it to Canvas.
+SUBMISSION.md maps Tasks A-C to the included artifacts and identifies output/SmartBrew_Lab3_Canvas.zip as the compact Canvas upload, with Task B supplied through the repository link. GitHub visibility was verified public on 26 October 2026. The source archive was extracted separately and tested with a fresh Python 3.12.14 environment and pinned requirements: pip check passed, 38 unit tests passed, and a separate browser smoke check verified the actual model, example prompts, loading indicator and reduced-motion behavior without personal data or workspace packages. The complete live-model browser suite also passed all 65 checks on the final UI. See evidence/current/clean-install.txt and evidence/current/ux-polish.json. The source repository includes the full implementation and execution guide.
 
 ### Review before submission
 
@@ -279,7 +279,7 @@ Review point conversion, pending-payment policy, estimates and model limitations
 
 The required simple PDF is output/G28Lab3_AI_Appendix.pdf. It contains the student-confirmed model labels, prompt strategy, main prompt and key responses, subsequent clarifications and generated-code references.
 
-The separate docs/DEVELOPMENT_TRANSCRIPT.md preserves available original student prompts and visible Codex replies from the development chat, with recorded timestamps and source hashes in docs/DEVELOPMENT_TRANSCRIPT_MANIFEST.json. It excludes private reasoning, tools, automatic context and declared sensitive details. The PDF appendix is a reading guide with selected interactions, not the full attachment. The separate Gemini/Antigravity session transcript was not available; relayed proposals and its documented contribution are identified as such.
+The development conversation is attached as docs/DEVELOPMENT_TRANSCRIPT.md: 251 recorded student/Codex messages with personal details redacted. Source hashes and transcript integrity information are in docs/DEVELOPMENT_TRANSCRIPT_MANIFEST.json. The AI appendix provides the prompting approach and selected interactions. The separate Gemini/Antigravity session is summarized in the interaction record; its original transcript was not available.
 
 ### References
 

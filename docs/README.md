@@ -19,7 +19,7 @@ The [submission guide](../SUBMISSION.md) maps Tasks A-C to the report, prompt lo
 | [Cross-lab review](CROSS_LAB_REVIEW.md) | Lab 1 feedback, conceptual mapping and custom-feature chronology |
 | [Asset credits](ASSETS.md) | Third-party images, icons and licenses |
 
-Exported Lab 3 report and AI appendix PDFs are directly in `output/` (`output/G28Lab3_Report.pdf` and `output/G28Lab3_AI_Appendix.pdf`), alongside the final source bundle (`output/G28Lab3_Project.zip`). The editable appendix is `LAB3_AI_APPENDIX.md`; it is generated from the prompt and interaction records, not edited independently.
+Exported Lab 3 report and AI appendix PDFs are directly in `output/` (`output/G28Lab3_Report.pdf` and `output/G28Lab3_AI_Appendix.pdf`). `output/SmartBrew_Lab3_Canvas.zip` is the compact seven-file submission archive; `output/G28Lab3_Project.zip` is the optional full source bundle. The editable appendix is `LAB3_AI_APPENDIX.md`, generated from the prompt and interaction records.
 
 ## Development & Handoff History
 
@@ -42,4 +42,4 @@ Install `requirements-docs.txt`, then run `python tools/build_documents.py`. By 
 
 The available development transcript is already included; evaluator setup does not require local chat logs. `tools/export_development_transcript.py` documents its extraction from explicitly supplied primary session files. Its source hashes establish which local files were read; the private source logs themselves are not distributed. The transcript is a separate Markdown attachment, while the PDF appendix provides the prompt strategy and selected interactions.
 
-`tools/verify_artifacts.py` checks requirement coverage, source hashes, function documentation and PDF content. It does not turn an AI-generated Lab 1-2 reference into an acceptable submission.
+`tools/verify_artifacts.py` checks requirement coverage, source hashes, function documentation and PDF content. Add `--build-canvas-zip` to rebuild the compact Canvas archive, or `--build-project-zip` for the full source bundle.
