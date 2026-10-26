@@ -6,14 +6,19 @@ This directory preserves verification outputs, screenshots, local runtime-model 
 
 | File | Description |
 | --- | --- |
-| [current/unit-tests.txt](current/unit-tests.txt) | Full output of `python -m unittest discover -s tests -v` (**33 unit tests passed** against isolated temporary SQLite databases). |
-| [current/browser-results.json](current/browser-results.json) | End-to-end Playwright browser audit output (`SMARTBREW_LIVE_AI=1 npm run test:browser`, **58 browser checks passed** across F01-F10 and optional F11, plus response-latency and viewport/accessibility observations). |
-| [current/artifact-checks.json](current/artifact-checks.json) | Output of `python tools/verify_artifacts.py` verifying requirement/source coverage, authored Python function docstrings, local README/documentation links, and unchanged Lab 1/Lab 2 baseline SHA-256 hashes. |
+| [current/unit-tests.txt](current/unit-tests.txt) | Full output of `python -m unittest discover -s tests -v` (**38 unit tests passed** against isolated temporary SQLite databases, including three-choice validation and the selected-recipe strength regression). |
+| [current/clean-install.txt](current/clean-install.txt) | Fresh Python 3.12.14 environment with pinned qrcode/colorama, successful `pip check` and 38 unit tests run from a ZIP-extracted source copy without workspace packages or personal data. |
+| [current/ux-polish.json](current/ux-polish.json) | Actual browser verification on that clean source/environment: three examples fill/focus without sending; Ask invokes the real model; mobile layout, loading cleanup and reduced-motion behavior verified. |
+| [current/assistant-loading.png](current/assistant-loading.png) | Actual model-wait state showing example prompts and the loading indicator on the clean installation. |
+| [current/browser-results.json](current/browser-results.json) | End-to-end Playwright browser audit output (`SMARTBREW_LIVE_AI=1 npm run test:browser`, **65 browser checks passed** across F01-F10 and F11's three choices, selected-option follow-up, mobile layout and conversation clearing). |
+| [current/artifact-checks.json](current/artifact-checks.json) | Output of `python tools/verify_artifacts.py` verifying requirement/source coverage, 130 authored Python function docstrings, local documentation links, unchanged baseline hashes, the 13-to-24 story comparison, the 251-message attachment, actual test counts and live three-choice/selected-option evidence. |
 | [current/desktop.png](current/desktop.png) | Current desktop customer view (`1440 x 1000`) during the automated browser audit. |
 | [current/receipt.png](current/receipt.png) | Current purchase receipt dialog with generated QR SVG and local email simulator confirmation. |
 | [current/maintenance.png](current/maintenance.png) | Current protected technician Maintenance tab showing ingredient counters and waste bins. |
 | [current/test-scenarios.png](current/test-scenarios.png) | Current protected technician Test scenarios tab showing fault logging, payment simulation, and F06 context controls. |
 | [current/local-assistant.png](current/local-assistant.png) | Current F11 local drink assistant proposal card before explicit customer application. |
+| [current/assistant-options.png](current/assistant-options.png) | Three real-model recipe cards on desktop, showing names, server prices, short descriptions and settings without technical scores. |
+| [current/assistant-options-mobile.png](current/assistant-options-mobile.png) | The same three recipe choices stacked within the mobile viewport without horizontal overflow. |
 | [current/mobile.png](current/mobile.png) | Current mobile customer view (`390 x 844`) verified for zero horizontal overflow. |
 
 ## 2. Local Runtime Model Evidence (`current/`)
@@ -45,6 +50,8 @@ All multi-turn evaluation suites run against the live local `qwen3:4b` runtime u
 | [history/recommendation-regression-before.txt](history/recommendation-regression-before.txt) | Preserved failing regression from before the menu and recommendation failure path were decoupled. |
 | [history/local-ai-initial-review.txt](history/local-ai-initial-review.txt) | Preserved initial `qwen3:4b` cold-start timeout and invented `"usual"` drink response before prompt/timeout refinement. |
 | [history/browser-failure.json](history/browser-failure.json) | Preserved earlier F11 browser failure where conversation history containing an older latte caused the model to modify the latte instead of the active cappuccino. |
+| [history/assistant-options-first-run.json](history/assistant-options-first-run.json) | First three-choice browser run: correct second-option context was sent, but the model changed cappuccino to latte on "Make it mild". A narrow strength-only guard, unit regression and the final live browser run verify the correction. |
+| [history/assistant-options-alternative-regression.json](history/assistant-options-alternative-regression.json) | Intermediate eight-turn run where "What else" repeated the primary espresso despite two valid model-generated alternatives; retained before the explicit-alternative promotion guard and final regression rerun. |
 | [history/browser-f06-first-run-failure.json](history/browser-f06-first-run-failure.json) | Preserved first-run F06 browser timing failure where `page.waitForLoadState('networkidle')` resolved before `updateQuote()` finished re-enabling `#checkout-button` after sign-out. |
 
 ## 5. Historical UML and Source Evidence (`history/`)

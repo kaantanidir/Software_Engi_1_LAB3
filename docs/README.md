@@ -2,6 +2,8 @@
 
 Start with the repository README for installation and the ten-feature walkthrough.
 
+The [submission guide](../SUBMISSION.md) maps Tasks A-C to the report, prompt logs, source code and Canvas archive.
+
 ## Current Lab 3
 
 | Document | Read it for |
@@ -11,6 +13,8 @@ Start with the repository README for installation and the ten-feature walkthroug
 | [Verification record](QA_RESULTS.md) | Actual test results, screenshots, failures found and remaining limitations |
 | [Evidence index](../evidence/README.md) | Categorized index of verification outputs, runtime model evidence, regressions and baselines |
 | [AI interaction record](AI_CONVERSATION.md) | Tool/model roles, main prompts, key responses and revisions |
+| [Original development conversation](DEVELOPMENT_TRANSCRIPT.md) | 251 available student/Codex messages with declared redactions and omissions |
+| [Conversation source manifest](DEVELOPMENT_TRANSCRIPT_MANIFEST.json) | Message counts, source hashes and transcript integrity hash |
 | [Main supplied prompt](MAIN_PROMPT.md) | Original Lab 2 review / Lab 3 request and assignment text |
 | [Cross-lab review](CROSS_LAB_REVIEW.md) | Lab 1 feedback, conceptual mapping and custom-feature chronology |
 | [Asset credits](ASSETS.md) | Third-party images, icons and licenses |
@@ -35,5 +39,7 @@ Internal engineering handoff notes in `docs/development/` remain in Git for deve
 ## Rebuilding Documents
 
 Install `requirements-docs.txt`, then run `python tools/build_documents.py`. By default it updates only the current Lab 3 report and AI appendix. `--text-only` omits PDFs. The separate `--include-reference` flag also regenerates historical review aids; it never changes the original files in `baseline/`.
+
+The available development transcript is already included; evaluator setup does not require local chat logs. `tools/export_development_transcript.py` documents its extraction from explicitly supplied primary session files. Its source hashes establish which local files were read; the private source logs themselves are not distributed. The transcript is a separate Markdown attachment, while the PDF appendix provides the prompt strategy and selected interactions.
 
 `tools/verify_artifacts.py` checks requirement coverage, source hashes, function documentation and PDF content. It does not turn an AI-generated Lab 1-2 reference into an acceptable submission.

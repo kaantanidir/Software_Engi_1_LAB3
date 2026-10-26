@@ -179,6 +179,49 @@ async function auditAssistantConversation() {
   check('F11: multi-turn proposals have no persistent side effects', true);
   return [base, clarify, follow];
 }
+/** Purpose: verify three actual model options, mobile layout and selected-option context. Inputs: isolated signed-in page and evidence folder. Returns: live turn records. */
+async function auditAssistantOptions(currentEvidence) {
+  await page.locator('#assistant-clear').click();
+  const before = await (await page.request.get('/api/state')).json();
+  await page.getByRole('button', { name: 'Three strong oat options', exact: true }).click();
+  const choices = await assistantTurn(await page.locator('#assistant-request').inputValue());
+  const suggestions = choices.response.suggestions;
+  check('F11: real model supplies three distinct supported recipe options', suggestions.length === 3 && new Set(suggestions.map(optionConfigKey)).size === 3);
+  check('F11: every option preserves requested settings and shows server price', suggestions.every(isRequestedOatOption) && await page.locator('.assistant-option').count() === 3);
+  const cardsText = await page.locator('.assistant-options').textContent();
+  check('F11: customer recipe choices omit technical scores and confidence percentages', !/score|confidence|\d\s*%/i.test(cardsText));
+  await page.screenshot({ path: path.join(currentEvidence, 'assistant-options.png'), fullPage: true });
+  await page.setViewportSize({ width: 390, height: 844 });
+  const mobileChoices = await page.evaluate(inspectLayout);
+  check('F11: three recipe options fit the mobile viewport', mobileChoices.scrollWidth <= mobileChoices.width && await page.locator('.assistant-option').count() === 3);
+  await page.screenshot({ path: path.join(currentEvidence, 'assistant-options-mobile.png'), fullPage: true });
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  const chosen = suggestions[1].quote;
+  await page.locator('[data-assistant-apply="1"]').click();
+  await page.locator('[data-assistant-option="1"].is-active').waitFor();
+  assert.deepEqual(await page.evaluate(currentCustomizerConfig), chosen.config);
+  check('F11: the second option applies its own exact recipe', (await page.locator('#quote-price').textContent()).includes(String(chosen.price / 100)));
+  const follow = await assistantTurn('Make it mild.');
+  assert.deepEqual(follow.request.context_config, chosen.config);
+  assert.deepEqual(follow.response.quote.config, { ...chosen.config, strength: 'mild' });
+  check('F11: follow-up refines the chosen second recipe rather than the first', true);
+  const after = await (await page.request.get('/api/state')).json();
+  assert.deepEqual(after, before);
+  check('F11: proposing and applying any option has no purchase effects', true);
+  return [choices, follow];
+}
+/** Purpose: compare normalized option identities. Inputs: suggestion. Returns: stable configuration JSON. */
+function optionConfigKey(suggestion) { return JSON.stringify(suggestion.quote.config); }
+/** Purpose: verify request constraints and server-owned prices on each option. Inputs: suggestion. Returns: boolean. */
+function isRequestedOatOption(suggestion) {
+  const config = suggestion.quote.config;
+  return suggestion.quote.available && Number.isInteger(suggestion.quote.price) && config.milk === 'oat' && config.strength === 'strong' && config.temperature === 75 && config.syrup === 1 && config.extra === 0;
+}
+/** Purpose: read the selected drink and actual controls after applying an option. Inputs: browser DOM. Returns: normalized recipe configuration. */
+function currentCustomizerConfig() {
+  const form = document.querySelector('#customize-form');
+  return { drink: document.querySelector('.drink-card.selected').dataset.drink, milk: form.elements.milk.value, strength: form.elements.strength.value, temperature: Number(form.elements.temperature.value), syrup: Number(form.elements.syrup.value), extra: Number(form.elements.extra.value) };
+}
 /** Purpose: inspect visible button targets and input focus. Inputs: browser DOM. Returns: size/focus observations. */
 function inspectAccessibility() {
   let smallButtons = 0;
@@ -377,6 +420,7 @@ async function main() {
       check('F11: explicit confirmation applies the validated settings', await page.locator('#customize-form [name=milk]').inputValue() === 'oat' && await page.locator('#customize-form [name=syrup]').inputValue() === '1');
       liveAI = { realInference: true, mockedModel: false, response: actual };
       liveAI.conversation = await auditAssistantConversation();
+      liveAI.options = await auditAssistantOptions(currentEvidence);
       await signOut();
       check('F11: account change clears conversation and proposal', (await page.locator('#assistant-result').textContent()) === '' && await page.locator('#assistant-request').inputValue() === '');
       await signIn();

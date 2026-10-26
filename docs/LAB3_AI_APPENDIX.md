@@ -1,10 +1,14 @@
 # SmartBrew AI - Group 28 - Lab 3 AI appendix
 
-Updated 2026-10-21. This appendix records development assistance, the main supplied prompt and key interactions. The following record identifies the development and runtime models separately.
+Updated 2026-10-26. This appendix records development assistance, the main supplied prompt and key interactions. The following record identifies the development and runtime models separately.
 
 ## Record scope and prompt strategy
 
 This appendix includes the main supplied request, key responses and clarifications. Markdown whitespace is normalized. The later Lab 1/course-policy context is explicitly summarized rather than represented as a full verbatim export. Generated source files in the Git repository are the code responses. This record contains no private model reasoning, invented prompts or student-written personal reflection.
+
+## Original development conversation attachment
+
+The separate docs/DEVELOPMENT_TRANSCRIPT.md preserves available original student prompts and visible Codex replies from the development chat, with recorded timestamps and source hashes in docs/DEVELOPMENT_TRANSCRIPT_MANIFEST.json. It excludes private reasoning, tools, automatic context and declared sensitive details. The PDF appendix is a reading guide with selected interactions, not the full attachment. The separate Gemini/Antigravity session transcript was not available; relayed proposals and its documented contribution are identified as such.
 
 # Main Lab 2 Correction / Lab 3 Prompt
 
@@ -104,6 +108,16 @@ You are free to use **any LLM or AI assistant of your choice** (e.g., ChatGPT/GP
 
 Session: 20-21 October 2026, Europe/Berlin. This is a selected, normalized interaction record with main prompts, key responses and observed revisions. It is not a full archival export. Administrative quotations are preserved in MAIN_PROMPT.md; later discussions are summarized where indicated. Private credentials are not reproduced.
 
+## Assignment 2 authorship clarification - 26 October 2026
+
+The student clarified: "öncekinde ai yardımı bunun gibi yoktu, sakın gidip ai yaptı deme assignment 2 ye, false document istemiyorum". Earlier limited assistance was not comparable to Lab 3 generation. The assistant's inference that Assignment 2 was AI-authored or unsuitable as the human-elicited baseline was unsupported and is withdrawn. Compare the group's preserved submission; later generated review corrections are separate. Historical transcript assertions remain recorded, superseded by this correction. This does not claim that no assistance occurred.
+
+## Original conversation attachment
+
+Added 26 October 2026: [available development conversation](DEVELOPMENT_TRANSCRIPT.md) and its [source/hash manifest](DEVELOPMENT_TRANSCRIPT_MANIFEST.json). The attachment contains **251 recorded messages: 85 student messages and 166 visible Codex replies**, recovered from three primary project-chat segments covering the initial Lab 3 request through the repository reorganization report (20-22 October, Europe/Berlin). It preserves wording and UTC source timestamps with declared omissions and redactions. It includes the generation request, scope decisions, observed defects, authorization to implement, revision discussions and relayed Gemini proposals.
+
+Private reasoning, system/developer instructions, tool payloads, approval-review sessions, automatic UI context, image bytes and separate pasted-file contents are excluded. A non-public account password, personal emails and home-directory prefixes are redacted. Generated code remains in the repository and Git history. The original separate Gemini/Antigravity transcript is not available in these local Codex logs; its contribution remains summarized below and supported by source/test evidence. This attachment strengthens the Task B conversation evidence without claiming to recover unavailable material.
+
 ## Models and Roles
 
 **Development assistant (initial Lab 3 Tasks A-C and assistant handoff integration):** Codex desktop application, student-confirmed selector label **GPT-6.1 Sol**, used for Lab 3 Tasks A, B and C: elicitation/comparison, complete code generation and revision, tests, documentation and repository work. A separate backend build identifier was not exposed. The exact model used in earlier Lab 1-2 tutoring was not recorded.
@@ -164,7 +178,7 @@ Assistant:
 >
 > A mutation would run only in a disposable test copy: deliberately break one rule, check whether a test catches it, then discard the copy. Your main project keeps all ten features.
 
-No optional student experiment has been selected or claimed. The source baselines are preserved unchanged. The original submitted Lab 2 was AI-assisted in this conversation, so the report compares against the actual submitted group version and discloses that it is not an independently human-elicited baseline. Instructor clarification may be needed for that distinction.
+No optional student experiment has been selected or claimed in this part of the record. The source baselines are preserved unchanged. The comparison uses the group's actual submitted Assignment 2. The student later clarified that earlier limited assistance was not comparable to Lab 3 generation; it does not justify attributing the submission to AI or disqualifying it as the comparison baseline.
 
 ## Customer Review and Approved Revision
 
@@ -234,3 +248,45 @@ In a follow-up Google Antigravity IDE session using **Gemini 4 Argon Medium** wi
 ### Scope of Technical Record
 
 This technical interaction record documents the design assumptions, baseline provenance, observed failures, automated test evidence and model limitations across the development and runtime models. It does not claim completion of the assigned reading or include a generated first-person student reflection.
+
+## Submission documentation revision - 26 October 2026
+
+Student request in this audit: after reviewing the Lab 3 criteria, story comparison and conversation evidence, the student instructed: "do it".
+
+Codex added a comparison using the exact 13 original story texts from the preserved submitted baseline, mapped them to 17 revised stories and justified seven additional stories, producing complete coverage of the 24 Lab 3 stories. It also recovered the available visible development messages, documented redactions/omissions and added the transcript and manifest to the source bundle. The report/appendix and archive were rebuilt and verified. These are documentation/export changes; no application feature or historical baseline was rewritten. The current session's exact model selector label was not separately recorded and is not inferred from the earlier session's label.
+
+The comparison retains the actual group submission. An assistant-raised authorship concern was subsequently corrected as described below. No instructor message was sent and no personal student reflection was generated.
+
+## Combined application/model startup - 26 October 2026
+
+Student request: "start the server, do we needf to include that ollama should be started manually as well when using the site? or is there a wayto start it with starting the app as well". A brief low-battery interruption was followed by the student asking to continue after connecting power.
+
+Codex started the existing SmartBrew application and added `tools/start_smartbrew.ps1` for Windows. This launcher starts/reuses optional Ollama with installed weights, then starts the Python application. It supports a separate port/database and `-SkipAI` to omit preparation; that switch does not disable an already running model server. The existing preparation script now checks installed models before pulling and supports `-NoDownload` and `-SkipWarmup`. Normal combined startup uses both switches. Missing AI produces a warning and preserves manual ordering. The README distinguishes one-time installation/download from normal startup, direct Python launches and process-only execution-policy bypass.
+
+Observed verification: both PowerShell files passed syntax parsing. The preparation script started the actual local Ollama process and the application reported `qwen3:4b` available. Combined and skip-preparation launcher checks used isolated temporary databases: both served six menu drinks and reported the actual model available. The combined launcher reused the same Ollama PID, triggered no model download and left the existing demo server available. These are startup/readiness checks, not new inference-quality results; previously recorded live-model evidence retains its original dates. The PDF instructions and submission ZIP were refreshed after verification.
+
+## Three recipe choices and customer-facing explanations - 26 October 2026
+
+Student request: "ayrıca drink assistantın top 3 önerilerle gelmesi daha iyi olur, böylece skorlardan neler olduğunu da öğrenebiliriz gibi hisediyorum".
+
+After Codex asked whether each card should show the existing recommendation score and breakdown, the student clarified: "assistant üç tarif sunsun, puan dökümüne gerek var mı? yani userın görmesi kötü olur ama backlogda olması da hoş olabilir".
+
+Agreed behavior: show up to three suitable recipes with names, short descriptions, settings and server-calculated prices. Do not show technical score breakdowns or invented confidence percentages in customer cards. Keep the separate F06 heuristic scoring rationale in the technical documentation/backlog. Do not force three options when an exact request, available stock or duplicate settings leave fewer valid choices.
+
+Codex extended the actual local-model response schema to one primary recipe plus at most two alternatives in one inference request, using an 8192-token context and output bound of 900 tokens. Every candidate is validated; duplicate/unavailable alternatives and inconsistent settings are filtered. Choosing a card updates the customizer and the active configuration sent with subsequent messages. No proposal or application creates a purchase.
+
+Observed failure and correction: the first real-model browser run displayed three valid oat recipes and applied option two correctly, but "Make it mild" changed the selected cappuccino to a latte despite correct outgoing context. The original failure is preserved in `evidence/history/assistant-options-first-run.json`. A narrowly matched strength-only command now changes only strength on the validated active recipe; its wording is generated from that exact configuration. Other interpretation still uses the real LLM. A fixture-based regression checks the reproduced wrong-latte response; the successful real-model browser rerun checks the actual selected-option flow. This is not a general guarantee of model correctness.
+
+The existing eight-turn model regression also found that an explicit "What else" request repeated espresso as the primary response while proposing valid Americano/Mocha alternatives. The intermediate run is preserved in `evidence/history/assistant-options-alternative-regression.json`. For narrowly recognized explicit-alternative requests, the server now promotes a different available model-generated option rather than returning the active drink again. It explains when no different valid option exists; it does not invent a fallback recipe. A further unit regression covers both cases.
+
+Verification: 38 unit tests and 65 browser checks passed, including three real-model choices, no technical scores in cards, mobile layout, option-two application, selected-recipe follow-up and no purchase effects. The existing 12-turn live conversation suite passed after the schema change, and the final eight-turn live regression passed after the explicit-alternative correction. The nine-turn long-chat evidence retains its earlier date and was not rerun for this change. Desktop/mobile choice screenshots, current test records and preserved failed runs accompany the submission. The live app was restarted with the updated code and its existing database. Model provenance for this session remains as previously disclosed; no unrecorded model label or student reflection is invented.
+
+## Submission readiness - 26 October 2026
+
+Student request: "peki, dediklerine var?m daha sonras?nda da submissiona oynayal?m." The student also supplied the submission rules: share the GitHub link, invite riccardoRubei if private, upload Task A report/artifacts with comparison and prompt logs plus Task B or its repository reference, and use the stated 26 October deadline.
+
+Codex generated three supported example buttons (strong oat options, sweet oat chocolate and classic cappuccino). They populate and focus the text field; Ask remains the explicit inference action. A CSS loading indicator follows the existing busy state and disables animation for reduced motion. No caffeine claims were added. The existing full browser suite now selects the three-option example through its visible button. The .vs directory was added to .gitignore. SUBMISSION.md maps each assessed task to the PDFs, editable artifacts, original prompt records, conversation attachment, source and execution guide; the existing source ZIP is the single Canvas upload.
+
+Observed verification: 65 live-model browser checks passed. A separate ZIP-extracted copy and fresh Python 3.12.14 environment installed the pinned runtime packages, passed pip check and passed all 38 unit tests in 20.058 seconds. An actual browser on that clean installation confirmed that all three examples fill/focus without sending, Ask makes one real-model request, three recipes return, the loading indicator clears and reduced motion suppresses its animation. A 390-pixel mobile layout had no horizontal overflow. The isolated app/test processes were stopped afterward; personal data was not copied or changed. Evidence is in clean-install.txt, ux-polish.json and assistant-loading.png under evidence/current.
+
+GitHub's API confirmed the repository is public, so no instructor invitation is required by the supplied rule. This record documents implementation and observed verification; it does not claim a Canvas upload, a student-written reflection or an unrecorded model version. The original historical development attachment remains unchanged apart from its declared current authorship clarification.

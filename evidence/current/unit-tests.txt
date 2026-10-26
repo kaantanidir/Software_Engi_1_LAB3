@@ -1,3 +1,7 @@
+test_alternatives_are_unique_available_and_preserve_settings (test_assistant.AssistantTests.test_alternatives_are_unique_available_and_preserve_settings)
+Purpose: avoid padding choices or violating interpreted settings after stock changes. Inputs: duplicate, mismatched and depleted candidates. Returns: None. ... ok
+test_another_option_promotes_a_valid_model_alternative (test_assistant.AssistantTests.test_another_option_promotes_a_valid_model_alternative)
+Purpose: avoid repeating the active drink when explicitly asked for another. Inputs: repeated primary and compatible model-generated mocha. Returns: None. ... ok
 test_availability_is_rechecked_after_inference (test_assistant.AssistantTests.test_availability_is_rechecked_after_inference)
 Purpose: deny unavailable stock despite model suggestion. Inputs: depleted stock and valid model fixture. Returns: None. ... ok
 test_busy_inference_returns_without_queuing (test_assistant.AssistantTests.test_busy_inference_returns_without_queuing)
@@ -6,6 +10,8 @@ test_clarification_does_not_invent_a_recipe (test_assistant.AssistantTests.test_
 Purpose: allow an explicit clarification. Inputs: null-config response fixture. Returns: None. ... ok
 test_followup_context_reaches_model_without_side_effects (test_assistant.AssistantTests.test_followup_context_reaches_model_without_side_effects)
 Purpose: forward exact validated context without synthetic assistant history. Inputs: browser-shaped history/config and fixture. Returns: None. ... ok
+test_invalid_alternative_cannot_bypass_recipe_validation (test_assistant.AssistantTests.test_invalid_alternative_cannot_bypass_recipe_validation)
+Purpose: reject malformed, excessive or financially forged alternatives. Inputs: invalid model fixtures. Returns: None. ... ok
 test_rejects_malformed_context_before_inference (test_assistant.AssistantTests.test_rejects_malformed_context_before_inference)
 Purpose: reject untrusted context without inference. Inputs: invalid schemas/types/options. Returns: None. ... ok
 test_rejects_model_price_and_unsupported_options (test_assistant.AssistantTests.test_rejects_model_price_and_unsupported_options)
@@ -14,6 +20,10 @@ test_rejects_system_history_and_oversized_input (test_assistant.AssistantTests.t
 Purpose: constrain request size/roles. Inputs: invalid customer messages. Returns: None. ... ok
 test_remote_endpoints_and_cloud_tags_are_rejected (test_assistant.AssistantTests.test_remote_endpoints_and_cloud_tags_are_rejected)
 Purpose: keep configured inference local. Inputs: remote URLs/cloud tags. Returns: None. ... ok
+test_strength_followup_cannot_switch_the_selected_option (test_assistant.AssistantTests.test_strength_followup_cannot_switch_the_selected_option)
+Purpose: prevent a reproduced model drink switch after choosing option two. Inputs: cappuccino context and incorrect latte model fixture. Returns: None. ... ok
+test_three_suggestions_have_server_prices_and_no_side_effects (test_assistant.AssistantTests.test_three_suggestions_have_server_prices_and_no_side_effects)
+Purpose: validate all three choices without trusting model prices or writing orders. Inputs: three-config model fixture. Returns: None. ... ok
 test_unavailable_model_does_not_block_manual_quote (test_assistant.AssistantTests.test_unavailable_model_does_not_block_manual_quote)
 Purpose: preserve manual ordering during inference failure. Inputs: failed adapter request. Returns: None. ... ok
 test_valid_proposal_has_no_ordering_side_effects (test_assistant.AssistantTests.test_valid_proposal_has_no_ordering_side_effects)
@@ -66,6 +76,6 @@ test_separate_accounts_keep_private_records_after_relogin (test_service.SmartBre
 Purpose: preserve owner isolation across sign-in/restart. Inputs: two independent customer sessions. Returns: None. ... ok
 
 ----------------------------------------------------------------------
-Ran 33 tests in 14.783s
+Ran 38 tests in 20.058s
 
 OK

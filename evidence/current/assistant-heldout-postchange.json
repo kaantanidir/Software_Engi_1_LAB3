@@ -1,5 +1,5 @@
 {
-  "recordedAt": "2026-10-21T22:41:15.537309+00:00",
+  "recordedAt": "2026-10-26T14:45:26.321669+00:00",
   "liveInference": true,
   "simulatedModelResponses": false,
   "evaluationNote": "Post-change evaluation of the three multi-turn scenarios (now known regression cases; original pre-change baseline is preserved in evidence/assistant-heldout-baseline.json). Separates recipeCorrect, constraintsRetained, proposed temperature assumptions, and conversationalSignals.",
@@ -14,7 +14,7 @@
       },
       "response": {
         "kind": "recipe",
-        "message": "An intense espresso with one vanilla syrup shot and no milk for a quick wake-up boost.",
+        "message": "An intense espresso with one vanilla syrup shot and no milk for a quick, coffee-forward wake-up.",
         "quote": {
           "config": {
             "drink": "espresso",
@@ -40,10 +40,97 @@
           "image": "espresso.svg",
           "nutrition_note": "Illustrative recipe estimates"
         },
+        "suggestions": [
+          {
+            "quote": {
+              "config": {
+                "drink": "espresso",
+                "milk": "none",
+                "strength": "strong",
+                "temperature": 70,
+                "syrup": 1,
+                "extra": 0
+              },
+              "name": "Espresso",
+              "price": 2700,
+              "kcal": 29,
+              "allergens": [],
+              "ingredients": {
+                "beans": 12,
+                "water": 40,
+                "cups": 1,
+                "syrup": 10
+              },
+              "available": true,
+              "reasons": [],
+              "category": "Coffee",
+              "image": "espresso.svg",
+              "nutrition_note": "Illustrative recipe estimates"
+            },
+            "message": "An intense espresso with one vanilla syrup shot and no milk for a quick, coffee-forward wake-up."
+          },
+          {
+            "quote": {
+              "config": {
+                "drink": "americano",
+                "milk": "none",
+                "strength": "strong",
+                "temperature": 70,
+                "syrup": 1,
+                "extra": 0
+              },
+              "name": "Americano",
+              "price": 3200,
+              "kcal": 31,
+              "allergens": [],
+              "ingredients": {
+                "beans": 15,
+                "water": 180,
+                "cups": 1,
+                "syrup": 10
+              },
+              "available": true,
+              "reasons": [],
+              "category": "Coffee",
+              "image": "americano.svg",
+              "nutrition_note": "Illustrative recipe estimates"
+            },
+            "message": "A strong Americano with one vanilla syrup shot and no milk for a longer, coffee-forward wake-up."
+          },
+          {
+            "quote": {
+              "config": {
+                "drink": "mocha",
+                "milk": "none",
+                "strength": "strong",
+                "temperature": 70,
+                "syrup": 1,
+                "extra": 0
+              },
+              "name": "Mocha",
+              "price": 4200,
+              "kcal": 175,
+              "allergens": [],
+              "ingredients": {
+                "beans": 13,
+                "water": 40,
+                "cups": 1,
+                "cocoa": 15,
+                "syrup": 10
+              },
+              "available": true,
+              "reasons": [],
+              "category": "Chocolate",
+              "image": "mocha.svg",
+              "nutrition_note": "Illustrative recipe estimates"
+            },
+            "message": "A strong mocha with one vanilla syrup shot and no milk for chocolatey coffee warmth."
+          }
+        ],
         "model": "qwen3:4b",
         "local": true
       },
-      "seconds": 1.624,
+      "seconds": 3.979,
       "noOrderingSideEffects": true,
       "evaluation": {
         "recipeCorrect": true,
@@ -66,7 +153,7 @@
           },
           {
             "role": "assistant",
-            "content": "An intense espresso with one vanilla syrup shot and no milk for a quick wake-up boost."
+            "content": "An intense espresso with one vanilla syrup shot and no milk for a quick, coffee-forward wake-up."
           }
         ],
         "context_config": {
@@ -80,44 +167,130 @@
       },
       "response": {
         "kind": "recipe",
-        "message": "A bittersweet mocha with one vanilla syrup shot and no milk for a strong, chocolatey kick.",
+        "message": "An intense espresso with one vanilla syrup shot and no milk for a quick, coffee-forward wake-up.",
         "quote": {
           "config": {
-            "drink": "mocha",
+            "drink": "espresso",
             "milk": "none",
             "strength": "strong",
             "temperature": 70,
             "syrup": 1,
             "extra": 0
           },
-          "name": "Mocha",
-          "price": 4200,
-          "kcal": 175,
+          "name": "Espresso",
+          "price": 2700,
+          "kcal": 29,
           "allergens": [],
           "ingredients": {
-            "beans": 13,
+            "beans": 12,
             "water": 40,
             "cups": 1,
-            "cocoa": 15,
             "syrup": 10
           },
           "available": true,
           "reasons": [],
-          "category": "Chocolate",
-          "image": "mocha.svg",
+          "category": "Coffee",
+          "image": "espresso.svg",
           "nutrition_note": "Illustrative recipe estimates"
         },
+        "suggestions": [
+          {
+            "quote": {
+              "config": {
+                "drink": "espresso",
+                "milk": "none",
+                "strength": "strong",
+                "temperature": 70,
+                "syrup": 1,
+                "extra": 0
+              },
+              "name": "Espresso",
+              "price": 2700,
+              "kcal": 29,
+              "allergens": [],
+              "ingredients": {
+                "beans": 12,
+                "water": 40,
+                "cups": 1,
+                "syrup": 10
+              },
+              "available": true,
+              "reasons": [],
+              "category": "Coffee",
+              "image": "espresso.svg",
+              "nutrition_note": "Illustrative recipe estimates"
+            },
+            "message": "An intense espresso with one vanilla syrup shot and no milk for a quick, coffee-forward wake-up."
+          },
+          {
+            "quote": {
+              "config": {
+                "drink": "mocha",
+                "milk": "none",
+                "strength": "strong",
+                "temperature": 70,
+                "syrup": 1,
+                "extra": 0
+              },
+              "name": "Mocha",
+              "price": 4200,
+              "kcal": 175,
+              "allergens": [],
+              "ingredients": {
+                "beans": 13,
+                "water": 40,
+                "cups": 1,
+                "cocoa": 15,
+                "syrup": 10
+              },
+              "available": true,
+              "reasons": [],
+              "category": "Chocolate",
+              "image": "mocha.svg",
+              "nutrition_note": "Illustrative recipe estimates"
+            },
+            "message": "Mocha adds chocolate to the strong coffee for a bittersweet balance with vanilla sweetness."
+          },
+          {
+            "quote": {
+              "config": {
+                "drink": "americano",
+                "milk": "none",
+                "strength": "strong",
+                "temperature": 70,
+                "syrup": 1,
+                "extra": 0
+              },
+              "name": "Americano",
+              "price": 3200,
+              "kcal": 31,
+              "allergens": [],
+              "ingredients": {
+                "beans": 15,
+                "water": 180,
+                "cups": 1,
+                "syrup": 10
+              },
+              "available": true,
+              "reasons": [],
+              "category": "Coffee",
+              "image": "americano.svg",
+              "nutrition_note": "Illustrative recipe estimates"
+            },
+            "message": "Americano provides a longer, coffee-forward drink with a bittersweet edge from the espresso base and vanilla."
+          }
+        ],
         "model": "qwen3:4b",
         "local": true
       },
-      "seconds": 1.859,
+      "seconds": 3.971,
       "noOrderingSideEffects": true,
       "evaluation": {
         "recipeCorrect": true,
         "constraintsRetained": true,
         "conversationalSignals": {
           "namesProposedDrink": true,
-          "identicalConfigToPreviousTurn": false
+          "identicalConfigToPreviousTurn": true
         },
         "notes": []
       }
@@ -134,7 +307,7 @@
           },
           {
             "role": "assistant",
-            "content": "An intense espresso with one vanilla syrup shot and no milk for a quick wake-up boost."
+            "content": "An intense espresso with one vanilla syrup shot and no milk for a quick, coffee-forward wake-up."
           },
           {
             "role": "user",
@@ -142,11 +315,11 @@
           },
           {
             "role": "assistant",
-            "content": "A bittersweet mocha with one vanilla syrup shot and no milk for a strong, chocolatey kick."
+            "content": "An intense espresso with one vanilla syrup shot and no milk for a quick, coffee-forward wake-up."
           }
         ],
         "context_config": {
-          "drink": "mocha",
+          "drink": "espresso",
           "milk": "none",
           "strength": "strong",
           "temperature": 70,
@@ -156,7 +329,7 @@
       },
       "response": {
         "kind": "recipe",
-        "message": "An intense strong Americano with one vanilla syrup shot and no milk for a bittersweet wake-up boost.",
+        "message": "A strong Americano with vanilla sweetness and no milk, offering a longer coffee experience.",
         "quote": {
           "config": {
             "drink": "americano",
@@ -182,10 +355,69 @@
           "image": "americano.svg",
           "nutrition_note": "Illustrative recipe estimates"
         },
+        "suggestions": [
+          {
+            "quote": {
+              "config": {
+                "drink": "americano",
+                "milk": "none",
+                "strength": "strong",
+                "temperature": 70,
+                "syrup": 1,
+                "extra": 0
+              },
+              "name": "Americano",
+              "price": 3200,
+              "kcal": 31,
+              "allergens": [],
+              "ingredients": {
+                "beans": 15,
+                "water": 180,
+                "cups": 1,
+                "syrup": 10
+              },
+              "available": true,
+              "reasons": [],
+              "category": "Coffee",
+              "image": "americano.svg",
+              "nutrition_note": "Illustrative recipe estimates"
+            },
+            "message": "A strong Americano with vanilla sweetness and no milk, offering a longer coffee experience."
+          },
+          {
+            "quote": {
+              "config": {
+                "drink": "mocha",
+                "milk": "none",
+                "strength": "strong",
+                "temperature": 70,
+                "syrup": 1,
+                "extra": 0
+              },
+              "name": "Mocha",
+              "price": 4200,
+              "kcal": 175,
+              "allergens": [],
+              "ingredients": {
+                "beans": 13,
+                "water": 40,
+                "cups": 1,
+                "cocoa": 15,
+                "syrup": 10
+              },
+              "available": true,
+              "reasons": [],
+              "category": "Chocolate",
+              "image": "mocha.svg",
+              "nutrition_note": "Illustrative recipe estimates"
+            },
+            "message": "A strong mocha with vanilla sweetness and no milk, adding chocolate for a bittersweet balance."
+          }
+        ],
         "model": "qwen3:4b",
         "local": true
       },
-      "seconds": 1.889,
+      "seconds": 3.869,
       "noOrderingSideEffects": true,
       "evaluation": {
         "recipeCorrect": true,
@@ -208,7 +440,7 @@
       },
       "response": {
         "kind": "recipe",
-        "message": "A creamy plant-based latte at 65 degrees (not too hot) with no added sweetness.",
+        "message": "A creamy oat latte at 65 degrees for a cozy, plant-based drink without extra sweetness.",
         "quote": {
           "config": {
             "drink": "latte",
@@ -236,10 +468,103 @@
           "image": "latte.svg",
           "nutrition_note": "Illustrative recipe estimates"
         },
+        "suggestions": [
+          {
+            "quote": {
+              "config": {
+                "drink": "latte",
+                "milk": "oat",
+                "strength": "regular",
+                "temperature": 65,
+                "syrup": 0,
+                "extra": 0
+              },
+              "name": "Caffe Latte",
+              "price": 3900,
+              "kcal": 110,
+              "allergens": [
+                "oats"
+              ],
+              "ingredients": {
+                "beans": 10,
+                "water": 40,
+                "cups": 1,
+                "oat": 180
+              },
+              "available": true,
+              "reasons": [],
+              "category": "Coffee",
+              "image": "latte.svg",
+              "nutrition_note": "Illustrative recipe estimates"
+            },
+            "message": "A creamy oat latte at 65 degrees for a cozy, plant-based drink without extra sweetness."
+          },
+          {
+            "quote": {
+              "config": {
+                "drink": "cappuccino",
+                "milk": "oat",
+                "strength": "regular",
+                "temperature": 65,
+                "syrup": 0,
+                "extra": 0
+              },
+              "name": "Cappuccino",
+              "price": 3700,
+              "kcal": 85,
+              "allergens": [
+                "oats"
+              ],
+              "ingredients": {
+                "beans": 10,
+                "water": 40,
+                "cups": 1,
+                "oat": 120
+              },
+              "available": true,
+              "reasons": [],
+              "category": "Coffee",
+              "image": "cappuccino.svg",
+              "nutrition_note": "Illustrative recipe estimates"
+            },
+            "message": "A creamy oat cappuccino at 65 degrees offers a lighter foam texture for a cozy plant-based drink."
+          },
+          {
+            "quote": {
+              "config": {
+                "drink": "mocha",
+                "milk": "oat",
+                "strength": "regular",
+                "temperature": 65,
+                "syrup": 0,
+                "extra": 0
+              },
+              "name": "Mocha",
+              "price": 4200,
+              "kcal": 190,
+              "allergens": [
+                "oats"
+              ],
+              "ingredients": {
+                "beans": 10,
+                "water": 40,
+                "cups": 1,
+                "oat": 140,
+                "cocoa": 15
+              },
+              "available": true,
+              "reasons": [],
+              "category": "Chocolate",
+              "image": "mocha.svg",
+              "nutrition_note": "Illustrative recipe estimates"
+            },
+            "message": "A creamy oat mocha at 65 degrees adds chocolate to your plant-based coffee for a cozy treat."
+          }
+        ],
         "model": "qwen3:4b",
         "local": true
       },
-      "seconds": 1.66,
+      "seconds": 4.027,
       "noOrderingSideEffects": true,
       "evaluation": {
         "recipeCorrect": true,
@@ -263,7 +588,7 @@
           },
           {
             "role": "assistant",
-            "content": "A creamy plant-based latte at 65 degrees (not too hot) with no added sweetness."
+            "content": "A creamy oat latte at 65 degrees for a cozy, plant-based drink without extra sweetness."
           }
         ],
         "context_config": {
@@ -277,7 +602,7 @@
       },
       "response": {
         "kind": "recipe",
-        "message": "Switched to a regular oat mocha at 65 degrees for chocolatey goodness without extra sweetness.",
+        "message": "Switched to a regular oat mocha at 65 degrees for chocolatey warmth without extra sweetness.",
         "quote": {
           "config": {
             "drink": "mocha",
@@ -306,10 +631,43 @@
           "image": "mocha.svg",
           "nutrition_note": "Illustrative recipe estimates"
         },
+        "suggestions": [
+          {
+            "quote": {
+              "config": {
+                "drink": "mocha",
+                "milk": "oat",
+                "strength": "regular",
+                "temperature": 65,
+                "syrup": 0,
+                "extra": 0
+              },
+              "name": "Mocha",
+              "price": 4200,
+              "kcal": 190,
+              "allergens": [
+                "oats"
+              ],
+              "ingredients": {
+                "beans": 10,
+                "water": 40,
+                "cups": 1,
+                "oat": 140,
+                "cocoa": 15
+              },
+              "available": true,
+              "reasons": [],
+              "category": "Chocolate",
+              "image": "mocha.svg",
+              "nutrition_note": "Illustrative recipe estimates"
+            },
+            "message": "Switched to a regular oat mocha at 65 degrees for chocolatey warmth without extra sweetness."
+          }
+        ],
         "model": "qwen3:4b",
         "local": true
       },
-      "seconds": 1.795,
+      "seconds": 1.808,
       "noOrderingSideEffects": true,
       "evaluation": {
         "recipeCorrect": true,
@@ -332,7 +690,7 @@
           },
           {
             "role": "assistant",
-            "content": "A creamy plant-based latte at 65 degrees (not too hot) with no added sweetness."
+            "content": "A creamy oat latte at 65 degrees for a cozy, plant-based drink without extra sweetness."
           },
           {
             "role": "user",
@@ -340,7 +698,7 @@
           },
           {
             "role": "assistant",
-            "content": "Switched to a regular oat mocha at 65 degrees for chocolatey goodness without extra sweetness."
+            "content": "Switched to a regular oat mocha at 65 degrees for chocolatey warmth without extra sweetness."
           }
         ],
         "context_config": {
@@ -354,7 +712,7 @@
       },
       "response": {
         "kind": "recipe",
-        "message": "A regular oat mocha at 75 degrees with one extra espresso shot.",
+        "message": "A regular oat mocha at 75 degrees with one extra espresso shot for a chocolatey, warm drink.",
         "quote": {
           "config": {
             "drink": "mocha",
@@ -383,10 +741,43 @@
           "image": "mocha.svg",
           "nutrition_note": "Illustrative recipe estimates"
         },
+        "suggestions": [
+          {
+            "quote": {
+              "config": {
+                "drink": "mocha",
+                "milk": "oat",
+                "strength": "regular",
+                "temperature": 75,
+                "syrup": 0,
+                "extra": 1
+              },
+              "name": "Mocha",
+              "price": 4800,
+              "kcal": 194,
+              "allergens": [
+                "oats"
+              ],
+              "ingredients": {
+                "beans": 19,
+                "water": 70,
+                "cups": 1,
+                "oat": 140,
+                "cocoa": 15
+              },
+              "available": true,
+              "reasons": [],
+              "category": "Chocolate",
+              "image": "mocha.svg",
+              "nutrition_note": "Illustrative recipe estimates"
+            },
+            "message": "A regular oat mocha at 75 degrees with one extra espresso shot for a chocolatey, warm drink."
+          }
+        ],
         "model": "qwen3:4b",
         "local": true
       },
-      "seconds": 1.654,
+      "seconds": 1.752,
       "noOrderingSideEffects": true,
       "evaluation": {
         "recipeCorrect": true,
@@ -409,10 +800,11 @@
         "kind": "unavailable",
         "message": "Iced drinks and caramel syrup are not available on this machine; we only serve hot drinks (50-90 C) with optional vanilla syrup.",
         "quote": null,
+        "suggestions": [],
         "model": "qwen3:4b",
         "local": true
       },
-      "seconds": 1.016,
+      "seconds": 0.941,
       "noOrderingSideEffects": true,
       "evaluation": {
         "recipeCorrect": true,
@@ -471,10 +863,43 @@
           "image": "latte.svg",
           "nutrition_note": "Illustrative recipe estimates"
         },
+        "suggestions": [
+          {
+            "quote": {
+              "config": {
+                "drink": "latte",
+                "milk": "oat",
+                "strength": "regular",
+                "temperature": 70,
+                "syrup": 4,
+                "extra": 0
+              },
+              "name": "Caffe Latte",
+              "price": 5100,
+              "kcal": 210,
+              "allergens": [
+                "oats"
+              ],
+              "ingredients": {
+                "beans": 10,
+                "water": 40,
+                "cups": 1,
+                "oat": 180,
+                "syrup": 40
+              },
+              "available": true,
+              "reasons": [],
+              "category": "Coffee",
+              "image": "latte.svg",
+              "nutrition_note": "Illustrative recipe estimates"
+            },
+            "message": "A hot vanilla oat latte with maximum sweetness (4 vanilla syrup shots) at 70\u00b0C."
+          }
+        ],
         "model": "qwen3:4b",
         "local": true
       },
-      "seconds": 1.696,
+      "seconds": 1.512,
       "noOrderingSideEffects": true,
       "evaluation": {
         "recipeCorrect": true,

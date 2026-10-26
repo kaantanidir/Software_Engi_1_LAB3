@@ -1,0 +1,23 @@
+{
+  "recordedAt": "2026-10-26T17:16:21.585Z",
+  "source": "Submission ZIP extracted into tmp/submission-source-20261026",
+  "freshVenv": true,
+  "workspacePackagesAbsent": true,
+  "sixMenuDrinks": true,
+  "exampleButtons": 3,
+  "examplesFillAndFocus": true,
+  "exampleClicksSendRequests": false,
+  "askRequests": 1,
+  "mobile": {
+    "width": 390,
+    "scrollWidth": 390
+  },
+  "loadingAnimation": "assistant-loading",
+  "reducedMotionAnimation": "none",
+  "loadingClearedAfterResponse": true,
+  "realInference": true,
+  "model": "qwen3:4b",
+  "recipeOptions": 3,
+  "browser": "155.0.8059.85",
+  "personalDatabaseUsed": false
+}

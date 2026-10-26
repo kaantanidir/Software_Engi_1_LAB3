@@ -1,8 +1,13 @@
 <#
 Purpose: start a local Ollama process and prepare the optional drink model.
-Inputs: installed Ollama or the verified portable runtime in data/local-ai/runtime.
-Outputs: running loopback model server and downloaded/warmed qwen3:4b; no Windows service or global PATH change.
+Inputs: installed Ollama or the verified portable runtime in data/local-ai/runtime; NoDownload and SkipWarmup switches.
+Outputs: running loopback model server and available qwen3:4b, optionally downloaded/warmed; no Windows service or global PATH change.
 #>
+param(
+    [switch]$NoDownload,
+    [switch]$SkipWarmup
+)
+
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
 $portable = Join-Path $root 'data/local-ai/runtime/ollama.exe'
@@ -30,8 +35,15 @@ if (-not $running) {
     }
     if (-not $running) { throw 'Ollama did not start. Inspect data/local-ai/server.err.log.' }
 }
-& $executable pull qwen3:4b
-if ($LASTEXITCODE -ne 0) { throw 'Model download failed.' }
-& $executable run qwen3:4b 'Reply READY'
-if ($LASTEXITCODE -ne 0) { throw 'Model warm-up failed.' }
-Write-Output 'Local drink assistant prepared at http://127.0.0.1:11434. Start SmartBrew normally.'
+$available = Invoke-RestMethod -Uri 'http://127.0.0.1:11434/api/tags' -TimeoutSec 5
+$modelPresent = @($available.models | Where-Object { $_.name -eq 'qwen3:4b' -or $_.model -eq 'qwen3:4b' }).Count -gt 0
+if (-not $modelPresent) {
+    if ($NoDownload) { throw 'qwen3:4b is not installed. Run tools/start_local_ai.ps1 once to download it, then start SmartBrew again.' }
+    & $executable pull qwen3:4b
+    if ($LASTEXITCODE -ne 0) { throw 'Model download failed.' }
+}
+if (-not $SkipWarmup) {
+    & $executable run qwen3:4b 'Reply READY'
+    if ($LASTEXITCODE -ne 0) { throw 'Model warm-up failed.' }
+}
+Write-Output 'Local drink assistant available at http://127.0.0.1:11434 (qwen3:4b).'

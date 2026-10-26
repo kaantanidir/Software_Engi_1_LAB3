@@ -2,6 +2,8 @@
 
 A local coffee-machine prototype for Software Engineering Lab 3. Customers can customize drinks, keep personal recipes, pay through simulated card/wallet adapters and receive receipts. Technicians manage supplies, waste and diagnostic events. An optional local language model turns drink requests into recipes for the customer to review.
 
+For the assessed artifacts, GitHub link and Canvas ZIP instructions, see [the submission guide](SUBMISSION.md).
+
 ## Start the App
 
 Requirements: **Python 3.12** and a modern browser. Verified on Windows with Python 3.12.14. SQLite and the HTTP server are included with Python; runtime packages are pinned in `requirements.txt` (`qrcode==8.2`, plus `colorama==0.4.6` on Windows).
@@ -11,12 +13,18 @@ From the repository directory:
 ```powershell
 py -3.12 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
-.\.venv\Scripts\python.exe app.py --port 8765
+.\tools\start_smartbrew.ps1
 ```
 
 Open **http://127.0.0.1:8765/**. Stop with `Ctrl+C`. If that port is occupied, choose a different `--port` and use the matching address. Network access is needed for installation; normal ordering uses local assets and data afterward.
 
-On macOS/Linux, use `python3.12 -m venv .venv`, then `.venv/bin/python` for the install and run commands. Windows is the documented evaluation environment.
+On Windows the launcher starts Ollama if needed, reuses an existing local server, and then runs SmartBrew. It uses already downloaded `qwen3:4b` weights; normal startup never downloads the model. If Ollama/the model is missing or startup fails, it reports that and starts the site with manual ordering available. Ollama stays running after the app stops so it can be reused.
+
+Use `.\tools\start_smartbrew.ps1 -Port 8767` for another port, or add `-SkipAI` to skip Ollama preparation. An already running Ollama can still serve assistant requests with that switch. Direct `.\.venv\Scripts\python.exe app.py --port 8765` still works; that command expects Ollama to be running separately when using the optional assistant.
+
+If Windows blocks `.ps1` files, use `powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\start_smartbrew.ps1`. This applies only to that process and does not change the machine's execution policy. The same prefix can run `tools/start_local_ai.ps1` during one-time setup.
+
+On macOS/Linux, use `python3.12 -m venv .venv`, then `.venv/bin/python` for installation and `.venv/bin/python app.py --port 8765` to run the app; start Ollama separately for the optional assistant. The combined PowerShell launcher and documented evaluation environment are Windows-specific.
 
 Data persists in `data/smartbrew.sqlite3`. For a fresh demonstration that preserves existing accounts and purchases:
 
@@ -60,17 +68,21 @@ Technician test settings persist until changed. **Normal** applies to external p
 
 ## Optional Local Drink Assistant
 
-The ten features above do **not** require a model. To add real local inference:
+The ten features above do **not** require a model. For the optional assistant, install Ollama and download the model **once**:
 
-1. Install and start [Ollama](https://docs.ollama.com/windows). The verified runtime is **0.40.6**.
-2. Run `ollama pull qwen3:4b` (approximately 2.5 GB for the model).
-3. Optionally warm it with `ollama run qwen3:4b "Reply READY"`. The first load can take substantially longer than later requests.
-4. Start SmartBrew normally. It connects only to the local API at `127.0.0.1:11434`.
-5. Ask: **A strong oat latte at 75 degrees with one syrup shot and no extra espresso.** Inspect the proposal, then select **Use recipe**. Checkout remains a separate confirmation.
+1. Install [Ollama](https://docs.ollama.com/windows). The verified runtime is **0.40.6**.
+2. Run `.\tools\start_local_ai.ps1` to start/reuse Ollama, download `qwen3:4b` only if missing (approximately 2.5 GB), and warm it. With an already running installation, `ollama pull qwen3:4b` also prepares the model.
+3. On later launches, run `.\tools\start_smartbrew.ps1`. It starts/reuses Ollama and launches the site together; a separate manual Ollama startup is unnecessary. It skips warm-up, so the first assistant request may take longer while the model loads.
+4. SmartBrew connects only to the local API at `127.0.0.1:11434`. If you launch `app.py` directly instead, start Ollama separately (for example `ollama serve`, unless it is already running).
+5. Ask: **Recommend three strong, slightly sweet oat drinks at 75 degrees with one vanilla syrup shot and no extra espresso.** Compare up to three cards showing drink names, settings, short reasons and server-calculated prices. Select **Use recipe** on the option you want. Further changes refer to that option; checkout remains a separate confirmation. A precise named-drink request or limited stock may yield fewer distinct choices.
 
-On this workspace, `tools/start_local_ai.ps1` can also start the project-local portable runtime. It keeps its runtime/models under ignored `data/local-ai`, without a Windows service or PATH change.
+For a quick demo, choose **Three strong oat options**, **Sweet oat chocolate** or **Classic cappuccino** beneath the input. These examples fill and focus the request; select **Ask** to send it. While the model responds, the loading indicator follows the browser's reduced-motion preference.
 
-The adapter requests structured JSON, rejects unsupported fields/options, and recalculates price and stock availability on the server. It cannot place orders, edit accounts or authorize payment. Conversation is held in the page and cleared on account changes. The model is fallible: review its proposal. A missing model, invalid response or timeout leaves manual ordering available. The model wait is bounded at 90 seconds; it is not part of the menu/quote latency target.
+On this workspace both scripts can use the project-local portable runtime, with its runtime/models under ignored `data/local-ai`. Other machines use their installed Ollama; portable binaries/model weights are not bundled in the repository or source ZIP. No Windows service or PATH change is made by the scripts. Optional manual warm-up remains available with `ollama run qwen3:4b "Reply READY"`.
+
+The adapter requests structured JSON for one primary recipe and up to two alternatives, rejects unsupported fields/options, removes duplicate or unavailable alternatives and recalculates all prices and stock availability on the server. Alternatives retain the primary recipe's milk, strength, temperature, syrup and extra-shot settings. Customer cards show choices and reasons; they do not show technical scores or AI confidence percentages. F06's separate menu-ranking rules remain documented in the architecture and backlog. A narrow guard ensures exact strength-only follow-ups such as **Make it mild** preserve the selected drink and other settings.
+
+The assistant cannot place orders, edit accounts or authorize payment. Conversation is held in the page and cleared on account changes. The model is fallible: review its proposals. A missing model, invalid response or timeout leaves manual ordering available. The model wait is bounded at 90 seconds; it is not part of the menu/quote latency target. Three-option inference uses an 8192-token context and an output limit of 900 tokens in one local model request.
 
 The verified hardware has about 32 GB RAM and an RTX 3060 Laptop GPU with 6 GB VRAM. This is a tested machine, not a promised minimum hardware specification. Model weights are not bundled in Git. The exact tested model digest and live responses are in `evidence/current/local-ai-results.json`.
 
@@ -80,7 +92,7 @@ The verified hardware has about 32 GB RAM and an RTX 3060 Laptop GPU with 6 GB V
 .\.venv\Scripts\python.exe -m unittest discover -s tests -v
 ```
 
-The unit suite runs **33 tests** against isolated temporary databases under `tmp/tests` (recorded in `evidence/current/unit-tests.txt`). Model-adapter unit tests use labelled test doubles and do not require Ollama. Actual local inference is tested separately:
+The unit suite runs **38 tests** against isolated temporary databases under `tmp/tests` (recorded in `evidence/current/unit-tests.txt`). Model-adapter unit tests use labelled test doubles and do not require Ollama. Actual local inference is tested separately:
 
 ```powershell
 .\.venv\Scripts\python.exe tools/check_local_ai.py
@@ -100,7 +112,7 @@ $env:PYTHON = (Resolve-Path .\.venv\Scripts\python.exe).Path
 npm run test:browser
 ```
 
-The browser audit starts its own server on 8766 and uses separate temporary data, including a server restart. With `$env:SMARTBREW_LIVE_AI = '1'`, it runs **58 checks** (recorded in `evidence/current/browser-results.json`), covering all ten feature groups, the expanded F06 recommendation context controls/modes, and live F11 multi-turn recipe application and clearing. Set `CHROME_PATH` to an installed Chrome executable to use that instead of Playwright's browser. Recorded results and limitations are in [the verification record](docs/QA_RESULTS.md).
+The browser audit starts its own server on 8766 and uses separate temporary data, including a server restart. With `$env:SMARTBREW_LIVE_AI = '1'`, it runs **65 checks** (recorded in `evidence/current/browser-results.json`), covering all ten feature groups, F06 context controls/modes, and live F11 multi-turn conversation, three recipe choices, selected-option follow-ups, mobile layout and clearing. Set `CHROME_PATH` to an installed Chrome executable to use that instead of Playwright's browser. Recorded results and limitations are in [the verification record](docs/QA_RESULTS.md).
 
 With Ollama/model running, set `$env:SMARTBREW_LIVE_AI = '1'` before the browser command to additionally test actual inference, explicit recipe application and conversation clearing. The normal browser audit does not require a model; its deliberate unavailable-model response is a failure-path test, not simulated evidence of real inference.
 
@@ -127,10 +139,11 @@ With Ollama/model running, set `$env:SMARTBREW_LIVE_AI = '1'` before the browser
 - [Lab 3 report PDF](output/G28Lab3_Report.pdf)
 - [Model/prompt appendix PDF](output/G28Lab3_AI_Appendix.pdf)
 - [Documentation index](docs/README.md)
+- [Available original development conversation](docs/DEVELOPMENT_TRANSCRIPT.md) (251 visible messages; declared omissions/redactions and source hashes included)
 
 Lab 3 Tasks A-C and the initial local integration of a student-relayed Gemini web-chat draft were developed with Codex using the student-confirmed **GPT-6.1 Sol** selector label (before Gemini had local IDE access; that earlier web-chat Gemini version was not recorded). After opening the repository in Google Antigravity, **Gemini 4 Argon Medium** inspected the local files, implemented and tested the focused F11 multi-turn assistant corrections and the expanded F06 deterministic recommendation scoring and browser checks, and recorded the local verification evidence. Local **Qwen3:4b** through Ollama 0.40.6 is the prototype's runtime drink model, not a development assistant that generated the project. The appendix and AI record document prompts, decisions, observed errors and revisions. Students still need to understand and evaluate the work; no student-authored personal reflection is supplied.
 
-The original Lab 2 was also AI-assisted; that limitation is disclosed in the comparison rather than described as an independent human baseline. Earlier generated Lab 2 corrections are historical review aids only: the supplied course policy prohibits submitting generated text/models for Labs 1-2. Original submissions remain unchanged.
+The comparison uses the group's actual submitted Assignment 2, preserved unchanged. The student clarified that earlier limited AI assistance was not comparable to Lab 3's extensive generation; this does not establish AI authorship of Assignment 2. Later AI-generated Lab 2 corrections are separate historical review aids only: the supplied course policy prohibits submitting generated text/models for Labs 1-2. They do not replace the original submission.
 
 ## Scope
 

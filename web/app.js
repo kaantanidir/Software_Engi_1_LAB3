@@ -271,7 +271,8 @@ async function handleClick(event) {
       else { form.elements.email.value = 'alex@smartbrew.test'; form.elements.password.value = 'DemoPass123!'; }
       return;
     }
-    if (button.id === 'assistant-apply') { await applyAssistantRecipe(); return; }
+    if (button.dataset.assistantPrompt !== undefined) { $('#assistant-request').value = button.dataset.assistantPrompt; $('#assistant-request').focus(); return; }
+    if (button.dataset.assistantApply !== undefined) { await applyAssistantRecipe(Number(button.dataset.assistantApply)); return; }
     if (button.id === 'assistant-clear') { resetAssistant(); return; }
     if (button.id === 'account-button' || button.hasAttribute('data-open-auth')) { openAuth(); return; }
     if (button.hasAttribute('data-tech-login')) { openAuth('technician'); return; }

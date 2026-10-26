@@ -1,18 +1,50 @@
 # Verification Record
 
-Recorded 21 October 2026, Europe/Berlin. These are observed coursework-prototype results, not certification of appliance hardware, financial processors or production security.
+First recorded 21 October 2026; three-choice assistant and current unit/browser verification updated 26 October 2026, Europe/Berlin. These are observed coursework-prototype results, not certification of appliance hardware, financial processors or production security.
+
+## Clean Installation and Final UI Check - 26 October 2026
+
+The submission source ZIP was extracted into a separate directory. A new Python 3.12.14 virtual environment installed `qrcode==8.2` and `colorama==0.4.6` from the pinned requirements; `pip check` reported no broken dependencies. All 38 unit tests passed against that extracted source in 20.058 seconds. No workspace `.packages`, existing environment or personal database was copied. The recorded installation and unit output is in `evidence/current/clean-install.txt`.
+
+A separate app process then served the extracted source with the fresh environment and a new database. Actual Chrome interaction verified that all three example prompts fill and focus the input without making an inference request; Ask made one request to the actual local `qwen3:4b` model and returned three recipes. The loading indicator animated normally, stopped animating with reduced motion enabled, and cleared when inference finished. The example controls fit a 390-pixel mobile viewport. Observations are recorded in `evidence/current/ux-polish.json` and the actual loading screenshot `evidence/current/assistant-loading.png`. The full existing live-model browser suite was also rerun on the final application code: 65 checks passed without browser exceptions. The 8-, 12- and 9-turn standalone model records retain their earlier dates.
+
+GitHub's public repository API confirmed that `kaantanidir/Software_Engi_1_LAB3` is public on 26 October 2026. `SUBMISSION.md` maps the assessed artifacts and identifies `output/G28Lab3_Project.zip` as the Canvas upload. No Canvas submission is claimed by these checks.
+
+## Documentation and Submission Audit - 26 October 2026
+
+The documentation revision adds an explicit comparison of the 13 original submitted user stories with all 24 revised stories: 17 retained/clarified/split stories and seven justified additions. The artifact checker verifies the quoted original wording against `docs/baseline/submitted-task2b.md` and checks complete revised-story coverage.
+
+The available original development conversation is attached as `docs/DEVELOPMENT_TRANSCRIPT.md`: 251 visible messages (85 student, 166 Codex), with declared omissions and redactions, source-file hashes and a transcript integrity hash in `docs/DEVELOPMENT_TRANSCRIPT_MANIFEST.json`. The original separate Gemini/Antigravity transcript remains unavailable. The checker verifies message counts, integrity and declared redactions.
+
+The report and appendix were rebuilt, rendered with Poppler and visually checked. Artifact verification now covers 130 documented Python functions, 18 source capabilities, unchanged baseline hashes and 87 whitelisted archive entries, including the Windows launcher and three-choice assistant screenshots/regression. The final ZIP is checked against current file bytes. The original baseline files and 251-message transcript remain unchanged; subsequent application changes are recorded separately below.
+
+## Three-Choice Assistant - 26 October 2026
+
+Broad taste requests return a primary recipe and up to two distinct, supported alternatives with short descriptions and server-calculated prices. Customer cards contain no score breakdown or confidence percentage; the separate F06 scoring rationale remains technical documentation/backlog material. Named drinks, exact refinements or limited stock can yield fewer choices. Server validation rejects unsupported fields/prices, removes duplicate/unavailable alternatives and keeps the interpreted non-drink settings consistent across options.
+
+The real-model browser audit produced three oat recipes, checked desktop/mobile cards, selected option two, verified its exact customizer settings and sent a further strength request using that option's full configuration. An initial run exposed a genuine model error: despite correct selected-cappuccino context, "Make it mild" produced a latte. The failure is retained in `evidence/history/assistant-options-first-run.json`. A narrow strength-only refinement guard now preserves the active drink and unrelated settings; a deterministic unit regression and the successful real-model browser rerun verify it. This guard is not a claim to understand arbitrary follow-up language.
+
+The existing eight-turn model regression additionally exposed a repeated primary espresso for "What else do you have that fits that?", although the same model response contained valid Americano/Mocha alternatives. That run is preserved in `evidence/history/assistant-options-alternative-regression.json`. A narrow explicit-alternative guard now promotes a different available model-generated choice, or explains that none was proposed. It does not fabricate a replacement recipe. The new unit regression verifies promotion and the no-alternative case.
+
+After the correction, all eight turns in the real-model regression passed again (`evidence/current/assistant-heldout-postchange.json`). The 12-turn conversation suite was also rerun successfully after the schema extension. The nine-turn long-chat record retains its earlier run date and was not rerun for this change; the new browser/selected-option checks and the two rerun conversation suites provide the current regression evidence.
+
+## Windows Startup Verification - 26 October 2026
+
+Both `tools/start_smartbrew.ps1` and `tools/start_local_ai.ps1` passed PowerShell syntax parsing. The preparation script started the real local Ollama server with the existing `qwen3:4b` model. Combined startup and `-SkipAI` startup were then exercised on separate temporary databases and dynamically selected ports. Both served six menu drinks and reported the actual model available; the combined launcher reused the existing Ollama PID and did not download model weights. The running demo on port 8765 and its database were preserved.
+
+`-SkipAI` skips preparation; an already running Ollama remains accessible. Missing-model/runtime failures are caught by the launcher, which reports the issue and runs the site for manual ordering. Normal startup does not download weights or wait for model warm-up. The startup checks verified service/model readiness, not new inference-quality results; the earlier live-model evaluations below retain their original dates.
 
 ## Automated Tests
 
-`python -m unittest discover -s tests -v`: **33 tests passed in 14.538 seconds**, Python 3.12.14. Full output: `evidence/current/unit-tests.txt`.
+`python -m unittest discover -s tests -v`: **38 tests passed in 20.058 seconds**, Python 3.12.14, using the freshly installed evaluation environment and source extracted from the ZIP. Full output: `evidence/current/unit-tests.txt`; installation/dependency-check context: `evidence/current/clean-install.txt`.
 
 Coverage includes the ten selected feature groups, explicit password/NFC methods, mixed-method rejection, independent account ownership, saved-recipe CRUD, persistent snapshots, threshold/quantity checks, deterministic F06 recommendation scoring (time-of-day periods, manual vs injectable local-clock period modes, temperature and weather-condition bonuses, non-inferred `unknown` default condition, offline weather exclusion, customer-only preference/recipe/completed-order personalization caps, pending-order exclusion, unavailable-drink filtering and deterministic tie-breaking), decline rollback, payment methods, bounded loyalty, prepaid balance, concurrent idempotency, offline pending reconciliation, receipts and protected maintenance.
 
-Ten tests exercise the optional model adapter with explicitly labelled response fixtures: schema validation, rejection of price/unsupported-option fields, clarification, fresh stock checks, invalid history roles, local-only configuration, busy/unavailable inference, exact follow-up context and no ordering side effects. These fixtures do not demonstrate real model inference.
+Fifteen tests exercise the optional model adapter with explicitly labelled response fixtures: schema validation, rejection of price/unsupported-option fields, clarification, fresh stock checks, invalid history roles, local-only configuration, busy/unavailable inference, exact follow-up context, three-choice validation/deduplication/settings consistency, the strength-only regression and no ordering side effects. These fixtures do not demonstrate real model inference.
 
 ## Browser Audit
 
-`SMARTBREW_LIVE_AI=1 npm run test:browser`: **58 checks passed**, no uncaught browser errors. Tested Chrome 155.0.8059.41, Node 24.19.0 and Playwright 1.62.1 on Windows. Results: `evidence/current/browser-results.json` (initial F06 browser test wait failure before awaiting quote readiness is preserved separately in `evidence/history/browser-f06-first-run-failure.json`, while the earlier F11 regression record remains untouched in `evidence/history/browser-failure.json`). The multi-turn assistant sequence checks exact outgoing context, a clarification turn and unchanged recipe fields, even after discussing an older drink.
+`SMARTBREW_LIVE_AI=1 npm run test:browser`: **65 checks passed**, no uncaught browser errors. Tested Chrome 155.0.8059.85, Node 24.22.1 and Playwright 1.62.1 on Windows. Results: `evidence/current/browser-results.json` (initial three-option, F06 and earlier F11 failures remain in their separate historical records). The assistant sequences check exact outgoing context, a clarification turn, three choices, selected-option application and field preservation.
 
 The audit starts its own server on 8766 and uses a separate database/browser. It creates two customers, saves and purchases for one, verifies the other's empty private records and forbidden actions, rejects wrong passwords/mixed methods, restarts the server with the same database and confirms retained ownership. It additionally checks the explicit NFC flow and public Alex fixture.
 
@@ -25,13 +57,13 @@ With the live-AI option enabled, the browser calls the actual model endpoint, ve
 | Desktop viewport | 1440 x 1000 |
 | Mobile viewport | 390 x 844; root width 390, no horizontal page overflow |
 | Local menu photos | All six displayed image elements loaded |
-| 100 sequential state/menu requests | p95 10.18 ms |
-| 100 sequential quote requests | p95 9.54 ms |
+| 100 sequential state/menu requests | p95 12.31 ms |
+| 100 sequential quote requests | p95 8.26 ms |
 | Visible button targets / input focus | No visible buttons smaller than 24 x 24; input focus indicator present |
 
 The proposed two-second response target applies only to warmed local menu/quote requests. These measurements are not concurrent load tests or a production SLA. The control checks are a limited accessibility smoke test, not a complete WCAG audit.
 
-Screenshots: `evidence/current/desktop.png`, `evidence/current/mobile.png`, `evidence/current/maintenance.png`, `evidence/current/test-scenarios.png`, `evidence/current/receipt.png` and `evidence/current/local-assistant.png`. Some show transient notifications or deliberately simulated failures.
+Screenshots: `evidence/current/desktop.png`, `evidence/current/mobile.png`, `evidence/current/maintenance.png`, `evidence/current/test-scenarios.png`, `evidence/current/receipt.png`, `evidence/current/local-assistant.png`, `evidence/current/assistant-options.png` and `evidence/current/assistant-options-mobile.png`. Some show transient notifications or deliberately simulated failures.
 
 ## Actual Local Inference
 
@@ -73,7 +105,7 @@ An initial response to "Make my usual one" invented an espresso while asking for
 | Synthetic assistant context turn leaked into model replies, blocked drink-type switches, allowed silent iced/caramel substitution, and added unrequested extra espresso | Replaced synthetic `assistant` turn with trailing `system` context (`current_proposal`), ordered `config` before `message` in `RESPONSE_SCHEMA`, and added explicit refusal/constraint rules; pre/post runs in `evidence/history/assistant-heldout-baseline.json`, `evidence/history/assistant-heldout-postchange-first-run.json`, and `evidence/current/assistant-heldout-postchange.json` |
 | Initial F06 browser check inspected `#checkout-button` before post-logout quote refresh finished | Preserved first-run failure in `evidence/history/browser-f06-first-run-failure.json`; updated `tools/browser_check.cjs` to await quote readiness before asserting manual ordering |
 
-Earlier 16-, 23-, 26-, 28- and 30-unit-test or 46- and 50-browser-check references in historical handoff notes describe earlier snapshots prior to the F11 and F06 expansions. Current verified counts are **33 unit tests** and **58 browser checks**.
+Earlier 16-, 23-, 26-, 28-, 30- and 33-unit-test or 46-, 50- and 58-browser-check references describe earlier snapshots. Current verified counts are **38 unit tests** and **65 browser checks**; historical interaction notes retain the counts observed at their respective dates.
 
 ## Files, Sources and Scope
 

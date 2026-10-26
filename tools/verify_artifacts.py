@@ -9,7 +9,7 @@ import re
 import sys
 from zipfile import ZipFile, ZIP_DEFLATED
 
-from coursework_data import LAB3, SOURCES
+from coursework_data import LAB3, SOURCES, STORIES3, STORY_COMPARISON, ADDED_STORIES
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -17,6 +17,7 @@ FINAL_ZIP_WHITELIST = (
     ".gitattributes",
     ".gitignore",
     "README.md",
+    "SUBMISSION.md",
     "app.py",
     "package.json",
     "requirements.txt",
@@ -45,9 +46,13 @@ FINAL_ZIP_WHITELIST = (
     "tools/check_assistant_long_chat.py",
     "tools/check_local_ai.py",
     "tools/coursework_data.py",
+    "tools/export_development_transcript.py",
     "tools/start_local_ai.ps1",
+    "tools/start_smartbrew.ps1",
     "tools/verify_artifacts.py",
     "docs/AI_CONVERSATION.md",
+    "docs/DEVELOPMENT_TRANSCRIPT.md",
+    "docs/DEVELOPMENT_TRANSCRIPT_MANIFEST.json",
     "docs/ARCHITECTURE.md",
     "docs/ASSETS.md",
     "docs/CROSS_LAB_REVIEW.md",
@@ -66,6 +71,8 @@ FINAL_ZIP_WHITELIST = (
     "docs/baseline/lab1/manifest.json",
     "evidence/README.md",
     "evidence/current/artifact-checks.json",
+    "evidence/current/assistant-options.png",
+    "evidence/current/assistant-options-mobile.png",
     "evidence/current/assistant-conversations.json",
     "evidence/current/assistant-heldout-postchange.json",
     "evidence/current/assistant-long-chat.json",
@@ -78,11 +85,16 @@ FINAL_ZIP_WHITELIST = (
     "evidence/current/receipt.png",
     "evidence/current/test-scenarios.png",
     "evidence/current/unit-tests.txt",
+    "evidence/current/clean-install.txt",
+    "evidence/current/ux-polish.json",
+    "evidence/current/assistant-loading.png",
     "evidence/history/assistant-conversations-first-run.json",
     "evidence/history/assistant-conversations-second-run.json",
     "evidence/history/assistant-heldout-baseline.json",
     "evidence/history/assistant-heldout-postchange-first-run.json",
     "evidence/history/assistant-long-chat-wording-failure.json",
+    "evidence/history/assistant-options-first-run.json",
+    "evidence/history/assistant-options-alternative-regression.json",
     "evidence/history/authentication-regression-before.txt",
     "evidence/history/browser-f06-first-run-failure.json",
     "evidence/history/browser-failure.json",
@@ -193,7 +205,9 @@ def check_document_links():
     count = 0
     checked_files = (
         ROOT / "README.md",
+        ROOT / "SUBMISSION.md",
         ROOT / "docs" / "README.md",
+        ROOT / "docs" / "AI_CONVERSATION.md",
         ROOT / "evidence" / "README.md",
         ROOT / "docs" / "development" / "ASSISTANT_IMPLEMENTATION_UPDATE.md",
         ROOT / "docs" / "development" / "GEMINI_HANDOFF.md",
@@ -206,6 +220,45 @@ def check_document_links():
             assert path.is_relative_to(ROOT) and path.exists(), f"Broken local link in {file.name}: {target}"
             count += 1
     return count
+
+
+def check_story_comparison():
+    """Purpose: verify comparison against actual submitted wording and cover every revised story. Inputs: baseline and structured story tables. Returns: coverage counts."""
+    baseline = " ".join((ROOT / "docs" / "baseline" / "submitted-task2b.md").read_text(encoding="utf-8").split())
+    assert len(STORY_COMPARISON) == 13 and len(ADDED_STORIES) == 7
+    original_ids, retained_ids = set(), set()
+    for original, wording, revised, reason in STORY_COMPARISON:
+        original_id = re.findall(r"US-\d{2}", original)
+        assert len(original_id) == 1 and original_id[0] not in original_ids
+        assert " ".join(wording.split()) in baseline, f"Comparison does not quote the submitted story: {original}"
+        original_ids.update(original_id)
+        retained_ids.update(re.findall(r"US-\d{2}", revised))
+        assert reason.strip(), f"Missing story-change justification: {original}"
+    assert original_ids == {f"US-{number:02d}" for number in range(1, 14)}
+    added_ids = {row[0].split(" / ")[0] for row in ADDED_STORIES}
+    assert len(retained_ids) == 17 and not retained_ids & added_ids
+    assert retained_ids | added_ids == {row[0] for row in STORIES3}
+    assert all(row[1].strip() and row[2].strip() for row in ADDED_STORIES)
+    return {"originalStories": len(original_ids), "retainedOrSplitStories": len(retained_ids), "additionalStories": len(added_ids), "revisedStories": len(STORIES3), "submittedWordingVerified": True}
+
+
+def check_development_transcript():
+    """Purpose: validate attachment integrity, provenance counts and declared redactions. Inputs: transcript/manifest. Returns: exported message count."""
+    path = ROOT / "docs" / "DEVELOPMENT_TRANSCRIPT.md"
+    raw = path.read_bytes()
+    transcript = raw.decode("utf-8")
+    manifest = json.loads((ROOT / "docs" / "DEVELOPMENT_TRANSCRIPT_MANIFEST.json").read_text(encoding="utf-8"))
+    assert hashlib.sha256(raw).hexdigest() == manifest["transcript_sha256"], "Conversation attachment changed after export"
+    speakers = re.findall(r"^### \d{3} - (Student|Codex) - ", transcript, flags=re.M)
+    assert len(speakers) == manifest["messages"] == sum(source["included_messages"] for source in manifest["sources"])
+    assert speakers.count("Student") == manifest["roles"]["user"]
+    assert speakers.count("Codex") == manifest["roles"]["assistant"]
+    assert all(re.fullmatch(r"[a-f0-9]{64}", source["sha256"]) for source in manifest["sources"])
+    assert not re.search(r"(?i)C:[/\\]Users[/\\]", transcript), "Unredacted home path in conversation"
+    assert not re.search(r"\b(?:ghp_|github_pat_|sk-|hf_)[A-Za-z0-9_-]{20,}\b", transcript), "Possible token in conversation"
+    assert manifest["redactions"].get("account_passwords", 0) > 0
+    assert "separate Gemini/Antigravity session transcript is unavailable" in transcript
+    return manifest["messages"]
 
 
 def main():
@@ -231,6 +284,34 @@ def main():
     manifest1 = json.loads((lab1 / "manifest.json").read_text())
     assert hashlib.sha256((lab1 / "G28Lab1.asta").read_bytes()).hexdigest() == manifest1["G28Lab1.asta"], "Lab 1 baseline changed"
     whitelisted_count = validate_project_zip_policy()
+    story_comparison = check_story_comparison()
+    transcript_messages = check_development_transcript()
+    unit_log = (ROOT / "evidence" / "current" / "unit-tests.txt").read_text(encoding="utf-8")
+    unit_pass = re.search(r"Ran (\d+) tests in [\d.]+s\s+OK\s*$", unit_log)
+    assert unit_pass, "Unit-test evidence does not contain a successful completion"
+    unit_count = int(unit_pass[1])
+    browser = json.loads((ROOT / "evidence" / "current" / "browser-results.json").read_text(encoding="utf-8"))
+    assert browser["errors"] == []
+    three_choices_verified = False
+    live_ai = browser.get("liveAI") or {}
+    if live_ai.get("options") is not None:
+        assert live_ai.get("realInference") is True
+        option_turn, followup_turn = live_ai["options"]
+        assert len(option_turn["response"]["suggestions"]) == 3
+        chosen = option_turn["response"]["suggestions"][1]["quote"]["config"]
+        assert followup_turn["request"]["context_config"] == chosen
+        assert followup_turn["response"]["quote"]["config"] == {**chosen, "strength": "mild"}
+        three_choices_verified = True
+    browser_count = len(browser["checks"])
+    clean_log = (ROOT / "evidence" / "current" / "clean-install.txt").read_text(encoding="utf-8")
+    assert "qrcode==8.2" in clean_log and "colorama==0.4.6" in clean_log and "No broken requirements found." in clean_log
+    assert re.search(r"Ran 38 tests in [\d.]+s\s+OK\s*$", clean_log), "Clean-install unit test evidence incomplete"
+    ux = json.loads((ROOT / "evidence" / "current" / "ux-polish.json").read_text(encoding="utf-8"))
+    assert ux["freshVenv"] and ux["workspacePackagesAbsent"] and not ux["personalDatabaseUsed"]
+    assert ux["exampleButtons"] == 3 and ux["examplesFillAndFocus"] and not ux["exampleClicksSendRequests"]
+    assert ux["askRequests"] == 1 and ux["realInference"] and ux["loadingClearedAfterResponse"]
+    assert ux["loadingAnimation"] == "assistant-loading" and ux["reducedMotionAnimation"] == "none"
+    assert ux["mobile"]["scrollWidth"] <= ux["mobile"]["width"]
     if "--source-only" in sys.argv:
         summary = {
             "python": platform.python_version(),
@@ -241,6 +322,13 @@ def main():
             "lab1BaselineHashVerified": True,
             "readmeAndIndexLocalLinksVerified": check_document_links(),
             "projectZipWhitelistVerified": whitelisted_count,
+            "storyComparison": story_comparison,
+            "developmentTranscriptMessagesVerified": transcript_messages,
+            "unitTestsPassed": unit_count,
+            "browserChecksPassed": browser_count,
+            "threeAssistantChoicesAndSelectedFollowupVerified": three_choices_verified,
+            "cleanInstallVerified": True,
+            "examplePromptsAndReducedMotionVerified": True,
         }
         print(json.dumps(summary, indent=2))
         return
@@ -259,6 +347,10 @@ def main():
                 assert record["id"] in text
             for value in ("F11", "Qwen3", "Ollama"):
                 assert value in text
+            for phrase in ("User-story comparison: original to revised", "Seven additional stories", "Assignment 2 authorship clarification", "DEVELOPMENT_TRANSCRIPT.md"):
+                assert phrase in text, "Missing report revision: " + phrase
+            for original, wording, revised, reason in STORY_COMPARISON:
+                assert original in " ".join(text.split()), "Missing original-story comparison in PDF: " + original
         else:
             for i in range(1, 14):
                 assert f"REQ-{i:02d}" in text and f"US-{i:02d}" in text
@@ -277,7 +369,7 @@ def main():
             sheet.save(ROOT / "tmp" / f"contact-{label}-{start//6+1}.png")
     appendix = PdfReader(ROOT / "output" / "G28Lab3_AI_Appendix.pdf")
     appendix_text = "\n".join(page.extract_text() for page in appendix.pages)
-    for phrase in ("GPT-6.1 Sol", "Task A", "Task B", "Task C", "do we need to", "personal reflection"):
+    for phrase in ("GPT-6.1 Sol", "Task A", "Task B", "Task C", "do we need to", "personal reflection", "DEVELOPMENT_TRANSCRIPT.md", "251 recorded messages"):
         assert phrase in appendix_text, "Missing appendix content: " + phrase
     counts["aiAppendix"] = len(appendix.pages)
     if "--include-reference" in sys.argv:
@@ -285,7 +377,7 @@ def main():
             bundle.write(ROOT / "docs" / "reference" / "lab2" / "G28Lab2.asta", "Lab2_G28/G28Lab2.asta")
             bundle.write(ROOT / "docs" / "reference" / "lab2" / "G28Lab2_Corrected.pdf", "Lab2_G28/G28Lab2.pdf")
             bundle.writestr("Lab2_G28/AI_REFERENCE_ONLY.txt", "AI-GENERATED REVIEW REFERENCE ONLY. NOT FOR LAB 1 OR LAB 2 SUBMISSION.\nGeneral course rules prohibit generated text/models in those submissions.\nOriginal submissions are preserved in docs/baseline of the Lab 3 repository.\n")
-    evidence = {"python": platform.python_version(), "platform": platform.platform(), "pythonFunctionsDocumented": functions, "coverage": coverage, "pdfPages": counts, "baselineHashesVerified": True, "lab1BaselineHashVerified": True, "lab2GeneratedOutputsAreReviewOnly": True, "readmeAndIndexLocalLinksVerified": check_document_links(), "projectZipWhitelistVerified": whitelisted_count}
+    evidence = {"python": platform.python_version(), "platform": platform.platform(), "pythonFunctionsDocumented": functions, "coverage": coverage, "pdfPages": counts, "baselineHashesVerified": True, "lab1BaselineHashVerified": True, "lab2GeneratedOutputsAreReviewOnly": True, "readmeAndIndexLocalLinksVerified": check_document_links(), "projectZipWhitelistVerified": whitelisted_count, "storyComparison": story_comparison, "developmentTranscriptMessagesVerified": transcript_messages, "documentRevisionDate": "2026-10-26", "unitTestsPassed": unit_count, "browserChecksPassed": browser_count, "threeAssistantChoicesAndSelectedFollowupVerified": three_choices_verified, "cleanInstallVerified": True, "examplePromptsAndReducedMotionVerified": True}
     (ROOT / "evidence" / "current" / "artifact-checks.json").write_text(json.dumps(evidence, indent=2) + "\n", encoding="utf-8", newline="\n")
     if "--build-project-zip" in sys.argv:
         build_project_zip()

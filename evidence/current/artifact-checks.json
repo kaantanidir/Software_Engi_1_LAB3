@@ -1,7 +1,7 @@
 {
   "python": "3.12.14",
   "platform": "Windows-11-10.0.26300-SP0",
-  "pythonFunctionsDocumented": 117,
+  "pythonFunctionsDocumented": 130,
   "coverage": {
     "S01": [
       "FR-01",
@@ -74,12 +74,26 @@
   },
   "pdfPages": {
     "lab2": 12,
-    "lab3": 21,
-    "aiAppendix": 6
+    "lab3": 25,
+    "aiAppendix": 8
   },
   "baselineHashesVerified": true,
   "lab1BaselineHashVerified": true,
   "lab2GeneratedOutputsAreReviewOnly": true,
-  "readmeAndIndexLocalLinksVerified": 47,
-  "projectZipWhitelistVerified": 79
+  "readmeAndIndexLocalLinksVerified": 74,
+  "projectZipWhitelistVerified": 91,
+  "storyComparison": {
+    "originalStories": 13,
+    "retainedOrSplitStories": 17,
+    "additionalStories": 7,
+    "revisedStories": 24,
+    "submittedWordingVerified": true
+  },
+  "developmentTranscriptMessagesVerified": 251,
+  "documentRevisionDate": "2026-10-26",
+  "unitTestsPassed": 38,
+  "browserChecksPassed": 65,
+  "threeAssistantChoicesAndSelectedFollowupVerified": true,
+  "cleanInstallVerified": true,
+  "examplePromptsAndReducedMotionVerified": true
 }

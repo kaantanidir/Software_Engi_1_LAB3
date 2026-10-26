@@ -1,0 +1,36 @@
+{
+  "export_date": "2026-10-26",
+  "start_inclusive_utc": "2026-10-20T21:32:00Z",
+  "end_exclusive_utc": "2026-10-21T23:00:00Z",
+  "messages": 251,
+  "roles": {
+    "user": 85,
+    "assistant": 166
+  },
+  "sources": [
+    {
+      "filename": "rollout-2026-09-14T00-32-17-01a09ce6-5b9c-7721-b061-f1813283594c.jsonl",
+      "sha256": "921f2f565c948cad1f16ea3113f056c752d8b4db034b2d8274ead461719ad4c4",
+      "included_messages": 133
+    },
+    {
+      "filename": "rollout-2026-10-21T03-47-16-01a09ce6-5b9c-7721-b061-f1813283594c_01a15c24-2a1f-7482-ad71-b29072199ee8.jsonl",
+      "sha256": "8fae4eaeb896b4ed2828c7a757fceedb66c7f01a0a565118028d30bd5c963a9d",
+      "included_messages": 104
+    },
+    {
+      "filename": "rollout-2026-10-21T22-10-10-01a09ce6-5b9c-7721-b061-f1813283594c_01a16015-e73a-7933-a89d-49b5fc71412f.jsonl",
+      "sha256": "538350dfaf7745c9f928914e06a8dfc79b5e74d17fbe3900fb42669a5f428186",
+      "included_messages": 14
+    }
+  ],
+  "redactions": {
+    "account_passwords": 1,
+    "home_paths": 44,
+    "tokens": 0,
+    "url_credentials": 0,
+    "personal_emails": 2
+  },
+  "transcript_sha256": "2cabae642d2991b795a8d187df93748ff985728ea2da569685cf3d3ddcd25a66",
+  "scope": "Available visible Codex-side development messages; declared omissions and redactions are explained in the transcript."
+}

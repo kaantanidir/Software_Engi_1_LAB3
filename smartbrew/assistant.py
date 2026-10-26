@@ -28,13 +28,30 @@ RESPONSE_SCHEMA = {
         "kind": {"type": "string", "enum": ["recipe", "clarify", "unavailable"]},
         "config": {"anyOf": [CONFIG_SCHEMA, {"type": "null"}]},
         "message": {"type": "string", "minLength": 1, "maxLength": 320},
+        "alternatives": {"type": "array", "maxItems": 2, "items": {
+            "type": "object", "additionalProperties": False,
+            "properties": {"config": CONFIG_SCHEMA, "message": {"type": "string", "minLength": 1, "maxLength": 240}},
+            "required": ["config", "message"],
+        }},
     },
-    "required": ["kind", "config", "message"],
+    "required": ["kind", "config", "message", "alternatives"],
 }
 SYSTEM_PROMPT = """You are SmartBrew's local drink assistant, not a general chatbot.
 Interpret the customer's drink request using only the supplied menu, current inventory and option limits.
 Return JSON matching the schema. Prefer a complete recipe proposal when the customer gives enough
 taste preferences; they do not need to name a menu item. Explain your choice and assumptions briefly.
+For a new broad taste request, return your best recipe in config/message and TWO other suitable recipes
+in alternatives, giving three options in this single response. Each alternative has config and a short
+message naming the actual drink and explaining why it fits. Prefer different menu drinks when allowed.
+All three options must respect explicit constraints such as no dairy, milk type, temperature, syrup or extra
+shots. Alternatives must keep the primary recipe's milk, strength, temperature, syrup and extra fields;
+only the base drink may differ. A request for one named drink returns that drink with alternatives=[] unless
+the customer explicitly asks for other drink options. Never replace an explicitly requested drink silently.
+Do not invent scores, confidence percentages, health claims or prices. The server supplies actual prices.
+Return fewer alternatives if the request leaves fewer distinct suitable recipes. Never repeat an identical
+config just to fill three slots. For a precise refinement of current_proposal, return only the refined
+recipe with alternatives=[] unless the customer explicitly requests multiple choices. For kind=clarify
+or kind=unavailable, config=null and alternatives=[].
 Taste guide: espresso is concentrated and coffee-forward; Americano is a longer coffee-forward drink.
 Latte has more milk than cappuccino; either can be creamy with oat or dairy and either can be strong.
 Mocha combines coffee and chocolate; cocoa (Hot Chocolate) is chocolate-forward without a coffee base.
@@ -84,25 +101,25 @@ When explaining safety limits, say you cannot guarantee safety/caffeine content.
 drink contains beans or that oat milk is unavailable; neither is true of this menu.
 Examples:
 Request: A bold vanilla coffee, no milk.
-Response: {"kind":"recipe","config":{"drink":"americano","milk":"none","strength":"strong","temperature":70,"syrup":1,"extra":0},"message":"A strong Americano with one vanilla syrup shot and no milk."}
+Response: {"kind":"recipe","config":{"drink":"americano","milk":"none","strength":"strong","temperature":70,"syrup":1,"extra":0},"message":"A strong Americano with vanilla sweetness and no milk.","alternatives":[{"config":{"drink":"espresso","milk":"none","strength":"strong","temperature":70,"syrup":1,"extra":0},"message":"Espresso gives a shorter coffee-forward option with vanilla sweetness and no milk."},{"config":{"drink":"mocha","milk":"none","strength":"strong","temperature":70,"syrup":1,"extra":0},"message":"Mocha adds chocolate to strong coffee and vanilla, without milk."}]}
 Request: A mild oat latte, 80 degrees, two vanilla shots.
-Response: {"kind":"recipe","config":{"drink":"latte","milk":"oat","strength":"mild","temperature":80,"syrup":2,"extra":0},"message":"A mild oat latte at 80 degrees with two vanilla syrup shots."}
+Response: {"kind":"recipe","config":{"drink":"latte","milk":"oat","strength":"mild","temperature":80,"syrup":2,"extra":0},"message":"A mild oat latte at 80 degrees with two vanilla syrup shots.","alternatives":[]}
 Context current_proposal: {"drink":"latte","milk":"oat","strength":"regular","temperature":65,"syrup":2,"extra":1}
 Request: Less sweet.
-Response: {"kind":"recipe","config":{"drink":"latte","milk":"oat","strength":"regular","temperature":65,"syrup":1,"extra":1},"message":"The same oat latte at 65 degrees, reduced to one vanilla syrup shot."}
+Response: {"kind":"recipe","config":{"drink":"latte","milk":"oat","strength":"regular","temperature":65,"syrup":1,"extra":1},"message":"The same oat latte at 65 degrees, reduced to one vanilla syrup shot.","alternatives":[]}
 Context current_proposal: {"drink":"latte","milk":"oat","strength":"mild","temperature":65,"syrup":0,"extra":0}
 Request: Can we make it chocolatey?
-Response: {"kind":"recipe","config":{"drink":"mocha","milk":"oat","strength":"mild","temperature":65,"syrup":0,"extra":0},"message":"Switched to a mild oat mocha at 65 degrees so you get chocolate with your coffee."}
+Response: {"kind":"recipe","config":{"drink":"mocha","milk":"oat","strength":"mild","temperature":65,"syrup":0,"extra":0},"message":"Switched to a mild oat mocha at 65 degrees so you get chocolate with your coffee.","alternatives":[]}
 Request: I'd like to add an ingredient, but I haven't chosen which.
-Response: {"kind":"clarify","config":null,"message":"Would you like vanilla syrup or an extra espresso shot?"}
+Response: {"kind":"clarify","config":null,"message":"Would you like vanilla syrup or an extra espresso shot?","alternatives":[]}
 Request: Give me an iced caramel cappuccino.
-Response: {"kind":"unavailable","config":null,"message":"Iced drinks and caramel syrup are not available on this machine; we only serve hot drinks (50-90 C) with optional vanilla syrup."}
+Response: {"kind":"unavailable","config":null,"message":"Iced drinks and caramel syrup are not available on this machine; we only serve hot drinks (50-90 C) with optional vanilla syrup.","alternatives":[]}
 Request: Is this safe for my severe milk allergy?
-Response: {"kind":"unavailable","config":null,"message":"I cannot guarantee allergy safety or the absence of cross-contact on this machine."}
+Response: {"kind":"unavailable","config":null,"message":"I cannot guarantee allergy safety or the absence of cross-contact on this machine.","alternatives":[]}
 Request: Make my usual one. (no known favorite)
-Response: {"kind":"clarify","config":null,"message":"Which drink and settings do you usually choose?"}
+Response: {"kind":"clarify","config":null,"message":"Which drink and settings do you usually choose?","alternatives":[]}
 Request: Add ice cream and caramel sauce.
-Response: {"kind":"unavailable","config":null,"message":"Those ingredients are not on this machine's menu."}
+Response: {"kind":"unavailable","config":null,"message":"Those ingredients are not on this machine's menu.","alternatives":[]}
 """
 
 
@@ -155,8 +172,16 @@ class LocalAssistant:
             available = False
         return {"available": available, "model": self.model, "local": True}
 
+    @staticmethod
+    def strength_refinement(message, current_proposal):
+        """Purpose: constrain an exact strength-only follow-up to the active recipe. Inputs: request and validated selected configuration. Returns: changed config or None for other language forms."""
+        match = re.fullmatch(r"(?:please )?make (?:it|that) (mild|regular|strong)(?:,? please)?[.!]?", message.strip(), flags=re.I)
+        if current_proposal is None or match is None:
+            return None
+        return {**current_proposal, "strength": match[1].lower()}
+
     def suggest(self, token, data):
-        """Purpose: interpret a drink request without side effects. Inputs: session and message/history. Returns: validated proposal."""
+        """Purpose: interpret a drink request without side effects. Inputs: session and message/history. Returns: primary quote and up to three validated suggestions."""
         message = data.get("message")
         history = data.get("history", [])
         if not isinstance(message, str) or not 1 <= len(message.strip()) <= 600:
@@ -206,25 +231,68 @@ class LocalAssistant:
         try:
             response = self.request("/api/chat", {"model": self.model, "messages": messages, "format": RESPONSE_SCHEMA,
                                                  "stream": False, "think": False, "keep_alive": "10m",
-                                                 "options": {"temperature": 0, "num_ctx": 4096, "num_predict": 450}}, self.timeout)
+                                                 "options": {"temperature": 0, "num_ctx": 8192, "num_predict": 900}}, self.timeout)
         finally:
             self.slot.release()
         try:
             result = json.loads(response["message"]["content"])
-            if response.get("done") is not True or not isinstance(result, dict) or set(result) != {"kind", "message", "config"} or result["kind"] not in ("recipe", "clarify", "unavailable") or not isinstance(result["message"], str) or not 1 <= len(result["message"].strip()) <= 320:
+            if response.get("done") is not True or not isinstance(result, dict) or set(result) != {"kind", "message", "config", "alternatives"} or result["kind"] not in ("recipe", "clarify", "unavailable") or not isinstance(result["message"], str) or not 1 <= len(result["message"].strip()) <= 320:
                 raise ValueError("Invalid model result")
+            alternatives = result["alternatives"]
+            if not isinstance(alternatives, list) or len(alternatives) > 2:
+                raise ValueError("Invalid alternative list")
             quote = None
+            suggestions = []
             if result["kind"] == "recipe":
-                config = result["config"]
-                if not isinstance(config, dict) or set(config) != set(CONFIG_SCHEMA["required"]):
-                    raise ValueError("Unexpected recipe fields")
-                config = self.store.config(config)
-                if config["temperature"] % 5:
-                    raise ValueError("Unsupported temperature step")
+                # Validate the entire model response before exposing any candidate to the browser.
+                candidates = [{"config": result["config"], "message": result["message"]}]
+                for alternative in alternatives:
+                    if not isinstance(alternative, dict) or set(alternative) != {"config", "message"} or not isinstance(alternative["message"], str) or not 1 <= len(alternative["message"].strip()) <= 240:
+                        raise ValueError("Invalid alternative recipe")
+                    candidates.append(alternative)
+                validated = []
+                for candidate in candidates:
+                    config = candidate["config"]
+                    if not isinstance(config, dict) or set(config) != set(CONFIG_SCHEMA["required"]):
+                        raise ValueError("Unexpected recipe fields")
+                    config = self.store.config(config)
+                    if config["temperature"] % 5:
+                        raise ValueError("Unsupported temperature step")
+                    validated.append({"config": config, "message": candidate["message"].strip()})
+                refinement = self.strength_refinement(message, validated_proposal)
+                if refinement is not None:
+                    # An exact strength-only command cannot silently switch the selected drink or other settings.
+                    drink_name = next(drink["name"] for drink in MENU if drink["id"] == refinement["drink"])
+                    milk_label = "no milk" if refinement["milk"] == "none" else refinement["milk"] + " milk"
+                    result["message"] = f"{drink_name}, {refinement['strength']} strength, {refinement['temperature']} C, {milk_label}. Vanilla syrup: {refinement['syrup']}; extra espresso: {refinement['extra']}."
+                    validated = [{"config": refinement, "message": result["message"]}]
+                seen = set()
                 with self.store.connection() as db:
-                    quote = self.store.quote(db, config)
-            elif result["config"] is not None:
+                    for index, candidate in enumerate(validated):
+                        if index > 0 and any(candidate["config"][field] != validated[0]["config"][field] for field in CONFIG_SCHEMA["required"] if field != "drink"):
+                            # Keep the interpreted ingredient/setting constraints consistent across options.
+                            continue
+                        candidate_quote = self.store.quote(db, candidate["config"])
+                        if index == 0:
+                            quote = candidate_quote
+                        key = json.dumps(candidate_quote["config"], sort_keys=True)
+                        if key in seen or (index > 0 and not candidate_quote["available"]):
+                            continue
+                        seen.add(key)
+                        suggestions.append({"quote": candidate_quote, "message": candidate["message"]})
+                alternative_request = re.fullmatch(r"(?:what else(?: do you have(?: that fits that)?)?|(?:show|give) me (?:another option|a different drink)|another option|a different drink)[.!?]?", message.strip(), flags=re.I)
+                if validated_proposal is not None and alternative_request is not None:
+                    # For an explicit request for another drink, promote an available model-generated alternative.
+                    suggestions = [item for item in suggestions if item["quote"]["available"] and item["quote"]["config"]["drink"] != validated_proposal["drink"]]
+                    if suggestions:
+                        quote = suggestions[0]["quote"]
+                        result["message"] = suggestions[0]["message"]
+                    else:
+                        quote = None
+                        result["kind"] = "unavailable"
+                        result["message"] = "No different available recipe was proposed for those settings. Adjust your request or choose a recipe manually."
+            elif result["config"] is not None or alternatives:
                 raise ValueError("Non-recipe response contains a recipe")
         except (KeyError, TypeError, ValueError, RuleError) as error:
             raise RuleError("The model did not produce a supported recipe. Please rephrase or customize manually.", 502) from error
-        return {"kind": result["kind"], "message": result["message"].strip(), "quote": quote, "model": self.model, "local": True}
+        return {"kind": result["kind"], "message": result["message"].strip(), "quote": quote, "suggestions": suggestions, "model": self.model, "local": True}

@@ -1,0 +1,531 @@
+{
+  "recordedAt": "2026-10-26T14:30:28.416Z",
+  "passed": false,
+  "checks": [
+    "F02: six menu drinks load",
+    "F02: category filter",
+    "F01: ordinary login starts empty with NFC disabled",
+    "F01: logout clears receipt and private records",
+    "F01/F04/F07: new customer is not Alex and sees no other records",
+    "HTTP: another account cannot delete recipes or email purchases",
+    "HTTP: hidden NFC cannot bypass password sign-in",
+    "F01: wrong password does not sign in as Alex",
+    "F01/F04/F07: restart preserves the correct account and its records",
+    "F04: owner can delete their saved recipe",
+    "F01: explicit NFC sign-in remains available",
+    "F01: customer credential login",
+    "F03: live quote updates",
+    "F04: named recipe create/rename",
+    "F07/F08: checkout with loyalty discount",
+    "F03/F09: receipt contains syrup and extra-shot settings",
+    "F09: actual QR SVG generated",
+    "Customer checkout has no payment-outcome control",
+    "Complete order review includes syrup and extra shots",
+    "F07: declined payment reported",
+    "HTTP: customer cannot override payment simulation",
+    "F07: one completed history entry",
+    "F10: seven ingredient counters",
+    "F10: technician UI controls processor simulation",
+    "F05: depleted customized ingredient blocks checkout",
+    "F10: full bin halts checkout",
+    "F10: diagnostic fault logged",
+    "F06: technician selects unknown, sunny, cloudy, rainy and snowy conditions",
+    "F06: technician selects cold, mild, warm and hot temperatures",
+    "F06: technician selects all four manual periods",
+    "F06: technician switches between manual override and local-clock automatic mode",
+    "F06: recommendation context visibly identifies local clock versus technician override",
+    "F06: changing context deterministically updates top recommendation across three scenarios",
+    "F06: offline mode reports weather unavailable and ignores temperature and condition bonuses",
+    "F06: manual ordering remains usable when weather context is unavailable",
+    "F06: offline recommendations use local context",
+    "F07: prepaid completes offline",
+    "F07: unsupported offline wallet is pending",
+    "F07: pending payment reconciles on retry",
+    "HTTP authorization rejects customer admin request",
+    "Proposed local-response target: p95 below 2 seconds",
+    "Proposed quote-response target: p95 below 2 seconds",
+    "F11: real local model returns a supported oat-latte proposal",
+    "F11: inference does not apply settings or purchase automatically",
+    "F11: explicit confirmation applies the validated settings",
+    "F11: new conversational request selects cappuccino",
+    "F11: clarification retains full recipe context",
+    "F11: follow-up changes only requested fields after clarification",
+    "F11: multi-turn proposals have no persistent side effects",
+    "F11: real model supplies three distinct supported recipe options",
+    "F11: every option preserves requested settings and shows server price",
+    "F11: customer recipe choices omit technical scores and confidence percentages",
+    "F11: three recipe options fit the mobile viewport",
+    "F11: the second option applies its own exact recipe"
+  ],
+  "errors": [],
+  "assistantTurns": [
+    {
+      "request": {
+        "message": "A regular cappuccino at 75 degrees with two syrup shots and one extra espresso.",
+        "history": [
+          {
+            "role": "user",
+            "content": "A strong oat latte at 75 degrees with one syrup shot and no extra espresso."
+          },
+          {
+            "role": "assistant",
+            "content": "A strong oat latte at 75 degrees with one vanilla syrup shot and no extra espresso."
+          }
+        ],
+        "context_config": {
+          "drink": "latte",
+          "milk": "oat",
+          "strength": "strong",
+          "temperature": 75,
+          "syrup": 1,
+          "extra": 0
+        }
+      },
+      "response": {
+        "kind": "recipe",
+        "message": "A regular oat cappuccino at 75 degrees with two vanilla syrup shots and one extra espresso shot.",
+        "quote": {
+          "config": {
+            "drink": "cappuccino",
+            "milk": "oat",
+            "strength": "regular",
+            "temperature": 75,
+            "syrup": 2,
+            "extra": 1
+          },
+          "name": "Cappuccino",
+          "price": 4900,
+          "kcal": 139,
+          "allergens": [
+            "oats"
+          ],
+          "ingredients": {
+            "beans": 19,
+            "water": 70,
+            "cups": 1,
+            "oat": 120,
+            "syrup": 20
+          },
+          "available": true,
+          "reasons": [],
+          "category": "Coffee",
+          "image": "cappuccino.svg",
+          "nutrition_note": "Illustrative recipe estimates"
+        },
+        "suggestions": [
+          {
+            "quote": {
+              "config": {
+                "drink": "cappuccino",
+                "milk": "oat",
+                "strength": "regular",
+                "temperature": 75,
+                "syrup": 2,
+                "extra": 1
+              },
+              "name": "Cappuccino",
+              "price": 4900,
+              "kcal": 139,
+              "allergens": [
+                "oats"
+              ],
+              "ingredients": {
+                "beans": 19,
+                "water": 70,
+                "cups": 1,
+                "oat": 120,
+                "syrup": 20
+              },
+              "available": true,
+              "reasons": [],
+              "category": "Coffee",
+              "image": "cappuccino.svg",
+              "nutrition_note": "Illustrative recipe estimates"
+            },
+            "message": "A regular oat cappuccino at 75 degrees with two vanilla syrup shots and one extra espresso shot."
+          }
+        ],
+        "model": "qwen3:4b",
+        "local": true
+      },
+      "milliseconds": 1726.3214000000007
+    },
+    {
+      "request": {
+        "message": "Can I add something?",
+        "history": [
+          {
+            "role": "user",
+            "content": "A strong oat latte at 75 degrees with one syrup shot and no extra espresso."
+          },
+          {
+            "role": "assistant",
+            "content": "A strong oat latte at 75 degrees with one vanilla syrup shot and no extra espresso."
+          },
+          {
+            "role": "user",
+            "content": "A regular cappuccino at 75 degrees with two syrup shots and one extra espresso."
+          },
+          {
+            "role": "assistant",
+            "content": "A regular oat cappuccino at 75 degrees with two vanilla syrup shots and one extra espresso shot."
+          }
+        ],
+        "context_config": {
+          "drink": "cappuccino",
+          "milk": "oat",
+          "strength": "regular",
+          "temperature": 75,
+          "syrup": 2,
+          "extra": 1
+        }
+      },
+      "response": {
+        "kind": "clarify",
+        "message": "Would you like vanilla syrup or an extra espresso shot?",
+        "quote": null,
+        "suggestions": [],
+        "model": "qwen3:4b",
+        "local": true
+      },
+      "milliseconds": 906.4494000000013
+    },
+    {
+      "request": {
+        "message": "Make it oat and stronger.",
+        "history": [
+          {
+            "role": "user",
+            "content": "A strong oat latte at 75 degrees with one syrup shot and no extra espresso."
+          },
+          {
+            "role": "assistant",
+            "content": "A strong oat latte at 75 degrees with one vanilla syrup shot and no extra espresso."
+          },
+          {
+            "role": "user",
+            "content": "A regular cappuccino at 75 degrees with two syrup shots and one extra espresso."
+          },
+          {
+            "role": "assistant",
+            "content": "A regular oat cappuccino at 75 degrees with two vanilla syrup shots and one extra espresso shot."
+          },
+          {
+            "role": "user",
+            "content": "Can I add something?"
+          },
+          {
+            "role": "assistant",
+            "content": "Would you like vanilla syrup or an extra espresso shot?"
+          }
+        ],
+        "context_config": {
+          "drink": "cappuccino",
+          "milk": "oat",
+          "strength": "regular",
+          "temperature": 75,
+          "syrup": 2,
+          "extra": 1
+        }
+      },
+      "response": {
+        "kind": "recipe",
+        "message": "A stronger oat cappuccino at 75 degrees with two vanilla syrup shots and one extra espresso shot.",
+        "quote": {
+          "config": {
+            "drink": "cappuccino",
+            "milk": "oat",
+            "strength": "strong",
+            "temperature": 75,
+            "syrup": 2,
+            "extra": 1
+          },
+          "name": "Cappuccino",
+          "price": 4900,
+          "kcal": 139,
+          "allergens": [
+            "oats"
+          ],
+          "ingredients": {
+            "beans": 22,
+            "water": 70,
+            "cups": 1,
+            "oat": 120,
+            "syrup": 20
+          },
+          "available": true,
+          "reasons": [],
+          "category": "Coffee",
+          "image": "cappuccino.svg",
+          "nutrition_note": "Illustrative recipe estimates"
+        },
+        "suggestions": [
+          {
+            "quote": {
+              "config": {
+                "drink": "cappuccino",
+                "milk": "oat",
+                "strength": "strong",
+                "temperature": 75,
+                "syrup": 2,
+                "extra": 1
+              },
+              "name": "Cappuccino",
+              "price": 4900,
+              "kcal": 139,
+              "allergens": [
+                "oats"
+              ],
+              "ingredients": {
+                "beans": 22,
+                "water": 70,
+                "cups": 1,
+                "oat": 120,
+                "syrup": 20
+              },
+              "available": true,
+              "reasons": [],
+              "category": "Coffee",
+              "image": "cappuccino.svg",
+              "nutrition_note": "Illustrative recipe estimates"
+            },
+            "message": "A stronger oat cappuccino at 75 degrees with two vanilla syrup shots and one extra espresso shot."
+          }
+        ],
+        "model": "qwen3:4b",
+        "local": true
+      },
+      "milliseconds": 1574.6941000000006
+    },
+    {
+      "request": {
+        "message": "Recommend three strong, slightly sweet oat drinks at 75 degrees with one vanilla syrup shot and no extra espresso.",
+        "history": [],
+        "context_config": null
+      },
+      "response": {
+        "kind": "recipe",
+        "message": "A strong oat latte at 75 degrees with one vanilla syrup shot.",
+        "quote": {
+          "config": {
+            "drink": "latte",
+            "milk": "oat",
+            "strength": "strong",
+            "temperature": 75,
+            "syrup": 1,
+            "extra": 0
+          },
+          "name": "Caffe Latte",
+          "price": 4200,
+          "kcal": 135,
+          "allergens": [
+            "oats"
+          ],
+          "ingredients": {
+            "beans": 13,
+            "water": 40,
+            "cups": 1,
+            "oat": 180,
+            "syrup": 10
+          },
+          "available": true,
+          "reasons": [],
+          "category": "Coffee",
+          "image": "latte.svg",
+          "nutrition_note": "Illustrative recipe estimates"
+        },
+        "suggestions": [
+          {
+            "quote": {
+              "config": {
+                "drink": "latte",
+                "milk": "oat",
+                "strength": "strong",
+                "temperature": 75,
+                "syrup": 1,
+                "extra": 0
+              },
+              "name": "Caffe Latte",
+              "price": 4200,
+              "kcal": 135,
+              "allergens": [
+                "oats"
+              ],
+              "ingredients": {
+                "beans": 13,
+                "water": 40,
+                "cups": 1,
+                "oat": 180,
+                "syrup": 10
+              },
+              "available": true,
+              "reasons": [],
+              "category": "Coffee",
+              "image": "latte.svg",
+              "nutrition_note": "Illustrative recipe estimates"
+            },
+            "message": "A strong oat latte at 75 degrees with one vanilla syrup shot."
+          },
+          {
+            "quote": {
+              "config": {
+                "drink": "cappuccino",
+                "milk": "oat",
+                "strength": "strong",
+                "temperature": 75,
+                "syrup": 1,
+                "extra": 0
+              },
+              "name": "Cappuccino",
+              "price": 4000,
+              "kcal": 110,
+              "allergens": [
+                "oats"
+              ],
+              "ingredients": {
+                "beans": 13,
+                "water": 40,
+                "cups": 1,
+                "oat": 120,
+                "syrup": 10
+              },
+              "available": true,
+              "reasons": [],
+              "category": "Coffee",
+              "image": "cappuccino.svg",
+              "nutrition_note": "Illustrative recipe estimates"
+            },
+            "message": "A strong oat cappuccino at 75 degrees with one vanilla syrup shot."
+          },
+          {
+            "quote": {
+              "config": {
+                "drink": "mocha",
+                "milk": "oat",
+                "strength": "strong",
+                "temperature": 75,
+                "syrup": 1,
+                "extra": 0
+              },
+              "name": "Mocha",
+              "price": 4500,
+              "kcal": 215,
+              "allergens": [
+                "oats"
+              ],
+              "ingredients": {
+                "beans": 13,
+                "water": 40,
+                "cups": 1,
+                "oat": 140,
+                "cocoa": 15,
+                "syrup": 10
+              },
+              "available": true,
+              "reasons": [],
+              "category": "Chocolate",
+              "image": "mocha.svg",
+              "nutrition_note": "Illustrative recipe estimates"
+            },
+            "message": "A strong oat mocha at 75 degrees with one vanilla syrup shot."
+          }
+        ],
+        "model": "qwen3:4b",
+        "local": true
+      },
+      "milliseconds": 3841.8548999999985
+    },
+    {
+      "request": {
+        "message": "Make it mild.",
+        "history": [
+          {
+            "role": "user",
+            "content": "Recommend three strong, slightly sweet oat drinks at 75 degrees with one vanilla syrup shot and no extra espresso."
+          },
+          {
+            "role": "assistant",
+            "content": "A strong oat latte at 75 degrees with one vanilla syrup shot."
+          }
+        ],
+        "context_config": {
+          "drink": "cappuccino",
+          "milk": "oat",
+          "strength": "strong",
+          "temperature": 75,
+          "syrup": 1,
+          "extra": 0
+        }
+      },
+      "response": {
+        "kind": "recipe",
+        "message": "A mild oat latte at 75 degrees with one vanilla syrup shot.",
+        "quote": {
+          "config": {
+            "drink": "latte",
+            "milk": "oat",
+            "strength": "mild",
+            "temperature": 75,
+            "syrup": 1,
+            "extra": 0
+          },
+          "name": "Caffe Latte",
+          "price": 4200,
+          "kcal": 135,
+          "allergens": [
+            "oats"
+          ],
+          "ingredients": {
+            "beans": 8,
+            "water": 40,
+            "cups": 1,
+            "oat": 180,
+            "syrup": 10
+          },
+          "available": true,
+          "reasons": [],
+          "category": "Coffee",
+          "image": "latte.svg",
+          "nutrition_note": "Illustrative recipe estimates"
+        },
+        "suggestions": [
+          {
+            "quote": {
+              "config": {
+                "drink": "latte",
+                "milk": "oat",
+                "strength": "mild",
+                "temperature": 75,
+                "syrup": 1,
+                "extra": 0
+              },
+              "name": "Caffe Latte",
+              "price": 4200,
+              "kcal": 135,
+              "allergens": [
+                "oats"
+              ],
+              "ingredients": {
+                "beans": 8,
+                "water": 40,
+                "cups": 1,
+                "oat": 180,
+                "syrup": 10
+              },
+              "available": true,
+              "reasons": [],
+              "category": "Coffee",
+              "image": "latte.svg",
+              "nutrition_note": "Illustrative recipe estimates"
+            },
+            "message": "A mild oat latte at 75 degrees with one vanilla syrup shot."
+          }
+        ],
+        "model": "qwen3:4b",
+        "local": true
+      },
+      "milliseconds": 1597.3747000000003
+    }
+  ],
+  "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n\n  {\n+   drink: 'latte',\n-   drink: 'cappuccino',\n    extra: 0,\n    milk: 'oat',\n    strength: 'mild',\n    syrup: 1,\n    temperature: 75\n\n    at auditAssistantOptions (C:\\Users\\HP\\Documents\\ChatGPT\\Coding Uni\\SmartBrew_G28\\tools\\browser_check.cjs:205:10)\n    at async main (C:\\Users\\HP\\Documents\\ChatGPT\\Coding Uni\\SmartBrew_G28\\tools\\browser_check.cjs:422:24)"
+}

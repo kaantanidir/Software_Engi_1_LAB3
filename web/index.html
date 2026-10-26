@@ -16,6 +16,12 @@
       <section class="assistant-band" aria-labelledby="assistant-heading">
         <div class="assistant-heading"><h2 id="assistant-heading"><i data-lucide="sparkles"></i>Drink assistant</h2><div class="assistant-actions"><span id="assistant-status" class="muted" role="status">Checking local model</span><button id="assistant-clear" class="icon" type="button" title="Clear conversation"><i data-lucide="rotate-ccw"></i></button></div></div>
         <form id="assistant-form"><label for="assistant-request">Your request</label><div class="assistant-input"><input id="assistant-request" name="request" maxlength="600" required placeholder="Something strong, slightly sweet, and without dairy"><button id="assistant-submit" type="submit"><i data-lucide="send"></i>Ask</button></div></form>
+        <div class="assistant-examples" role="group" aria-label="Example drink requests">
+          <button type="button" data-assistant-prompt="Recommend three strong, slightly sweet oat drinks at 75 degrees with one vanilla syrup shot and no extra espresso.">Three strong oat options</button>
+          <button type="button" data-assistant-prompt="A hot chocolate with oat milk at 75 degrees and two vanilla syrup shots.">Sweet oat chocolate</button>
+          <button type="button" data-assistant-prompt="A regular cappuccino with dairy milk at 75 degrees, no syrup and no extra espresso.">Classic cappuccino</button>
+        </div>
+        <p class="assistant-examples-hint muted">Choose an example, then select Ask.</p>
         <div id="assistant-result" aria-live="polite"></div>
       </section>
       <div class="menu-layout"><div class="catalog">
